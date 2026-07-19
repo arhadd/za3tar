@@ -19,11 +19,13 @@ Early build. Milestones:
 - **M1 — capture** 🚧 system-audio tap + mic → two 16 kHz WAVs (no bot). Mic
   proven; system tap streams and writes, pending a one-time macOS permission
   grant (see [capture/README.md](capture/README.md))
-- **M2 — ASR** pluggable transcribers (ElevenLabs Scribe v2 · Speechmatics
-  bilingual · Gemini) + a bake-off to pick the best on real audio
-- **M3 — notes** Claude-generated notes with a code-switching output contract
-- **M4 — the app** record → transcript → notes → copy
-- **M5 — dogfood** real meetings, signed build
+- **M2 — ASR** ✅ ElevenLabs Scribe v2 transcribes both tracks (me/them),
+  merged by timestamp. Behind one adapter so a second engine drops in later.
+- **M3 — notes** ✅ Claude turns the transcript into structured markdown with
+  the code-switching contract (Arabic script + Latin for English terms)
+- **M4 — the app** ✅ record → auto-transcribe → notes → copy-as-markdown, with
+  a live rough-notes box. Verified end-to-end against the live APIs.
+- **M5 — dogfood** real meetings once the M1 permission is granted; signed build
 
 ## Stack
 
