@@ -21,6 +21,10 @@ dist-ssr
 *.wav
 recordings/
 
+# compiled capture helper (built from capture/ via `npm run capture:build`)
+/src-tauri/binaries/
+/capture/za3tar-capture
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

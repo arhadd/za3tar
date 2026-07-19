@@ -16,7 +16,9 @@ calls. za3tar is the pairing: no-bot native Mac app × dialectal Arabic.
 Early build. Milestones:
 
 - **M0 — scaffold** ✅ Tauri v2 + React + TS + Tailwind
-- **M1 — capture** system-audio tap + mic → two 16 kHz WAVs (no bot)
+- **M1 — capture** 🚧 system-audio tap + mic → two 16 kHz WAVs (no bot). Mic
+  proven; system tap streams and writes, pending a one-time macOS permission
+  grant (see [capture/README.md](capture/README.md))
 - **M2 — ASR** pluggable transcribers (ElevenLabs Scribe v2 · Speechmatics
   bilingual · Gemini) + a bake-off to pick the best on real audio
 - **M3 — notes** Claude-generated notes with a code-switching output contract
