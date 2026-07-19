@@ -1,0 +1,37 @@
+@import "tailwindcss";
+
+/* za3tar — the arabeezy granola alternative.
+   warm, herby palette: za'atar olive + sumac + sesame cream. */
+@theme {
+  --color-olive: #6b7b3a;
+  --color-olive-deep: #3f4a25;
+  --color-sumac: #b5432e;
+  --color-cream: #f7f2e7;
+  --color-sesame: #e8dcc0;
+  --color-ink: #20241a;
+  --color-ink-soft: #4a4f3d;
+
+  --font-sans:
+    ui-sans-serif, system-ui, -apple-system, "SF Pro Text", "Segoe UI",
+    sans-serif;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--color-cream);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* arabic / rtl text renders with a system arabic face */
+[dir="rtl"],
+.arabic {
+  font-family: "SF Arabic", "Geeza Pro", var(--font-sans);
+}
