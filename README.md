@@ -1,15 +1,24 @@
 # za3tar 🌿
 
-**the arabeezy granola alternative** — a Mac meeting notetaker that actually
-understands how people in the region talk.
+**from meeting to done, بالعربيزي** — a Mac meeting notetaker that actually
+understands how people in the region talk, and acts on what was agreed.
 
 Records your meetings without a bot (system audio + mic, captured locally),
-transcribes dialectal Arabic with Arabic/English code-switching, and writes
-clean AI notes that mirror how the meeting actually sounded — Arabic in Arabic
-script, English tech terms and names left in Latin.
+transcribes dialectal Arabic with Arabic/English code-switching, writes clean
+AI notes that mirror how the meeting actually sounded — Arabic in Arabic
+script, English tech terms and names left in Latin — then pulls out the
+**decisions, action items (with owners and real dates), and open questions**,
+and drafts the follow-up: a WhatsApp message or recap email in the meeting's
+own language mix, action items straight onto your Calendar. Nothing sends
+without your click.
 
 Granola has the form factor but no Arabic. The Arabic tools are bots in your
-calls. za3tar is the pairing: no-bot native Mac app × dialectal Arabic.
+calls. za3tar is the pairing: no-bot native Mac app × dialectal Arabic — and
+the ladder past notes: **capture → synthesize → execute**.
+
+Works for calls (mic = you, system audio = them) *and* in-person meetings
+(one mic track, diarized into voices, attributed by the names people actually
+say). Set `ZA3TAR_USER` in `.env` so the models know who "me" is.
 
 ## Status
 
@@ -32,6 +41,14 @@ Early build. Milestones:
   saving as 0-length despite holding audio); notes no longer truncate on long
   meetings; two tracks transcribe in parallel. Still pending: the M1 system-audio
   grant for the "them" track, and a Developer-ID-signed build.
+- **M6 — actions** ✅ the rung past notes. Stop → transcript → notes →
+  **decisions / action items (owners + resolved dates) / open questions**, all
+  automatic. Each meeting can then execute: WhatsApp follow-up + recap email
+  drafted in the meeting's own language mix (editable; opens in
+  WhatsApp/Mail — nothing sends itself), `.ics` export to Calendar, per-item
+  done tracking, copy-as-markdown packet. In-person meetings are diarized
+  (`voice1`/`voice2`) and attributed via the names people say + `ZA3TAR_USER`.
+  Verified against the live APIs (`cargo test --test live -- --ignored`).
 
 ## Stack
 
