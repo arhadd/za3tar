@@ -4,10 +4,7 @@
 // numbers left in Latin. This code-switching output contract is the thing no
 // global notetaker does.
 
-use serde::Deserialize;
-
-const ANTHROPIC_URL: &str = "https://api.anthropic.com/v1/messages";
-const MODEL: &str = "claude-sonnet-5";
+use crate::anthropic;
 
 const SYSTEM_PROMPT: &str = r#"You are za3tar, an expert meeting-notes writer for Arabic-speaking teams.
 You turn a meeting transcript into clear, structured notes.
@@ -20,8 +17,11 @@ LANGUAGE CONTRACT (most important rule):
 - Do not translate to English and do not switch everything to formal Arabic.
   Preserve the code-switching exactly as a bilingual colleague would write it.
 - The transcript lines are labelled [me ...] (the user) and [them ...] (other
-  participants). Use these ONLY to attribute who said what. NEVER print the raw
-  labels "me"/"them" or the bracket tags in the notes. Refer to the user by the
+  participants). An in-person recording is labelled [voice1 ...], [voice2 ...]
+  instead — the voices are unidentified, so work out who is who from names and
+  roles revealed in the conversation (the Context may name the user). Use these
+  labels ONLY to attribute who said what. NEVER print the raw labels or the
+  bracket tags in the notes. Refer to the user by the
   name given in Context if present, otherwise in the first person (أنا). Refer to
   others by name if the transcript reveals it, otherwise as "الطرف الآخر".
 
@@ -35,40 +35,15 @@ FORMAT:
   if known (e.g. **Ala:** …). If a section has nothing, put a single "—".
 - Output ONLY the markdown notes. No preamble, no explanation."#;
 
-#[derive(Deserialize)]
-struct AnthropicResponse {
-    #[serde(default)]
-    content: Vec<ContentBlock>,
-    #[serde(default)]
-    stop_reason: Option<String>,
-    #[serde(default)]
-    error: Option<AnthropicError>,
-}
-
-#[derive(Deserialize)]
-struct ContentBlock {
-    #[serde(rename = "type")]
-    kind: String,
-    #[serde(default)]
-    text: String,
-}
-
-#[derive(Deserialize)]
-struct AnthropicError {
-    message: String,
-}
-
-fn read_key() -> Result<String, String> {
-    std::env::var("ANTHROPIC_API_KEY")
-        .map_err(|_| "ANTHROPIC_API_KEY not set (add it to .env)".to_string())
-}
-
 fn build_user_prompt(transcript: &str, rough_notes: Option<&str>, title: Option<&str>) -> String {
     let mut p = String::from("# Context\n");
     p.push_str(&format!(
         "Meeting: {}\n",
         title.unwrap_or("(untitled meeting)")
     ));
+    if let Some(u) = anthropic::user_context_line() {
+        p.push_str(&u);
+    }
     if let Some(notes) = rough_notes {
         let notes = notes.trim();
         if !notes.is_empty() {
@@ -87,56 +62,9 @@ pub async fn generate(
     rough_notes: Option<&str>,
     title: Option<&str>,
 ) -> Result<String, String> {
-    let api_key = read_key()?;
     let user = build_user_prompt(transcript, rough_notes, title);
-
-    let body = serde_json::json!({
-        // Headroom for long meetings: 1500 truncated real notes mid-sentence.
-        // Meeting notes almost never exceed this; if a meeting ever does, we
-        // surface it below rather than silently cutting off.
-        "model": MODEL,
-        "max_tokens": 8192,
-        "system": SYSTEM_PROMPT,
-        "messages": [{ "role": "user", "content": user }],
-    });
-
-    let client = reqwest::Client::new();
-    let resp = client
-        .post(ANTHROPIC_URL)
-        .header("x-api-key", api_key)
-        .header("anthropic-version", "2023-06-01")
-        .header("content-type", "application/json")
-        .json(&body)
-        .send()
-        .await
-        .map_err(|e| format!("anthropic request failed: {e}"))?;
-
-    let status = resp.status();
-    let text = resp.text().await.map_err(|e| e.to_string())?;
-    let parsed: AnthropicResponse =
-        serde_json::from_str(&text).map_err(|e| format!("parse anthropic response: {e}"))?;
-
-    if let Some(err) = parsed.error {
-        return Err(format!("anthropic error: {}", err.message));
-    }
-    if !status.is_success() {
-        return Err(format!("anthropic {status}"));
-    }
-
-    let truncated = parsed.stop_reason.as_deref() == Some("max_tokens");
-    let mut md = parsed
-        .content
-        .into_iter()
-        .filter(|b| b.kind == "text")
-        .map(|b| b.text)
-        .collect::<Vec<_>>()
-        .join("\n")
-        .trim()
-        .to_string();
-
-    if md.is_empty() {
-        return Err("empty response from notes model".into());
-    }
+    // 8192-token headroom: 1500 truncated real notes mid-sentence.
+    let (mut md, truncated) = anthropic::complete(SYSTEM_PROMPT, &user, 8192).await?;
     // If the model still hit the ceiling on an unusually long meeting, mark it
     // instead of handing back notes that look complete but stop mid-thought.
     if truncated {
