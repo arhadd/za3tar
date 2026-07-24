@@ -49,6 +49,12 @@ Early build. Milestones:
   done tracking, copy-as-markdown packet. In-person meetings are diarized
   (`voice1`/`voice2`) and attributed via the names people say + `ZA3TAR_USER`.
   Verified against the live APIs (`cargo test --test live -- --ignored`).
+- **M7 — follow-through** ✅ open action items aggregated **across all
+  meetings** (overdue flags, owner chips, jump-to-meeting) with one-tap
+  WhatsApp nudges in the meeting's own language. In-app **Settings** (API keys
+  + your name — no `.env` needed, installable by non-developers). Real app
+  icon. Echo cancellation on the mic (AEC) so speakers don't bleed into the
+  "me" track; capture runs one helper per track.
 
 ## Stack
 
