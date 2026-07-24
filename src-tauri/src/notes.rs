@@ -40,6 +40,8 @@ struct AnthropicResponse {
     #[serde(default)]
     content: Vec<ContentBlock>,
     #[serde(default)]
+    stop_reason: Option<String>,
+    #[serde(default)]
     error: Option<AnthropicError>,
 }
 
@@ -89,8 +91,11 @@ pub async fn generate(
     let user = build_user_prompt(transcript, rough_notes, title);
 
     let body = serde_json::json!({
+        // Headroom for long meetings: 1500 truncated real notes mid-sentence.
+        // Meeting notes almost never exceed this; if a meeting ever does, we
+        // surface it below rather than silently cutting off.
         "model": MODEL,
-        "max_tokens": 1500,
+        "max_tokens": 8192,
         "system": SYSTEM_PROMPT,
         "messages": [{ "role": "user", "content": user }],
     });
@@ -118,7 +123,8 @@ pub async fn generate(
         return Err(format!("anthropic {status}"));
     }
 
-    let md = parsed
+    let truncated = parsed.stop_reason.as_deref() == Some("max_tokens");
+    let mut md = parsed
         .content
         .into_iter()
         .filter(|b| b.kind == "text")
@@ -130,6 +136,11 @@ pub async fn generate(
 
     if md.is_empty() {
         return Err("empty response from notes model".into());
+    }
+    // If the model still hit the ceiling on an unusually long meeting, mark it
+    // instead of handing back notes that look complete but stop mid-thought.
+    if truncated {
+        md.push_str("\n\n---\n_🫧 هالملخص طويل ووصل للحد الأقصى — ممكن يكون ناقص من الآخر._");
     }
     Ok(md)
 }

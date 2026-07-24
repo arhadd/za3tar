@@ -302,6 +302,47 @@ final class MicCapture {
     }
 }
 
+// MARK: - WAV header finalization
+//
+// AVAudioFile only rewrites the RIFF/data chunk sizes when its ExtAudioFile is
+// disposed on deallocation. When the helper is killed with SIGTERM that dispose
+// doesn't reliably flush the sizes, leaving files whose header claims 0 bytes of
+// audio even though megabytes of PCM follow — QuickLook, most players, and any
+// re-processing then see an empty file (ElevenLabs is lenient and still reads
+// it, which is why this hid for a while). We patch the two size fields from the
+// real on-disk length so the file is always valid, regardless of how AVAudioFile
+// left it. Walking the chunks (rather than assuming a 44-byte header) is
+// deliberate: AVAudioFile inserts a ~4 KB FLLR padding chunk before `data`.
+func finalizeWavHeader(_ url: URL) {
+    guard let fh = try? FileHandle(forUpdating: url) else { return }
+    defer { try? fh.close() }
+    guard let fileLen = try? fh.seekToEnd(), fileLen >= 12 else { return }
+
+    func writeU32LE(_ value: UInt64, at offset: UInt64) {
+        let v = UInt32(truncatingIfNeeded: value)
+        let bytes = Data([UInt8(v & 0xff), UInt8((v >> 8) & 0xff),
+                          UInt8((v >> 16) & 0xff), UInt8((v >> 24) & 0xff)])
+        try? fh.seek(toOffset: offset)
+        fh.write(bytes)
+    }
+
+    var offset: UInt64 = 12 // past "RIFF"<size>"WAVE"
+    while offset + 8 <= fileLen {
+        try? fh.seek(toOffset: offset)
+        guard let hdr = try? fh.read(upToCount: 8), hdr.count == 8 else { return }
+        let id = String(bytes: hdr[hdr.startIndex..<hdr.startIndex+4], encoding: .ascii) ?? ""
+        let declared = UInt64(hdr[hdr.startIndex+4]) | (UInt64(hdr[hdr.startIndex+5]) << 8)
+            | (UInt64(hdr[hdr.startIndex+6]) << 16) | (UInt64(hdr[hdr.startIndex+7]) << 24)
+        if id == "data" {
+            let dataStart = offset + 8
+            writeU32LE(fileLen - dataStart, at: offset + 4) // data chunk size
+            writeU32LE(fileLen - 8, at: 4)                  // RIFF chunk size
+            return
+        }
+        offset = offset + 8 + declared + (declared & 1) // chunks are word-aligned
+    }
+}
+
 // MARK: - main
 
 let args = CommandLine.arguments
@@ -324,6 +365,10 @@ func shutdown() {
     stopping = true
     system.stop()
     mic.stop()
+    // stop() releases the AVAudioFile writers; now patch the headers so the WAVs
+    // carry their real length even though we're about to exit(0).
+    finalizeWavHeader(systemURL)
+    finalizeWavHeader(micURL)
     emit(["event": "stopped"])
     exit(0)
 }

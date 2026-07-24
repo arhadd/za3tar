@@ -156,13 +156,27 @@ pub async fn transcribe_dir(dir: &Path) -> Result<Vec<Segment>, String> {
     let mic = dir.join("mic.wav");
     let system = dir.join("system.wav");
 
+    // Transcribe both tracks concurrently — they're independent uploads, so
+    // there's no reason to pay for one round-trip then the other.
+    let mic_fut = async {
+        if mic.exists() {
+            transcribe_track(&client, &api_key, &mic, "me").await
+        } else {
+            Ok(vec![])
+        }
+    };
+    let system_fut = async {
+        if system.exists() {
+            transcribe_track(&client, &api_key, &system, "them").await
+        } else {
+            Ok(vec![])
+        }
+    };
+    let (mic_words, system_words) = tokio::join!(mic_fut, system_fut);
+
     let mut all = Vec::new();
-    if mic.exists() {
-        all.extend(transcribe_track(&client, &api_key, &mic, "me").await?);
-    }
-    if system.exists() {
-        all.extend(transcribe_track(&client, &api_key, &system, "them").await?);
-    }
+    all.extend(mic_words?);
+    all.extend(system_words?);
     if all.is_empty() {
         return Err("no speech found in either track".into());
     }
@@ -183,11 +197,14 @@ fn fmt_ts(sec: f64) -> String {
     format!("{:02}:{:02}", s / 60, s % 60)
 }
 
+/// Char-boundary-safe truncation. Slicing bytes (`&s[..n]`) panics when `n`
+/// lands inside a multi-byte codepoint — and API error bodies are often Arabic.
 fn truncate(s: &str, n: usize) -> String {
-    if s.len() <= n {
+    if s.chars().count() <= n {
         s.to_string()
     } else {
-        format!("{}…", &s[..n])
+        let head: String = s.chars().take(n).collect();
+        format!("{head}…")
     }
 }
 

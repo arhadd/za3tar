@@ -24,8 +24,14 @@ Early build. Milestones:
 - **M3 — notes** ✅ Claude turns the transcript into structured markdown with
   the code-switching contract (Arabic script + Latin for English terms)
 - **M4 — the app** ✅ record → auto-transcribe → notes → copy-as-markdown, with
-  a live rough-notes box. Verified end-to-end against the live APIs.
-- **M5 — dogfood** real meetings once the M1 permission is granted; signed build
+  a live rough-notes box, a **past-meetings library** (reopen/retranscribe/
+  rename any recording), and in-app guidance to the system-audio grant.
+  Verified end-to-end against the live APIs.
+- **M5 — dogfood** 🚧 real meetings work today (mic-only until the M1 grant).
+  Fixes from the first dogfood pass: WAVs are now header-finalized on stop (were
+  saving as 0-length despite holding audio); notes no longer truncate on long
+  meetings; two tracks transcribe in parallel. Still pending: the M1 system-audio
+  grant for the "them" track, and a Developer-ID-signed build.
 
 ## Stack
 
