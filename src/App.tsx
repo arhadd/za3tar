@@ -31,6 +31,17 @@ type MeetingActions = {
 };
 type DraftKind = "whatsapp" | "email";
 type Draft = { kind: DraftKind; subject: string; body: string };
+type OpenAction = {
+  dir: string;
+  meeting_title: string;
+  meeting_created: number;
+  action: ActionItem;
+};
+type Settings = {
+  elevenlabs_api_key: string;
+  anthropic_api_key: string;
+  user_name: string;
+};
 
 /** Meeting date passed to the extractor so it can resolve "بكرا" to a real date. */
 function todayContext(): string {
@@ -60,6 +71,10 @@ function App() {
   const [library, setLibrary] = useState<Summary[]>([]);
   const [showLibrary, setShowLibrary] = useState(false);
   const [viewingPast, setViewingPast] = useState(false);
+  const [openActions, setOpenActions] = useState<OpenAction[]>([]);
+  const [showFollowUps, setShowFollowUps] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
+  const [settingsForm, setSettingsForm] = useState<Settings | null>(null);
   const timer = useRef<number | null>(null);
 
   // whether anyone besides the user was heard (them / them2 / …)
@@ -70,6 +85,20 @@ function App() {
       setLibrary(await invoke<Summary[]>("list_recordings"));
     } catch {
       /* library is best-effort */
+    }
+    try {
+      const open = await invoke<OpenAction[]>("list_open_actions");
+      // overdue first, then newest meeting first
+      const today = new Date().toISOString().slice(0, 10);
+      open.sort((a, b) => {
+        const ao = a.action.due_date && a.action.due_date < today ? 0 : 1;
+        const bo = b.action.due_date && b.action.due_date < today ? 0 : 1;
+        if (ao !== bo) return ao - bo;
+        return b.meeting_created - a.meeting_created;
+      });
+      setOpenActions(open);
+    } catch {
+      /* follow-ups are best-effort */
     }
   }
 
@@ -347,7 +376,7 @@ function App() {
     window.setTimeout(() => setCopied(false), 1500);
   }
 
-  async function openPast(s: Summary) {
+  async function openPast(recDir: string) {
     setError(null);
     setPermissionHint(null);
     setBusy(null);
@@ -356,11 +385,11 @@ function App() {
         title: string;
         segments: Segment[];
         notes: string | null;
-      }>("load_recording", { dir: s.dir });
+      }>("load_recording", { dir: recDir });
       const past = await invoke<MeetingActions | null>("load_actions", {
-        dir: s.dir,
+        dir: recDir,
       }).catch(() => null);
-      setDir(s.dir);
+      setDir(recDir);
       setTitle(detail.title);
       setSegments(detail.segments.length ? detail.segments : null);
       setNotes(detail.notes);
@@ -369,7 +398,66 @@ function App() {
       setRoughNotes("");
       setViewingPast(true);
       setShowLibrary(false);
+      setShowFollowUps(false);
       setPhase("done");
+    } catch (e) {
+      setError(String(e));
+    }
+  }
+
+  /** mark an open action done from the follow-ups view (optimistic) */
+  async function markOpenDone(oa: OpenAction) {
+    setOpenActions((cur) =>
+      cur.filter((x) => !(x.dir === oa.dir && x.action.id === oa.action.id)),
+    );
+    // keep the per-meeting view in sync if it's the one on screen
+    if (dir === oa.dir && actions) {
+      setActions({
+        ...actions,
+        actions: actions.actions.map((x) =>
+          x.id === oa.action.id ? { ...x, done: true } : x,
+        ),
+      });
+    }
+    invoke("set_action_done", {
+      dir: oa.dir,
+      id: oa.action.id,
+      done: true,
+    }).catch(() => {});
+  }
+
+  /** chase one open action — drafts a WhatsApp nudge into the draft panel */
+  async function nudge(oa: OpenAction) {
+    setError(null);
+    setBusy("drafting the nudge…");
+    try {
+      const d = await invoke<{ subject?: string | null; body: string }>(
+        "draft_nudge",
+        { dir: oa.dir, id: oa.action.id, title: oa.meeting_title || null },
+      );
+      setDraft({ kind: "whatsapp", subject: "", body: d.body });
+    } catch (e) {
+      setError(String(e));
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  async function openSettings() {
+    try {
+      setSettingsForm(await invoke<Settings>("get_settings"));
+      setShowSettings(true);
+    } catch (e) {
+      setError(String(e));
+    }
+  }
+
+  async function saveSettings() {
+    if (!settingsForm) return;
+    try {
+      await invoke("save_settings", { settings: settingsForm });
+      setShowSettings(false);
+      showFlash("settings saved ✓");
     } catch (e) {
       setError(String(e));
     }
@@ -399,17 +487,39 @@ function App() {
         <span className="hidden text-xs text-ink-soft sm:inline">
           from meeting to done, بالعربيزي
         </span>
-        <button
-          onClick={() => {
-            refreshLibrary();
-            setShowLibrary((v) => !v);
-          }}
-          className="ml-auto rounded-lg px-2.5 py-1 text-xs text-ink-soft transition hover:bg-sesame hover:text-olive-deep"
-        >
-          {showLibrary
-            ? "close"
-            : `past meetings${library.length ? ` · ${library.length}` : ""}`}
-        </button>
+        <div className="ml-auto flex items-center gap-1">
+          <button
+            onClick={() => {
+              refreshLibrary();
+              setShowFollowUps((v) => !v);
+              setShowLibrary(false);
+            }}
+            className={`rounded-lg px-2.5 py-1 text-xs transition hover:bg-sesame hover:text-olive-deep ${
+              openActions.length ? "font-medium text-sumac" : "text-ink-soft"
+            }`}
+          >
+            follow-ups{openActions.length ? ` · ${openActions.length}` : ""}
+          </button>
+          <button
+            onClick={() => {
+              refreshLibrary();
+              setShowLibrary((v) => !v);
+              setShowFollowUps(false);
+            }}
+            className="rounded-lg px-2.5 py-1 text-xs text-ink-soft transition hover:bg-sesame hover:text-olive-deep"
+          >
+            {showLibrary
+              ? "close"
+              : `past meetings${library.length ? ` · ${library.length}` : ""}`}
+          </button>
+          <button
+            onClick={openSettings}
+            aria-label="settings"
+            className="rounded-lg px-2 py-1 text-xs text-ink-soft transition hover:bg-sesame hover:text-olive-deep"
+          >
+            ⚙
+          </button>
+        </div>
       </header>
 
       {showLibrary && (
@@ -422,7 +532,7 @@ function App() {
           {library.map((s) => (
             <button
               key={s.id}
-              onClick={() => openPast(s)}
+              onClick={() => openPast(s.dir)}
               className={`flex items-center gap-3 rounded-xl px-3 py-2 text-left transition hover:bg-cream ${
                 dir === s.dir ? "bg-cream" : ""
               }`}
@@ -452,6 +562,80 @@ function App() {
               </div>
             </button>
           ))}
+        </section>
+      )}
+
+      {showFollowUps && (
+        <section className="flex flex-col gap-1.5 rounded-2xl bg-white p-3">
+          <h2 className="px-1 text-xs font-semibold uppercase tracking-wide text-olive-deep">
+            open follow-ups · across all meetings
+          </h2>
+          {openActions.length === 0 && (
+            <p className="px-1 py-2 text-sm text-ink-soft">
+              كله سالك — nothing open 🌿
+            </p>
+          )}
+          {openActions.map((oa) => {
+            const overdue =
+              !!oa.action.due_date &&
+              oa.action.due_date < new Date().toISOString().slice(0, 10);
+            return (
+              <div
+                key={`${oa.dir}-${oa.action.id}`}
+                className="flex items-start gap-2.5 rounded-lg px-1 py-1.5 hover:bg-cream"
+              >
+                <button
+                  onClick={() => markOpenDone(oa)}
+                  aria-label="mark done"
+                  className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-md border border-sesame bg-white text-transparent transition hover:border-olive hover:text-olive"
+                >
+                  ✓
+                </button>
+                <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+                  <span
+                    dir="auto"
+                    className="arabic text-start text-sm text-ink"
+                  >
+                    {oa.action.title}
+                  </span>
+                  <button
+                    onClick={() => openPast(oa.dir)}
+                    className="self-start text-[11px] text-ink-soft hover:text-olive-deep"
+                  >
+                    {oa.meeting_title || "untitled meeting"} ·{" "}
+                    {relDate(oa.meeting_created)} ↗
+                  </button>
+                </div>
+                <div className="flex shrink-0 items-center gap-1.5">
+                  {(oa.action.due_label || oa.action.due_date) && (
+                    <span
+                      className={`rounded px-1.5 py-0.5 text-[10px] ${
+                        overdue
+                          ? "bg-sumac/15 font-medium text-sumac"
+                          : "bg-cream text-ink-soft"
+                      }`}
+                    >
+                      {overdue ? "⏰ " : ""}
+                      {oa.action.due_label || oa.action.due_date}
+                    </span>
+                  )}
+                  <span
+                    className={`rounded px-1.5 py-0.5 text-[10px] font-medium ${ownerChipClass(oa.action.owner)}`}
+                  >
+                    {oa.action.owner}
+                  </span>
+                  <button
+                    onClick={() => nudge(oa)}
+                    disabled={!!busy}
+                    title="draft a WhatsApp nudge"
+                    className="rounded-lg bg-sesame px-2 py-1 text-[11px] font-medium text-ink hover:bg-olive/20 disabled:opacity-60"
+                  >
+                    💬 nudge
+                  </button>
+                </div>
+              </div>
+            );
+          })}
         </section>
       )}
 
@@ -850,6 +1034,70 @@ function App() {
               copy
             </button>
           </div>
+        </section>
+      )}
+
+      {showSettings && settingsForm && (
+        <section className="flex flex-col gap-3 rounded-2xl border border-olive/30 bg-white p-4">
+          <div className="flex items-center gap-2">
+            <h2 className="text-sm font-semibold text-olive-deep">
+              ⚙ settings
+            </h2>
+            <span className="text-[11px] text-ink-soft">
+              stored locally, applied immediately
+            </span>
+            <button
+              onClick={() => setShowSettings(false)}
+              className="ml-auto rounded-lg px-2 py-1 text-xs text-ink-soft hover:text-olive-deep"
+            >
+              close
+            </button>
+          </div>
+          <label className="flex flex-col gap-1 text-xs text-ink-soft">
+            your name (how the notes refer to you)
+            <input
+              value={settingsForm.user_name}
+              onChange={(e) =>
+                setSettingsForm({ ...settingsForm, user_name: e.target.value })
+              }
+              placeholder="e.g. Ala Haddad"
+              className="rounded-lg border border-sesame px-3 py-2 text-sm text-ink outline-none focus:border-olive"
+            />
+          </label>
+          <label className="flex flex-col gap-1 text-xs text-ink-soft">
+            ElevenLabs API key (transcription)
+            <input
+              type="password"
+              value={settingsForm.elevenlabs_api_key}
+              onChange={(e) =>
+                setSettingsForm({
+                  ...settingsForm,
+                  elevenlabs_api_key: e.target.value,
+                })
+              }
+              className="rounded-lg border border-sesame px-3 py-2 text-sm text-ink outline-none focus:border-olive"
+            />
+          </label>
+          <label className="flex flex-col gap-1 text-xs text-ink-soft">
+            Anthropic API key (notes & actions)
+            <input
+              type="password"
+              value={settingsForm.anthropic_api_key}
+              onChange={(e) =>
+                setSettingsForm({
+                  ...settingsForm,
+                  anthropic_api_key: e.target.value,
+                })
+              }
+              className="rounded-lg border border-sesame px-3 py-2 text-sm text-ink outline-none focus:border-olive"
+            />
+          </label>
+          <button
+            onClick={saveSettings}
+            className="self-start rounded-xl bg-olive px-4 py-2 text-sm font-semibold text-white hover:bg-olive-deep"
+          >
+            save
+          </button>
         </section>
       )}
 

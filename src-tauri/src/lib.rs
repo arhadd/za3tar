@@ -4,6 +4,7 @@ pub mod asr;
 mod capture;
 pub mod library;
 pub mod notes;
+pub mod settings;
 
 use capture::CaptureState;
 
@@ -37,6 +38,11 @@ pub fn run() {
 
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
+        .setup(|app| {
+            // in-app settings fill whatever the env/.env didn't provide
+            settings::apply_at_startup(app.handle());
+            Ok(())
+        })
         .manage(CaptureState::default())
         .invoke_handler(tauri::generate_handler![
             open_system_audio_settings,
@@ -51,6 +57,10 @@ pub fn run() {
             actions::draft_followup,
             actions::export_calendar,
             actions::open_external,
+            actions::list_open_actions,
+            actions::draft_nudge,
+            settings::get_settings,
+            settings::save_settings,
             library::list_recordings,
             library::load_recording,
             library::set_recording_title,

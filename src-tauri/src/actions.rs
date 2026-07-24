@@ -288,6 +288,75 @@ fn build_ics(meeting: &str, actions: &[&ActionItem]) -> String {
     out
 }
 
+/// One open action item somewhere in the library, with enough meeting context
+/// to render and to chase.
+#[derive(Serialize, Clone)]
+pub struct OpenAction {
+    pub dir: String,
+    pub meeting_title: String,
+    pub meeting_created: u64,
+    pub action: ActionItem,
+}
+
+/// Follow-through: every not-done action item across all recordings, newest
+/// meeting first. This is the view that makes za3tar working memory instead
+/// of a per-meeting tool.
+#[tauri::command]
+pub fn list_open_actions(app: tauri::AppHandle) -> Result<Vec<OpenAction>, String> {
+    let mut out = Vec::new();
+    for rec in crate::library::list_recordings(app)? {
+        let Some(acts) = load(Path::new(&rec.dir)) else {
+            continue;
+        };
+        for a in acts.actions.into_iter().filter(|a| !a.done) {
+            out.push(OpenAction {
+                dir: rec.dir.clone(),
+                meeting_title: rec.title.clone(),
+                meeting_created: rec.created,
+                action: a,
+            });
+        }
+    }
+    Ok(out)
+}
+
+const NUDGE_SYSTEM: &str = r#"You are za3tar drafting a short, warm WhatsApp nudge about ONE open action item from an earlier meeting.
+
+LANGUAGE CONTRACT: mirror the meeting's own language mix — Arabic in Arabic
+script, English terms/names/numbers in Latin. Write as the user ("me" in the
+transcript; for in-person [voiceN] transcripts, the user is named in Context).
+
+SHAPE: 1–3 lines. Friendly, zero passive aggression: a light check-in on the
+item, referencing the meeting naturally ("من اجتماعنا يوم..."), and an easy
+out ("إذا بدك إشي مني قلي"). If the item is owned by the user themselves,
+instead draft a status update TO the other side about it. At most one emoji.
+
+OUTPUT: only valid JSON, no fences: {"subject": null, "body": "…"}"#;
+
+/// Chase one open action: a WhatsApp-ready nudge in the meeting's language.
+#[tauri::command]
+pub async fn draft_nudge(dir: String, id: u32, title: Option<String>) -> Result<Draft, String> {
+    let path = PathBuf::from(&dir);
+    let actions = load(&path).ok_or("no actions for this meeting")?;
+    let item = actions
+        .actions
+        .iter()
+        .find(|a| a.id == id)
+        .ok_or("action not found")?;
+
+    let mut user = build_context(&path, title.as_deref(), None)?;
+    user.push_str("\n# The action item to nudge about (JSON)\n");
+    user.push_str(&serde_json::to_string(item).unwrap_or_default());
+
+    let (raw, _) = anthropic::complete(NUDGE_SYSTEM, &user, 1024).await?;
+    let draft: Draft =
+        serde_json::from_str(extract_json(&raw)).map_err(|e| format!("parse nudge: {e}"))?;
+    if draft.body.trim().is_empty() {
+        return Err("empty nudge".into());
+    }
+    Ok(draft)
+}
+
 /// Open a URL with the system handler. Only the schemes the execute rung needs.
 #[tauri::command]
 pub fn open_external(url: String) -> Result<(), String> {

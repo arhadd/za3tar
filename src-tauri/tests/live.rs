@@ -85,12 +85,23 @@ async fn extract_actions_and_draft_followup() {
         "whatsapp draft lost the Arabic");
     assert!(wa.body.len() > 80, "draft suspiciously short");
 
-    let em = actions::draft_followup(dir_s, "email".into(), None)
+    let em = actions::draft_followup(dir_s.clone(), "email".into(), None)
         .await
         .expect("email draft failed");
     println!("== email subject ==\n{:?}", em.subject);
     println!("== email body ==\n{}", em.body);
     assert!(em.subject.as_deref().map(|s| !s.is_empty()).unwrap_or(false), "email needs a subject");
+
+    // chase the first extracted action with a nudge draft
+    let first_id = extracted.actions[0].id;
+    let nudge = actions::draft_nudge(dir_s, first_id, Some("community workshop مع رانيا".into()))
+        .await
+        .expect("nudge draft failed");
+    println!("== nudge ==\n{}", nudge.body);
+    assert!(
+        nudge.body.chars().any(|c| ('\u{0600}'..='\u{06FF}').contains(&c)),
+        "nudge lost the Arabic"
+    );
 }
 
 #[tokio::test]
