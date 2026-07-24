@@ -4,6 +4,7 @@ pub mod asr;
 mod capture;
 pub mod library;
 pub mod notes;
+pub mod people;
 pub mod settings;
 
 use capture::CaptureState;
@@ -64,6 +65,9 @@ pub fn run() {
             library::list_recordings,
             library::load_recording,
             library::set_recording_title,
+            library::set_recording_person,
+            people::list_people,
+            people::save_person,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

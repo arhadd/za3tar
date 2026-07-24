@@ -11,9 +11,18 @@ type Summary = {
   id: string;
   created: number;
   title: string;
+  person: string;
   has_transcript: boolean;
   has_notes: boolean;
   duration_secs: number;
+};
+type PersonRow = {
+  name: string;
+  phone: string;
+  email: string;
+  meetings: number;
+  last_met: number;
+  open_actions: number;
 };
 type ActionItem = {
   id: number;
@@ -30,11 +39,12 @@ type MeetingActions = {
   questions: string[];
 };
 type DraftKind = "whatsapp" | "email";
-type Draft = { kind: DraftKind; subject: string; body: string };
+type Draft = { kind: DraftKind; subject: string; body: string; target: string };
 type OpenAction = {
   dir: string;
   meeting_title: string;
   meeting_created: number;
+  person: string;
   action: ActionItem;
 };
 type Settings = {
@@ -59,6 +69,7 @@ function App() {
   const [elapsed, setElapsed] = useState(0);
 
   const [title, setTitle] = useState("");
+  const [person, setPerson] = useState("");
   const [roughNotes, setRoughNotes] = useState("");
   const [segments, setSegments] = useState<Segment[] | null>(null);
   const [notes, setNotes] = useState<string | null>(null);
@@ -73,6 +84,9 @@ function App() {
   const [viewingPast, setViewingPast] = useState(false);
   const [openActions, setOpenActions] = useState<OpenAction[]>([]);
   const [showFollowUps, setShowFollowUps] = useState(false);
+  const [people, setPeople] = useState<PersonRow[]>([]);
+  const [showPeople, setShowPeople] = useState(false);
+  const [personEdit, setPersonEdit] = useState<PersonRow | null>(null);
   const [showSettings, setShowSettings] = useState(false);
   const [settingsForm, setSettingsForm] = useState<Settings | null>(null);
   const timer = useRef<number | null>(null);
@@ -100,7 +114,18 @@ function App() {
     } catch {
       /* follow-ups are best-effort */
     }
+    try {
+      setPeople(await invoke<PersonRow[]>("list_people"));
+    } catch {
+      /* directory is best-effort */
+    }
   }
+
+  const contactOf = (name: string): PersonRow | undefined =>
+    people.find((p) => p.name === name);
+
+  /** wa.me wants bare international digits */
+  const waDigits = (phone: string) => phone.replace(/[^\d]/g, "");
 
   useEffect(() => {
     refreshLibrary();
@@ -200,6 +225,10 @@ function App() {
         invoke("set_recording_title", { dir: d, title: title.trim() }).catch(
           () => {},
         );
+      if (person.trim())
+        invoke("set_recording_person", { dir: d, person: person.trim() }).catch(
+          () => {},
+        );
       setPhase("processing");
       setBusy("transcribing the two tracks…");
       const segs = await invoke<Segment[]>("transcribe", { dir: d });
@@ -294,7 +323,12 @@ function App() {
         "draft_followup",
         { dir, kind, title: title.trim() || null },
       );
-      setDraft({ kind, subject: d.subject ?? "", body: d.body });
+      setDraft({
+        kind,
+        subject: d.subject ?? "",
+        body: d.body,
+        target: person.trim(),
+      });
     } catch (e) {
       setError(String(e));
     } finally {
@@ -304,18 +338,26 @@ function App() {
 
   async function sendDraft() {
     if (!draft) return;
+    const contact = draft.target ? contactOf(draft.target) : undefined;
     try {
       if (draft.kind === "whatsapp") {
         const text = encodeURIComponent(draft.body);
+        const digits = contact?.phone ? waDigits(contact.phone) : "";
+        // with a saved number the draft opens straight in that person's chat
         try {
           await invoke("open_external", {
-            url: `whatsapp://send?text=${text}`,
+            url: digits
+              ? `whatsapp://send?phone=${digits}&text=${text}`
+              : `whatsapp://send?text=${text}`,
           });
         } catch {
-          await invoke("open_external", { url: `https://wa.me/?text=${text}` });
+          await invoke("open_external", {
+            url: `https://wa.me/${digits}?text=${text}`,
+          });
         }
       } else {
-        const url = `mailto:?subject=${encodeURIComponent(
+        const to = contact?.email ?? "";
+        const url = `mailto:${to}?subject=${encodeURIComponent(
           draft.subject,
         )}&body=${encodeURIComponent(draft.body)}`;
         await invoke("open_external", { url });
@@ -323,6 +365,22 @@ function App() {
     } catch (e) {
       setError(String(e));
     }
+  }
+
+  /** hand the follow-up to Jello: copies a self-contained instruction line */
+  async function copyForJello() {
+    if (!draft) return;
+    const contact = draft.target ? contactOf(draft.target) : undefined;
+    const who = draft.target || "them";
+    const via = contact?.phone
+      ? ` (WhatsApp ${contact.phone})`
+      : contact?.email
+        ? ` (email ${contact.email})`
+        : "";
+    await navigator.clipboard.writeText(
+      `follow up with ${who}${via} — send them this:\n\n${draft.body}`,
+    );
+    showFlash("copied for Jello 🪼");
   }
 
   async function exportCalendar() {
@@ -383,6 +441,7 @@ function App() {
     try {
       const detail = await invoke<{
         title: string;
+        person: string;
         segments: Segment[];
         notes: string | null;
       }>("load_recording", { dir: recDir });
@@ -391,6 +450,7 @@ function App() {
       }).catch(() => null);
       setDir(recDir);
       setTitle(detail.title);
+      setPerson(detail.person);
       setSegments(detail.segments.length ? detail.segments : null);
       setNotes(detail.notes);
       setActions(past);
@@ -435,7 +495,12 @@ function App() {
         "draft_nudge",
         { dir: oa.dir, id: oa.action.id, title: oa.meeting_title || null },
       );
-      setDraft({ kind: "whatsapp", subject: "", body: d.body });
+      setDraft({
+        kind: "whatsapp",
+        subject: "",
+        body: d.body,
+        target: oa.person,
+      });
     } catch (e) {
       setError(String(e));
     } finally {
@@ -491,8 +556,20 @@ function App() {
           <button
             onClick={() => {
               refreshLibrary();
+              setShowPeople((v) => !v);
+              setShowLibrary(false);
+              setShowFollowUps(false);
+            }}
+            className="rounded-lg px-2.5 py-1 text-xs text-ink-soft transition hover:bg-sesame hover:text-olive-deep"
+          >
+            people{people.length ? ` · ${people.length}` : ""}
+          </button>
+          <button
+            onClick={() => {
+              refreshLibrary();
               setShowFollowUps((v) => !v);
               setShowLibrary(false);
+              setShowPeople(false);
             }}
             className={`rounded-lg px-2.5 py-1 text-xs transition hover:bg-sesame hover:text-olive-deep ${
               openActions.length ? "font-medium text-sumac" : "text-ink-soft"
@@ -565,6 +642,100 @@ function App() {
         </section>
       )}
 
+      {showPeople && (
+        <section className="flex flex-col gap-1.5 rounded-2xl bg-white p-3">
+          <h2 className="px-1 text-xs font-semibold uppercase tracking-wide text-olive-deep">
+            people · who you've been meeting
+          </h2>
+          {people.length === 0 && (
+            <p className="px-1 py-2 text-sm text-ink-soft">
+              tag a meeting with a person ("with whom?") and they show up here
+            </p>
+          )}
+          {people.map((p) =>
+            personEdit && personEdit.name === p.name ? (
+              <div
+                key={p.name}
+                className="flex flex-col gap-2 rounded-lg border border-olive/30 bg-cream/60 p-2"
+              >
+                <span className="text-sm font-medium text-ink">{p.name}</span>
+                <div className="flex flex-wrap gap-2">
+                  <input
+                    value={personEdit.phone}
+                    onChange={(e) =>
+                      setPersonEdit({ ...personEdit, phone: e.target.value })
+                    }
+                    placeholder="phone (+9627…)"
+                    className="min-w-0 flex-1 rounded-lg border border-sesame bg-white px-2.5 py-1.5 text-sm outline-none focus:border-olive"
+                  />
+                  <input
+                    value={personEdit.email}
+                    onChange={(e) =>
+                      setPersonEdit({ ...personEdit, email: e.target.value })
+                    }
+                    placeholder="email"
+                    className="min-w-0 flex-1 rounded-lg border border-sesame bg-white px-2.5 py-1.5 text-sm outline-none focus:border-olive"
+                  />
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    onClick={async () => {
+                      try {
+                        await invoke("save_person", {
+                          name: personEdit.name,
+                          phone: personEdit.phone,
+                          email: personEdit.email,
+                        });
+                        setPersonEdit(null);
+                        refreshLibrary();
+                        showFlash("contact saved ✓");
+                      } catch (e) {
+                        setError(String(e));
+                      }
+                    }}
+                    className="rounded-lg bg-olive px-3 py-1.5 text-xs font-semibold text-white hover:bg-olive-deep"
+                  >
+                    save
+                  </button>
+                  <button
+                    onClick={() => setPersonEdit(null)}
+                    className="rounded-lg px-2 py-1.5 text-xs text-ink-soft hover:text-olive-deep"
+                  >
+                    cancel
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div
+                key={p.name}
+                className="flex items-center gap-3 rounded-lg px-1 py-1.5 hover:bg-cream"
+              >
+                <div className="flex min-w-0 flex-1 flex-col">
+                  <span className="text-sm font-medium text-ink">{p.name}</span>
+                  <span className="text-[11px] text-ink-soft">
+                    {p.meetings} meeting{p.meetings === 1 ? "" : "s"}
+                    {p.last_met ? ` · last ${relDate(p.last_met)}` : ""}
+                    {p.phone ? ` · 📱 ${p.phone}` : ""}
+                    {p.email ? ` · ✉️ ${p.email}` : ""}
+                  </span>
+                </div>
+                {p.open_actions > 0 && (
+                  <span className="rounded-full bg-sumac/15 px-2 py-0.5 text-[10px] font-medium text-sumac">
+                    {p.open_actions} open
+                  </span>
+                )}
+                <button
+                  onClick={() => setPersonEdit(p)}
+                  className="rounded-lg bg-sesame px-2 py-1 text-[11px] font-medium text-ink hover:bg-olive/20"
+                >
+                  {p.phone || p.email ? "edit" : "add contact"}
+                </button>
+              </div>
+            ),
+          )}
+        </section>
+      )}
+
       {showFollowUps && (
         <section className="flex flex-col gap-1.5 rounded-2xl bg-white p-3">
           <h2 className="px-1 text-xs font-semibold uppercase tracking-wide text-olive-deep">
@@ -602,6 +773,7 @@ function App() {
                     onClick={() => openPast(oa.dir)}
                     className="self-start text-[11px] text-ink-soft hover:text-olive-deep"
                   >
+                    {oa.person ? `${oa.person} · ` : ""}
                     {oa.meeting_title || "untitled meeting"} ·{" "}
                     {relDate(oa.meeting_created)} ↗
                   </button>
@@ -640,19 +812,36 @@ function App() {
       )}
 
       {(phase === "idle" || viewingPast) && (
-        <input
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          onBlur={() => {
-            if (viewingPast && dir)
-              invoke("set_recording_title", {
-                dir,
-                title: title.trim(),
-              }).catch(() => {});
-          }}
-          placeholder="what's this meeting? (optional)"
-          className="rounded-xl border border-sesame bg-white px-4 py-3 text-sm outline-none focus:border-olive"
-        />
+        <div className="flex gap-2">
+          <input
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            onBlur={() => {
+              if (viewingPast && dir)
+                invoke("set_recording_title", {
+                  dir,
+                  title: title.trim(),
+                }).catch(() => {});
+            }}
+            placeholder="what's this meeting? (optional)"
+            className="min-w-0 flex-[2] rounded-xl border border-sesame bg-white px-4 py-3 text-sm outline-none focus:border-olive"
+          />
+          <input
+            value={person}
+            onChange={(e) => setPerson(e.target.value)}
+            onBlur={() => {
+              if (viewingPast && dir) {
+                invoke("set_recording_person", {
+                  dir,
+                  person: person.trim(),
+                }).catch(() => {});
+                refreshLibrary();
+              }
+            }}
+            placeholder="with whom?"
+            className="min-w-0 flex-1 rounded-xl border border-sesame bg-white px-4 py-3 text-sm outline-none focus:border-olive"
+          />
+        </div>
       )}
 
       {!viewingPast && (
@@ -995,6 +1184,11 @@ function App() {
                 ? "💬 whatsapp draft"
                 : "✉️ email draft"}
             </h2>
+            {draft.target && (
+              <span className="rounded bg-olive/15 px-1.5 py-0.5 text-[10px] font-medium text-olive-deep">
+                → {draft.target}
+              </span>
+            )}
             <span className="text-[11px] text-ink-soft">
               edit it, then send — nothing leaves without you
             </span>
@@ -1032,6 +1226,13 @@ function App() {
               className="rounded-xl bg-sesame px-3.5 py-2 text-sm font-semibold text-ink hover:bg-olive/20"
             >
               copy
+            </button>
+            <button
+              onClick={copyForJello}
+              title="copy as an instruction you can paste to Jello"
+              className="rounded-xl bg-sesame px-3.5 py-2 text-sm font-semibold text-ink hover:bg-olive/20"
+            >
+              🪼 for Jello
             </button>
           </div>
         </section>

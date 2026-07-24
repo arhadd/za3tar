@@ -295,6 +295,7 @@ pub struct OpenAction {
     pub dir: String,
     pub meeting_title: String,
     pub meeting_created: u64,
+    pub person: String,
     pub action: ActionItem,
 }
 
@@ -313,6 +314,7 @@ pub fn list_open_actions(app: tauri::AppHandle) -> Result<Vec<OpenAction>, Strin
                 dir: rec.dir.clone(),
                 meeting_title: rec.title.clone(),
                 meeting_created: rec.created,
+                person: rec.person.clone(),
                 action: a,
             });
         }

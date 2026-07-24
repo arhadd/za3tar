@@ -11,11 +11,14 @@ use tauri::{AppHandle, Manager};
 
 use crate::asr::{load_transcript, Segment};
 
-/// Sidecar written next to the audio so a recording remembers its title.
+/// Sidecar written next to the audio so a recording remembers its title and
+/// who the meeting was with — the link that builds the people directory.
 #[derive(Serialize, Deserialize, Default)]
 struct Meta {
     #[serde(default)]
     title: String,
+    #[serde(default)]
+    person: String,
 }
 
 /// One row in the library list.
@@ -25,6 +28,7 @@ pub struct RecordingSummary {
     pub id: String,
     pub created: u64,
     pub title: String,
+    pub person: String,
     pub has_transcript: bool,
     pub has_notes: bool,
     pub duration_secs: f64,
@@ -35,6 +39,7 @@ pub struct RecordingSummary {
 pub struct RecordingDetail {
     pub dir: String,
     pub title: String,
+    pub person: String,
     pub segments: Vec<Segment>,
     pub notes: Option<String>,
 }
@@ -85,8 +90,10 @@ pub fn list_recordings(app: AppHandle) -> Result<Vec<RecordingSummary>, String> 
             .map(|s| s.to_string_lossy().to_string())
             .unwrap_or_default();
         let created = id.parse::<u64>().unwrap_or(0);
+        let meta = read_meta(&dir);
         out.push(RecordingSummary {
-            title: read_meta(&dir).title,
+            title: meta.title,
+            person: meta.person,
             has_transcript: dir.join("transcript.json").exists(),
             has_notes: dir.join("notes.md").exists(),
             duration_secs: duration_secs(&dir),
@@ -105,19 +112,40 @@ pub fn load_recording(dir: String) -> Result<RecordingDetail, String> {
     let path = PathBuf::from(&dir);
     let segments = load_transcript(&path).unwrap_or_default();
     let notes = std::fs::read_to_string(path.join("notes.md")).ok();
+    let meta = read_meta(&path);
     Ok(RecordingDetail {
-        title: read_meta(&path).title,
+        title: meta.title,
+        person: meta.person,
         segments,
         notes,
         dir,
     })
 }
 
+fn write_meta(path: &Path, meta: &Meta) -> Result<(), String> {
+    let json = serde_json::to_string_pretty(meta).map_err(|e| e.to_string())?;
+    std::fs::write(path.join("meta.json"), json).map_err(|e| e.to_string())
+}
+
 /// Persist a recording's title (written by the UI after a meeting).
 #[tauri::command]
 pub fn set_recording_title(dir: String, title: String) -> Result<(), String> {
     let path = PathBuf::from(&dir);
-    let meta = Meta { title };
-    let json = serde_json::to_string_pretty(&meta).map_err(|e| e.to_string())?;
-    std::fs::write(path.join("meta.json"), json).map_err(|e| e.to_string())
+    let mut meta = read_meta(&path);
+    meta.title = title;
+    write_meta(&path, &meta)
+}
+
+/// Link a recording to a person — the edge that builds the directory.
+#[tauri::command]
+pub fn set_recording_person(dir: String, person: String) -> Result<(), String> {
+    let path = PathBuf::from(&dir);
+    let mut meta = read_meta(&path);
+    meta.person = person.trim().to_string();
+    write_meta(&path, &meta)
+}
+
+/// Who a recording was with, for modules outside the library.
+pub fn person_of(dir: &Path) -> String {
+    read_meta(dir).person
 }
