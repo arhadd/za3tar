@@ -25,9 +25,15 @@ fn open_system_audio_settings() -> Result<(), String> {
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-    // load API keys from .env in dev (searches CWD and ancestors); in a bundled
-    // app the keys come from the process environment / settings.
+    // load API keys from .env in dev (searches CWD and ancestors). A bundled
+    // .app launched from Finder has no useful CWD, so fall back to the dev
+    // checkout's .env until keys move into real app settings.
     let _ = dotenvy::dotenv();
+    if std::env::var("ANTHROPIC_API_KEY").is_err() {
+        if let Some(home) = std::env::var_os("HOME") {
+            let _ = dotenvy::from_path(std::path::Path::new(&home).join("za3tar/.env"));
+        }
+    }
 
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())

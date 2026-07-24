@@ -5,13 +5,19 @@ The pitch is the product: **record the conversation you're already having.**
 
 ## Before you meet anyone (once)
 
-```bash
-cd ~/za3tar && npm run app     # boots in seconds (debug build is pre-warmed)
-```
+**za3tar is a real app now: `/Applications/za3tar.app`** — launch it like
+anything else. It reads keys from `~/za3tar/.env` (already set, incl.
+`ZA3TAR_USER`).
 
-- `.env` already has the keys + `ZA3TAR_USER="Ala Haddad"`.
-- In person you only need the mic — say yes to the mic prompt and you're live.
-  (The system-audio grant only matters for calls; see capture/README.md.)
+- First record: say yes to the **microphone** prompt, and grant **System
+  Audio Recording** when macOS asks (za3tar shows up under its own name in
+  System Settings › Privacy & Security › Screen & System Audio Recording —
+  the Terminal/Claude toggles were never the right ones, that was the dev-run
+  workaround failing).
+- In person you only need the mic. The system-audio grant is for calls.
+- Rebuild after code changes:
+  `npm run tauri build -- --debug --bundles app` then re-copy to
+  /Applications. Dev loop is still `npm run app`.
 
 ## The demo, beat by beat
 
