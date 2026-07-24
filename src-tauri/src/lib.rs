@@ -2,6 +2,7 @@ pub mod actions;
 pub mod anthropic;
 pub mod asr;
 mod capture;
+pub mod jello;
 pub mod library;
 pub mod notes;
 pub mod people;
@@ -68,6 +69,7 @@ pub fn run() {
             library::set_recording_person,
             people::list_people,
             people::save_person,
+            jello::send_to_jello,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

@@ -162,9 +162,9 @@ function App() {
     };
   }, [phase]);
 
-  function showFlash(msg: string) {
+  function showFlash(msg: string, ms = 2000) {
     setFlash(msg);
-    window.setTimeout(() => setFlash(null), 2000);
+    window.setTimeout(() => setFlash(null), ms);
   }
 
   async function start() {
@@ -367,20 +367,61 @@ function App() {
     }
   }
 
-  /** hand the follow-up to Jello: copies a self-contained instruction line */
-  async function copyForJello() {
+  /** hand a message to jello and surface its reply */
+  async function jelloSend(message: string) {
+    setBusy("sending to jello…");
+    try {
+      const reply = await invoke<string>("send_to_jello", { message });
+      showFlash(
+        `🪼 ${reply.slice(0, 140)}${reply.length > 140 ? "…" : ""}`,
+        5000,
+      );
+    } catch (e) {
+      setError(String(e));
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  /** the whole meeting → jello: calendar (tyme) + follow-up tracking */
+  async function sendPacketToJello() {
+    if (!actions) return;
+    const contact = person.trim() ? contactOf(person.trim()) : undefined;
+    const who = person.trim()
+      ? `${person.trim()}${contact?.phone ? ` (WhatsApp ${contact.phone})` : ""}${
+          contact?.email ? ` (email ${contact.email})` : ""
+        }`
+      : "someone (untagged)";
+    let msg = `[za3tar] meeting packet — "${title.trim() || "untitled"}" with ${who}, ${new Date().toLocaleDateString()}\n\n`;
+    if (actions.decisions.length)
+      msg += `decisions:\n${actions.decisions.map((d) => `- ${d}`).join("\n")}\n\n`;
+    const open = actions.actions.filter((a) => !a.done);
+    if (open.length)
+      msg += `open action items:\n${open
+        .map(
+          (a) =>
+            `- ${a.title} — ${a.owner}${a.due_date ? `, due ${a.due_date}` : a.due_label ? `, ${a.due_label}` : ""}`,
+        )
+        .join("\n")}\n\n`;
+    msg +=
+      "please: put the dated items on my calendar (tyme), and track these follow-ups — nudge me when something's due.";
+    if (notes) msg += `\n\nnotes:\n${notes}`;
+    await jelloSend(msg);
+  }
+
+  /** jello delivers the draft to the person over WhatsApp */
+  async function sendDraftViaJello() {
     if (!draft) return;
     const contact = draft.target ? contactOf(draft.target) : undefined;
-    const who = draft.target || "them";
+    const who = draft.target || "the other participant";
     const via = contact?.phone
       ? ` (WhatsApp ${contact.phone})`
       : contact?.email
         ? ` (email ${contact.email})`
-        : "";
-    await navigator.clipboard.writeText(
-      `follow up with ${who}${via} — send them this:\n\n${draft.body}`,
+        : " (find them in my contacts)";
+    await jelloSend(
+      `[za3tar] please send this message to ${who}${via} and confirm once delivered:\n\n${draft.body}`,
     );
-    showFlash("copied for Jello 🪼");
   }
 
   async function exportCalendar() {
@@ -1167,6 +1208,14 @@ function App() {
               📅 add to Calendar
             </button>
             <button
+              onClick={sendPacketToJello}
+              disabled={!!busy}
+              title="jello puts dated items on your calendar and tracks the follow-ups"
+              className="rounded-xl bg-olive px-3.5 py-2 text-sm font-semibold text-white hover:bg-olive-deep disabled:opacity-60"
+            >
+              🪼 send to Jello
+            </button>
+            <button
               onClick={copyPacket}
               className="rounded-xl bg-sesame px-3.5 py-2 text-sm font-semibold text-ink hover:bg-olive/20"
             >
@@ -1228,11 +1277,12 @@ function App() {
               copy
             </button>
             <button
-              onClick={copyForJello}
-              title="copy as an instruction you can paste to Jello"
-              className="rounded-xl bg-sesame px-3.5 py-2 text-sm font-semibold text-ink hover:bg-olive/20"
+              onClick={sendDraftViaJello}
+              disabled={!!busy}
+              title="jello sends it to them on WhatsApp and confirms"
+              className="rounded-xl bg-sesame px-3.5 py-2 text-sm font-semibold text-ink hover:bg-olive/20 disabled:opacity-60"
             >
-              🪼 for Jello
+              🪼 have Jello send it
             </button>
           </div>
         </section>
