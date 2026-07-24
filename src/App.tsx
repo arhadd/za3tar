@@ -15,6 +15,29 @@ type Summary = {
   has_notes: boolean;
   duration_secs: number;
 };
+type ActionItem = {
+  id: number;
+  title: string;
+  owner: string;
+  due_label?: string | null;
+  due_date?: string | null;
+  detail?: string | null;
+  done: boolean;
+};
+type MeetingActions = {
+  decisions: string[];
+  actions: ActionItem[];
+  questions: string[];
+};
+type DraftKind = "whatsapp" | "email";
+type Draft = { kind: DraftKind; subject: string; body: string };
+
+/** Meeting date passed to the extractor so it can resolve "بكرا" to a real date. */
+function todayContext(): string {
+  const d = new Date();
+  const weekday = d.toLocaleDateString("en-US", { weekday: "long" });
+  return `${d.toISOString().slice(0, 10)} (${weekday})`;
+}
 
 function App() {
   const [phase, setPhase] = useState<Phase>("idle");
@@ -28,16 +51,19 @@ function App() {
   const [roughNotes, setRoughNotes] = useState("");
   const [segments, setSegments] = useState<Segment[] | null>(null);
   const [notes, setNotes] = useState<string | null>(null);
+  const [actions, setActions] = useState<MeetingActions | null>(null);
+  const [draft, setDraft] = useState<Draft | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const [flash, setFlash] = useState<string | null>(null);
 
   const [library, setLibrary] = useState<Summary[]>([]);
   const [showLibrary, setShowLibrary] = useState(false);
   const [viewingPast, setViewingPast] = useState(false);
   const timer = useRef<number | null>(null);
 
-  // whether the "them" track carried any speech in the current transcript
-  const heardThem = !!segments?.some((s) => s.speaker === "them");
+  // whether anyone besides the user was heard (them / them2 / …)
+  const heardThem = !!segments?.some((s) => s.speaker !== "me");
 
   async function refreshLibrary() {
     try {
@@ -82,11 +108,18 @@ function App() {
     };
   }, [phase]);
 
+  function showFlash(msg: string) {
+    setFlash(msg);
+    window.setTimeout(() => setFlash(null), 2000);
+  }
+
   async function start() {
     setError(null);
     setPermissionHint(null);
     setSegments(null);
     setNotes(null);
+    setActions(null);
+    setDraft(null);
     setLevels({});
     setElapsed(0);
     setViewingPast(false);
@@ -96,6 +129,37 @@ function App() {
       setPhase("recording");
     } catch (e) {
       setError(String(e));
+    }
+  }
+
+  /** notes + actions for a given recording; each step fails soft so the
+   *  matching button stays available instead of killing the whole flow. */
+  async function synthesize(d: string) {
+    try {
+      setBusy("writing your notes…");
+      const md = await invoke<string>("generate_notes", {
+        dir: d,
+        roughNotes: roughNotes.trim() || null,
+        title: title.trim() || null,
+      });
+      setNotes(md);
+    } catch (e) {
+      setError(String(e));
+    }
+    try {
+      setBusy("pulling out decisions & actions…");
+      const a = await invoke<MeetingActions>("extract_actions", {
+        dir: d,
+        title: title.trim() || null,
+        today: todayContext(),
+      });
+      setActions(a);
+      setDraft(null);
+    } catch (e) {
+      setError(String(e));
+    } finally {
+      setBusy(null);
+      refreshLibrary();
     }
   }
 
@@ -112,11 +176,11 @@ function App() {
       const segs = await invoke<Segment[]>("transcribe", { dir: d });
       setSegments(segs);
       setPhase("done");
-      refreshLibrary();
+      // the whole point: stop → notes → actions, no clicks
+      await synthesize(d);
     } catch (e) {
       setError(String(e));
       setPhase("done");
-    } finally {
       setBusy(null);
     }
   }
@@ -131,9 +195,10 @@ function App() {
       refreshLibrary();
     } catch (e) {
       setError(String(e));
-    } finally {
       setBusy(null);
+      return;
     }
+    await synthesize(dir);
   }
 
   async function makeNotes() {
@@ -155,6 +220,133 @@ function App() {
     }
   }
 
+  async function extractActions() {
+    if (!dir) return;
+    setError(null);
+    setBusy("pulling out decisions & actions…");
+    try {
+      const a = await invoke<MeetingActions>("extract_actions", {
+        dir,
+        title: title.trim() || null,
+        today: todayContext(),
+      });
+      setActions(a);
+      setDraft(null);
+      refreshLibrary();
+    } catch (e) {
+      setError(String(e));
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  async function toggleDone(a: ActionItem) {
+    if (!dir || !actions) return;
+    const next = {
+      ...actions,
+      actions: actions.actions.map((x) =>
+        x.id === a.id ? { ...x, done: !x.done } : x,
+      ),
+    };
+    setActions(next);
+    invoke("set_action_done", { dir, id: a.id, done: !a.done }).catch(() => {});
+  }
+
+  async function makeDraft(kind: DraftKind) {
+    if (!dir) return;
+    setError(null);
+    setBusy(
+      kind === "whatsapp"
+        ? "drafting the whatsapp follow-up…"
+        : "drafting the recap email…",
+    );
+    try {
+      const d = await invoke<{ subject?: string | null; body: string }>(
+        "draft_followup",
+        { dir, kind, title: title.trim() || null },
+      );
+      setDraft({ kind, subject: d.subject ?? "", body: d.body });
+    } catch (e) {
+      setError(String(e));
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  async function sendDraft() {
+    if (!draft) return;
+    try {
+      if (draft.kind === "whatsapp") {
+        const text = encodeURIComponent(draft.body);
+        try {
+          await invoke("open_external", {
+            url: `whatsapp://send?text=${text}`,
+          });
+        } catch {
+          await invoke("open_external", { url: `https://wa.me/?text=${text}` });
+        }
+      } else {
+        const url = `mailto:?subject=${encodeURIComponent(
+          draft.subject,
+        )}&body=${encodeURIComponent(draft.body)}`;
+        await invoke("open_external", { url });
+      }
+    } catch (e) {
+      setError(String(e));
+    }
+  }
+
+  async function exportCalendar() {
+    if (!dir) return;
+    setError(null);
+    try {
+      await invoke<string>("export_calendar", {
+        dir,
+        title: title.trim() || null,
+      });
+      showFlash("sent to Calendar 📅");
+    } catch (e) {
+      setError(String(e));
+    }
+  }
+
+  async function copyDraft() {
+    if (!draft) return;
+    await navigator.clipboard.writeText(
+      draft.kind === "email" && draft.subject
+        ? `${draft.subject}\n\n${draft.body}`
+        : draft.body,
+    );
+    showFlash("draft copied ✓");
+  }
+
+  /** notes + open actions + questions as one markdown packet. */
+  function packetMarkdown(): string {
+    let md = `# ${title.trim() || "meeting"} — ${new Date().toLocaleDateString()}\n\n`;
+    if (notes) md += `${notes}\n\n`;
+    if (actions) {
+      if (actions.actions.length) {
+        md += `## action items\n`;
+        for (const a of actions.actions) {
+          const due = a.due_label || a.due_date;
+          md += `- [${a.done ? "x" : " "}] ${a.title} — **${a.owner}**${due ? ` (${due})` : ""}\n`;
+        }
+        md += "\n";
+      }
+      if (actions.questions.length) {
+        md += `## open questions\n`;
+        for (const q of actions.questions) md += `- ${q}\n`;
+      }
+    }
+    return md.trim();
+  }
+
+  async function copyPacket() {
+    await navigator.clipboard.writeText(packetMarkdown());
+    setCopied(true);
+    window.setTimeout(() => setCopied(false), 1500);
+  }
+
   async function openPast(s: Summary) {
     setError(null);
     setPermissionHint(null);
@@ -165,10 +357,15 @@ function App() {
         segments: Segment[];
         notes: string | null;
       }>("load_recording", { dir: s.dir });
+      const past = await invoke<MeetingActions | null>("load_actions", {
+        dir: s.dir,
+      }).catch(() => null);
       setDir(s.dir);
       setTitle(detail.title);
       setSegments(detail.segments.length ? detail.segments : null);
       setNotes(detail.notes);
+      setActions(past);
+      setDraft(null);
       setRoughNotes("");
       setViewingPast(true);
       setShowLibrary(false);
@@ -178,20 +375,21 @@ function App() {
     }
   }
 
-  async function copyNotes() {
-    if (!notes) return;
-    await navigator.clipboard.writeText(notes);
-    setCopied(true);
-    window.setTimeout(() => setCopied(false), 1500);
-  }
-
   function grantSystemAudio() {
     invoke("open_system_audio_settings").catch(() => {});
+  }
+
+  function ownerChipClass(owner: string): string {
+    if (owner === "me") return "bg-olive/15 text-olive-deep";
+    if (owner.startsWith("them")) return "bg-sumac/15 text-sumac";
+    return "bg-sesame text-ink-soft";
   }
 
   const mmss = `${String(Math.floor(elapsed / 60)).padStart(2, "0")}:${String(
     elapsed % 60,
   ).padStart(2, "0")}`;
+
+  const openCount = actions?.actions.filter((a) => !a.done).length ?? 0;
 
   return (
     <main className="mx-auto flex min-h-full max-w-xl flex-col gap-5 p-6">
@@ -199,7 +397,7 @@ function App() {
         <span className="text-2xl">🌿</span>
         <h1 className="text-2xl font-bold text-olive-deep">za3tar</h1>
         <span className="hidden text-xs text-ink-soft sm:inline">
-          meeting notes, بالعربيزي
+          from meeting to done, بالعربيزي
         </span>
         <button
           onClick={() => {
@@ -350,7 +548,8 @@ function App() {
         </div>
       )}
 
-      {/* after processing: if only the mic was heard, the system-audio grant is missing */}
+      {/* after processing: if only the user was heard, the system-audio grant is
+          missing (in-person voices would have been split by diarization) */}
       {phase === "done" &&
         !viewingPast &&
         segments &&
@@ -377,6 +576,12 @@ function App() {
         </div>
       )}
 
+      {flash && (
+        <div className="rounded-xl bg-olive/10 px-4 py-2 text-sm text-olive-deep">
+          {flash}
+        </div>
+      )}
+
       {segments && (
         <section className="flex flex-col gap-2">
           <h2 className="text-sm font-semibold text-ink-soft">transcript</h2>
@@ -392,7 +597,7 @@ function App() {
                         : "var(--color-sumac)",
                   }}
                 >
-                  {s.speaker === "me" ? "me" : "them"}
+                  {s.speaker}
                 </span>
                 <p dir="rtl" className="arabic text-right text-sm text-ink">
                   {s.text}
@@ -401,11 +606,10 @@ function App() {
             ))}
           </div>
 
-          {!notes && (
+          {!notes && !busy && (
             <button
               onClick={makeNotes}
-              disabled={!!busy}
-              className="self-start rounded-xl bg-olive px-4 py-2 text-sm font-semibold text-white hover:bg-olive-deep disabled:opacity-60"
+              className="self-start rounded-xl bg-olive px-4 py-2 text-sm font-semibold text-white hover:bg-olive-deep"
             >
               ✍️ make notes
             </button>
@@ -425,7 +629,7 @@ function App() {
               regenerate
             </button>
             <button
-              onClick={copyNotes}
+              onClick={copyPacket}
               className="rounded-lg bg-sesame px-3 py-1 text-xs text-ink-soft hover:text-olive-deep"
             >
               {copied ? "copied ✓" : "copy markdown"}
@@ -436,6 +640,215 @@ function App() {
             className="arabic rounded-xl bg-white p-4 text-right text-sm leading-relaxed text-ink"
           >
             <MarkdownLite md={notes} />
+          </div>
+        </section>
+      )}
+
+      {segments && !actions && !busy && (
+        <button
+          onClick={extractActions}
+          className="self-start rounded-xl bg-olive px-4 py-2 text-sm font-semibold text-white hover:bg-olive-deep"
+        >
+          🎯 pull out decisions & actions
+        </button>
+      )}
+
+      {actions && (
+        <section className="flex flex-col gap-3">
+          <div className="flex items-center gap-2">
+            <h2 className="text-sm font-semibold text-ink-soft">
+              what came out of it
+            </h2>
+            {openCount > 0 && (
+              <span className="rounded-full bg-sumac/15 px-2 py-0.5 text-[11px] font-medium text-sumac">
+                {openCount} open
+              </span>
+            )}
+            <button
+              onClick={extractActions}
+              disabled={!!busy}
+              className="ml-auto rounded-lg px-2 py-1 text-xs text-ink-soft hover:text-olive-deep disabled:opacity-60"
+            >
+              re-extract
+            </button>
+          </div>
+
+          {actions.decisions.length > 0 && (
+            <div className="flex flex-col gap-1.5 rounded-xl bg-white p-4">
+              <h3 className="text-xs font-semibold uppercase tracking-wide text-olive-deep">
+                decisions
+              </h3>
+              {actions.decisions.map((d, i) => (
+                <p
+                  key={i}
+                  dir="auto"
+                  className="arabic text-start text-sm text-ink"
+                >
+                  ✅ {d}
+                </p>
+              ))}
+            </div>
+          )}
+
+          {actions.actions.length > 0 && (
+            <div className="flex flex-col gap-1 rounded-xl bg-white p-3">
+              <h3 className="px-1 text-xs font-semibold uppercase tracking-wide text-olive-deep">
+                action items
+              </h3>
+              {actions.actions.map((a) => (
+                <div
+                  key={a.id}
+                  className="flex items-start gap-2.5 rounded-lg px-1 py-1.5 hover:bg-cream"
+                >
+                  <button
+                    onClick={() => toggleDone(a)}
+                    aria-label={a.done ? "mark not done" : "mark done"}
+                    className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-md border text-[11px] transition ${
+                      a.done
+                        ? "border-olive bg-olive text-white"
+                        : "border-sesame bg-white text-transparent hover:border-olive"
+                    }`}
+                  >
+                    ✓
+                  </button>
+                  <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+                    <span
+                      dir="auto"
+                      className={`arabic text-start text-sm ${
+                        a.done ? "text-ink-soft line-through" : "text-ink"
+                      }`}
+                    >
+                      {a.title}
+                    </span>
+                    {a.detail && (
+                      <span
+                        dir="auto"
+                        className="arabic text-start text-xs text-ink-soft"
+                      >
+                        {a.detail}
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex shrink-0 items-center gap-1.5">
+                    {(a.due_label || a.due_date) && (
+                      <span className="rounded bg-cream px-1.5 py-0.5 text-[10px] text-ink-soft">
+                        {a.due_label || a.due_date}
+                      </span>
+                    )}
+                    <span
+                      className={`rounded px-1.5 py-0.5 text-[10px] font-medium ${ownerChipClass(a.owner)}`}
+                    >
+                      {a.owner}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {actions.questions.length > 0 && (
+            <div className="flex flex-col gap-1.5 rounded-xl bg-white p-4">
+              <h3 className="text-xs font-semibold uppercase tracking-wide text-olive-deep">
+                open questions
+              </h3>
+              {actions.questions.map((q, i) => (
+                <p
+                  key={i}
+                  dir="auto"
+                  className="arabic text-start text-sm text-ink"
+                >
+                  ❓ {q}
+                </p>
+              ))}
+            </div>
+          )}
+
+          {actions.decisions.length === 0 &&
+            actions.actions.length === 0 &&
+            actions.questions.length === 0 && (
+              <p className="rounded-xl bg-white p-4 text-sm text-ink-soft">
+                ما في قرارات أو مهام واضحة بهاللقاء — حكي حلو بس 🌿
+              </p>
+            )}
+
+          <div className="flex flex-wrap gap-2">
+            <button
+              onClick={() => makeDraft("whatsapp")}
+              disabled={!!busy}
+              className="rounded-xl bg-olive px-3.5 py-2 text-sm font-semibold text-white hover:bg-olive-deep disabled:opacity-60"
+            >
+              💬 whatsapp follow-up
+            </button>
+            <button
+              onClick={() => makeDraft("email")}
+              disabled={!!busy}
+              className="rounded-xl bg-olive px-3.5 py-2 text-sm font-semibold text-white hover:bg-olive-deep disabled:opacity-60"
+            >
+              ✉️ recap email
+            </button>
+            <button
+              onClick={exportCalendar}
+              disabled={!!busy}
+              className="rounded-xl bg-sesame px-3.5 py-2 text-sm font-semibold text-ink hover:bg-olive/20 disabled:opacity-60"
+            >
+              📅 add to Calendar
+            </button>
+            <button
+              onClick={copyPacket}
+              className="rounded-xl bg-sesame px-3.5 py-2 text-sm font-semibold text-ink hover:bg-olive/20"
+            >
+              {copied ? "copied ✓" : "📋 copy packet"}
+            </button>
+          </div>
+        </section>
+      )}
+
+      {draft && (
+        <section className="flex flex-col gap-2 rounded-2xl border border-olive/30 bg-white p-4">
+          <div className="flex items-center gap-2">
+            <h2 className="text-sm font-semibold text-olive-deep">
+              {draft.kind === "whatsapp"
+                ? "💬 whatsapp draft"
+                : "✉️ email draft"}
+            </h2>
+            <span className="text-[11px] text-ink-soft">
+              edit it, then send — nothing leaves without you
+            </span>
+            <button
+              onClick={() => setDraft(null)}
+              className="ml-auto rounded-lg px-2 py-1 text-xs text-ink-soft hover:text-olive-deep"
+            >
+              close
+            </button>
+          </div>
+          {draft.kind === "email" && (
+            <input
+              dir="auto"
+              value={draft.subject}
+              onChange={(e) => setDraft({ ...draft, subject: e.target.value })}
+              placeholder="subject"
+              className="arabic rounded-lg border border-sesame px-3 py-2 text-start text-sm outline-none focus:border-olive"
+            />
+          )}
+          <textarea
+            dir="auto"
+            value={draft.body}
+            onChange={(e) => setDraft({ ...draft, body: e.target.value })}
+            className="arabic min-h-40 rounded-lg border border-sesame p-3 text-start text-sm leading-relaxed outline-none focus:border-olive"
+          />
+          <div className="flex gap-2">
+            <button
+              onClick={sendDraft}
+              className="rounded-xl bg-olive px-3.5 py-2 text-sm font-semibold text-white hover:bg-olive-deep"
+            >
+              {draft.kind === "whatsapp" ? "open in WhatsApp" : "open in Mail"}
+            </button>
+            <button
+              onClick={copyDraft}
+              className="rounded-xl bg-sesame px-3.5 py-2 text-sm font-semibold text-ink hover:bg-olive/20"
+            >
+              copy
+            </button>
           </div>
         </section>
       )}

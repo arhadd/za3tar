@@ -36,6 +36,8 @@ struct ElevenWord {
     start: Option<f64>,
     #[serde(rename = "type", default)]
     kind: Option<String>,
+    #[serde(default)]
+    speaker_id: Option<String>,
 }
 
 #[derive(Deserialize)]
@@ -48,11 +50,13 @@ struct ElevenResponse {
     words: Vec<ElevenWord>,
 }
 
-/// A single timed word tagged with its track.
+/// A single timed word tagged with its track (and, when diarization ran,
+/// which voice on that track spoke it).
 struct TaggedWord {
-    speaker: &'static str,
+    speaker: String,
     start: f64,
     text: String,
+    diarized_id: Option<String>,
 }
 
 fn read_key() -> Result<String, String> {
@@ -64,7 +68,8 @@ async fn transcribe_track(
     client: &reqwest::Client,
     api_key: &str,
     path: &Path,
-    speaker: &'static str,
+    speaker: &str,
+    diarize: bool,
 ) -> Result<Vec<TaggedWord>, String> {
     let bytes = std::fs::read(path).map_err(|e| format!("read {path:?}: {e}"))?;
     // an essentially-empty file (e.g. a silent/failed track) → no words, not an error
@@ -76,9 +81,12 @@ async fn transcribe_track(
         .file_name("audio.wav")
         .mime_str("audio/wav")
         .map_err(|e| e.to_string())?;
-    let form = reqwest::multipart::Form::new()
+    let mut form = reqwest::multipart::Form::new()
         .text("model_id", MODEL)
         .part("file", part);
+    if diarize {
+        form = form.text("diarize", "true");
+    }
 
     let resp = client
         .post(ELEVENLABS_URL)
@@ -102,9 +110,10 @@ async fn transcribe_track(
     if parsed.words.is_empty() {
         if !parsed.text.trim().is_empty() {
             out.push(TaggedWord {
-                speaker,
+                speaker: speaker.to_string(),
                 start: 0.0,
                 text: parsed.text.trim().to_string(),
+                diarized_id: None,
             });
         }
     } else {
@@ -117,9 +126,10 @@ async fn transcribe_track(
                 continue;
             }
             out.push(TaggedWord {
-                speaker,
+                speaker: speaker.to_string(),
                 start: w.start.unwrap_or(0.0),
                 text: t.to_string(),
+                diarized_id: w.speaker_id.clone(),
             });
         }
     }
@@ -140,12 +150,48 @@ fn coalesce(mut words: Vec<TaggedWord>) -> Vec<Segment> {
             }
         }
         segments.push(Segment {
-            speaker: w.speaker.to_string(),
+            speaker: w.speaker,
             start: w.start,
             text: w.text,
         });
     }
     segments
+}
+
+/// In-person mode: the meeting happened in one room, so every voice is on the
+/// mic track and the me/them split can't come from the tracks. When the system
+/// track is silent and diarization found several voices on the mic, relabel
+/// them "voice1", "voice2", … by how much they spoke. Deliberately NOT
+/// "me"/"them" — word count can't tell which voice is the laptop's owner, so
+/// the labels stay neutral and the notes/actions models attribute people by
+/// the names and roles revealed in the conversation. A voice needs a few words
+/// to count — one-word blips are usually crosstalk, not a person.
+fn relabel_in_person(words: &mut [TaggedWord]) {
+    use std::collections::HashMap;
+    let mut counts: HashMap<&str, usize> = HashMap::new();
+    for w in words.iter() {
+        if let Some(id) = w.diarized_id.as_deref() {
+            *counts.entry(id).or_default() += 1;
+        }
+    }
+    let mut ranked: Vec<(&str, usize)> = counts.into_iter().filter(|(_, n)| *n >= 3).collect();
+    if ranked.len() < 2 {
+        return; // one real voice — the existing "me" labels are already right
+    }
+    ranked.sort_by(|a, b| b.1.cmp(&a.1));
+
+    let mut label: HashMap<String, String> = HashMap::new();
+    for (rank, (id, _)) in ranked.iter().enumerate() {
+        label.insert(id.to_string(), format!("voice{}", rank + 1));
+    }
+    for w in words.iter_mut() {
+        if let Some(id) = w.diarized_id.as_deref() {
+            if let Some(name) = label.get(id) {
+                w.speaker = name.clone();
+            }
+            // below-threshold voices keep the track label ("me")
+        }
+    }
 }
 
 /// Transcribe both tracks in a recording directory and return a merged transcript.
@@ -157,26 +203,36 @@ pub async fn transcribe_dir(dir: &Path) -> Result<Vec<Segment>, String> {
     let system = dir.join("system.wav");
 
     // Transcribe both tracks concurrently — they're independent uploads, so
-    // there's no reason to pay for one round-trip then the other.
+    // there's no reason to pay for one round-trip then the other. The mic track
+    // is diarized because in an in-person meeting it carries every voice.
     let mic_fut = async {
         if mic.exists() {
-            transcribe_track(&client, &api_key, &mic, "me").await
+            transcribe_track(&client, &api_key, &mic, "me", true).await
         } else {
             Ok(vec![])
         }
     };
     let system_fut = async {
         if system.exists() {
-            transcribe_track(&client, &api_key, &system, "them").await
+            transcribe_track(&client, &api_key, &system, "them", false).await
         } else {
             Ok(vec![])
         }
     };
     let (mic_words, system_words) = tokio::join!(mic_fut, system_fut);
 
+    let mut mic_words = mic_words?;
+    let system_words = system_words?;
+
+    // Call mode (voices on the system track) → the track *is* the speaker and
+    // mic diarization is ignored. Silent system track → in-person mode.
+    if system_words.is_empty() {
+        relabel_in_person(&mut mic_words);
+    }
+
     let mut all = Vec::new();
-    all.extend(mic_words?);
-    all.extend(system_words?);
+    all.extend(mic_words);
+    all.extend(system_words);
     if all.is_empty() {
         return Err("no speech found in either track".into());
     }

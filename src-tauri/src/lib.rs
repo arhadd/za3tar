@@ -1,3 +1,5 @@
+pub mod actions;
+pub mod anthropic;
 pub mod asr;
 mod capture;
 pub mod library;
@@ -37,6 +39,12 @@ pub fn run() {
             capture::is_recording,
             asr::transcribe,
             notes::generate_notes,
+            actions::extract_actions,
+            actions::load_actions,
+            actions::set_action_done,
+            actions::draft_followup,
+            actions::export_calendar,
+            actions::open_external,
             library::list_recordings,
             library::load_recording,
             library::set_recording_title,
