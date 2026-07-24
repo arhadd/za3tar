@@ -12,13 +12,15 @@ use std::time::{SystemTime, UNIX_EPOCH};
 use serde::Serialize;
 use tauri::{AppHandle, Emitter, Manager, State};
 
-/// Live recording, if any. Holds the child so we can signal + reap it.
+/// Live recording, if any. Holds the children so we can signal + reap them.
+/// Two helper processes per recording — the mic's echo-cancellation unit and
+/// the system-audio process tap cannot share a process (VP reconfigures the
+/// output device and the tap's IO stops firing), so each track gets its own.
 #[derive(Default)]
 pub struct CaptureState(pub Mutex<Option<Recording>>);
 
 pub struct Recording {
-    child: Child,
-    pid: i32,
+    children: Vec<(Child, i32)>,
     pub dir: PathBuf,
 }
 
@@ -78,35 +80,39 @@ pub fn start_recording(
         .join(stamp.to_string());
     std::fs::create_dir_all(&base).map_err(|e| e.to_string())?;
 
-    let mut child = Command::new(&helper)
-        .arg(&base)
-        .stdout(Stdio::piped())
-        .stderr(Stdio::piped())
-        .spawn()
-        .map_err(|e| format!("failed to launch capture helper: {e}"))?;
+    let mut children = Vec::new();
+    for only in ["--only=system", "--only=mic"] {
+        let mut child = Command::new(&helper)
+            .arg(&base)
+            .arg(only)
+            .stdout(Stdio::piped())
+            .stderr(Stdio::piped())
+            .spawn()
+            .map_err(|e| format!("failed to launch capture helper ({only}): {e}"))?;
 
-    let pid = child.id() as i32;
+        let pid = child.id() as i32;
 
-    // forward the helper's JSON-line events to the frontend
-    if let Some(stdout) = child.stdout.take() {
-        let app2 = app.clone();
-        std::thread::spawn(move || {
-            let reader = BufReader::new(stdout);
-            for line in reader.lines().map_while(Result::ok) {
-                let payload: serde_json::Value =
-                    serde_json::from_str(&line).unwrap_or_else(|_| {
-                        serde_json::json!({ "event": "log", "message": line })
-                    });
-                let _ = app2.emit("capture-event", payload);
-            }
-            // stdout closed => helper exited
-            let _ = app2.emit("capture-event", serde_json::json!({ "event": "closed" }));
-        });
+        // forward the helper's JSON-line events to the frontend
+        if let Some(stdout) = child.stdout.take() {
+            let app2 = app.clone();
+            std::thread::spawn(move || {
+                let reader = BufReader::new(stdout);
+                for line in reader.lines().map_while(Result::ok) {
+                    let payload: serde_json::Value =
+                        serde_json::from_str(&line).unwrap_or_else(|_| {
+                            serde_json::json!({ "event": "log", "message": line })
+                        });
+                    let _ = app2.emit("capture-event", payload);
+                }
+                // stdout closed => helper exited
+                let _ = app2.emit("capture-event", serde_json::json!({ "event": "closed" }));
+            });
+        }
+        children.push((child, pid));
     }
 
     *guard = Some(Recording {
-        child,
-        pid,
+        children,
         dir: base.clone(),
     });
 
@@ -122,14 +128,17 @@ pub fn stop_recording(state: State<'_, CaptureState>) -> Result<String, String> 
         return Err("not recording".into());
     };
 
-    // SIGTERM lets the helper finalize the WAV files (SIGKILL would truncate them).
+    // SIGTERM lets the helpers finalize the WAV files (SIGKILL would truncate
+    // them). Signal both first, then reap, so they wind down in parallel.
     #[cfg(unix)]
-    unsafe {
-        libc::kill(rec.pid, libc::SIGTERM);
+    for (_, pid) in &rec.children {
+        unsafe {
+            libc::kill(*pid, libc::SIGTERM);
+        }
     }
-
-    // reap so we don't leak a zombie
-    let _ = rec.child.wait();
+    for (child, _) in rec.children.iter_mut() {
+        let _ = child.wait();
+    }
     Ok(rec.dir.to_string_lossy().to_string())
 }
 

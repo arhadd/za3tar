@@ -279,8 +279,33 @@ final class MicCapture {
 
     func start(outputURL: URL) throws {
         let input = engine.inputNode
-        let inFormat = input.outputFormat(forBus: 0)
-        guard inFormat.sampleRate > 0 else { throw "mic input format unavailable (permission denied?)" }
+        // Acoustic echo cancellation. Without it, the mic re-records whatever
+        // the speakers play — the other side of the call bleeds onto the "me"
+        // track and gets transcribed twice with the wrong speaker. Apple's
+        // voice-processing unit subtracts the system-output reference from
+        // the mic signal (the FaceTime-on-speakers trick). Ducking is forced
+        // to minimum so macOS doesn't quietly lower the meeting audio while
+        // we record. Fails soft: capture without AEC beats no capture.
+        do {
+            try input.setVoiceProcessingEnabled(true)
+            if #available(macOS 14.0, *) {
+                input.voiceProcessingOtherAudioDuckingConfiguration =
+                    .init(enableAdvancedDucking: false, duckingLevel: .min)
+            }
+            emit(["event": "aec", "track": "mic", "enabled": true])
+        } catch {
+            emit(["event": "aec", "track": "mic", "enabled": false,
+                  "message": "\(error.localizedDescription)"])
+        }
+        // read the format only after enabling voice processing — it changes it
+        // (VP exposes a multichannel reference layout; recording that raw
+        // yields silence). Tap in explicit mono at the node's rate instead and
+        // let the engine convert.
+        let nodeFormat = input.outputFormat(forBus: 0)
+        guard nodeFormat.sampleRate > 0 else { throw "mic input format unavailable (permission denied?)" }
+        guard let inFormat = AVAudioFormat(
+            standardFormatWithSampleRate: nodeFormat.sampleRate, channels: 1)
+        else { throw "mono tap format unavailable" }
         let w = try TrackWriter(name: "mic", url: outputURL, inputFormat: inFormat)
         writer = w
         input.installTap(onBus: 0, bufferSize: 4096, format: inFormat) { buffer, _ in
@@ -346,14 +371,25 @@ func finalizeWavHeader(_ url: URL) {
 // MARK: - main
 
 let args = CommandLine.arguments
-guard args.count >= 2 else { fail("usage: za3tar-capture <output-dir>") }
+guard args.count >= 2 else { fail("usage: za3tar-capture <output-dir> [--only=mic|system]") }
 let outDir = URL(fileURLWithPath: args[1], isDirectory: true)
 try? FileManager.default.createDirectory(at: outDir, withIntermediateDirectories: true)
 let systemURL = outDir.appendingPathComponent("system.wav")
 let micURL = outDir.appendingPathComponent("mic.wav")
-// AVAudioFile won't overwrite; clear stale files from a prior run.
-try? FileManager.default.removeItem(at: systemURL)
-try? FileManager.default.removeItem(at: micURL)
+
+// The mic's voice-processing unit (AEC) and the CoreAudio process tap cannot
+// coexist in one process — VP reconfigures the output device and the tap's
+// IOProc never fires again. So the app runs TWO helpers, one per track
+// (--only=mic / --only=system). Default "both" kept for standalone use, but
+// note AEC will starve the tap in that mode.
+let mode = args.count >= 3 ? args[2].replacingOccurrences(of: "--only=", with: "") : "both"
+let wantSystem = mode != "mic"
+let wantMic = mode != "system"
+
+// AVAudioFile won't overwrite; clear stale files from a prior run — but only
+// the tracks this process owns, or the two helpers delete each other's files.
+if wantSystem { try? FileManager.default.removeItem(at: systemURL) }
+if wantMic { try? FileManager.default.removeItem(at: micURL) }
 
 let system = SystemAudioCapture()
 let mic = MicCapture()
@@ -363,12 +399,12 @@ var stopping = false
 func shutdown() {
     if stopping { return }
     stopping = true
-    system.stop()
-    mic.stop()
+    if wantSystem { system.stop() }
+    if wantMic { mic.stop() }
     // stop() releases the AVAudioFile writers; now patch the headers so the WAVs
     // carry their real length even though we're about to exit(0).
-    finalizeWavHeader(systemURL)
-    finalizeWavHeader(micURL)
+    if wantSystem { finalizeWavHeader(systemURL) }
+    if wantMic { finalizeWavHeader(micURL) }
     emit(["event": "stopped"])
     exit(0)
 }
@@ -381,16 +417,19 @@ for sig in [SIGINT, SIGTERM] {
     signalSources.append(src) // retained for the process lifetime
 }
 
-do {
-    // mic first so a system-tap permission denial doesn't lose the mic track
-    try mic.start(outputURL: micURL)
-} catch {
-    emit(["event": "error", "track": "mic", "message": "\(error)"])
+if wantSystem {
+    do {
+        try system.start(outputURL: systemURL)
+    } catch {
+        emit(["event": "error", "track": "system", "message": "\(error)"])
+    }
 }
-do {
-    try system.start(outputURL: systemURL)
-} catch {
-    emit(["event": "error", "track": "system", "message": "\(error)"])
+if wantMic {
+    do {
+        try mic.start(outputURL: micURL)
+    } catch {
+        emit(["event": "error", "track": "mic", "message": "\(error)"])
+    }
 }
 
 emit(["event": "started", "outputDir": outDir.path])

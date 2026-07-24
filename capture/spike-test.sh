@@ -8,9 +8,11 @@ OUTDIR="${1:-/tmp/za3tar-spike}"
 rm -rf "$OUTDIR"; mkdir -p "$OUTDIR"
 LOG="$OUTDIR/helper.log"
 
-echo "== starting helper =="
-./za3tar-capture "$OUTDIR" >"$LOG" 2>&1 &
+echo "== starting helpers (one per track — AEC and the system tap can't share a process) =="
+./za3tar-capture "$OUTDIR" --only=system >"$LOG" 2>&1 &
 HELPER=$!
+./za3tar-capture "$OUTDIR" --only=mic >"$LOG.mic" 2>&1 &
+HELPER_MIC=$!
 
 # give it a moment to create the tap + mic
 sleep 2
@@ -20,12 +22,13 @@ say -r 180 "Testing za3tar capture. Marhaba, this is the system audio track. One
 sleep 1
 
 echo "== stopping helper =="
-kill -INT "$HELPER" 2>/dev/null
+kill -INT "$HELPER" "$HELPER_MIC" 2>/dev/null
 wait "$HELPER" 2>/dev/null
-echo "helper exit: $?"
+wait "$HELPER_MIC" 2>/dev/null
+echo "helpers stopped"
 
-echo "== helper log =="
-cat "$LOG"
+echo "== helper logs =="
+cat "$LOG" "$LOG.mic" 2>/dev/null
 
 echo "== files =="
 ls -la "$OUTDIR"/*.wav 2>/dev/null || echo "(no wav files)"
