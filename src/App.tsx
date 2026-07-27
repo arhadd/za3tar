@@ -52,6 +52,48 @@ type Settings = {
   anthropic_api_key: string;
   user_name: string;
 };
+// jello bridge envelopes — docs/JELLO-PROTOCOL.md
+type JelloAck = {
+  ok: boolean;
+  events_created: { action_id: string; title: string; when: string }[];
+  followups_tracked: string[];
+  person: string;
+  warnings: string[];
+};
+type JelloEvent = {
+  start: string;
+  end: string;
+  title: string;
+  attendees: string[];
+};
+type JelloSchedule = { date: string; events: JelloEvent[]; error?: string };
+type JelloFollowupStatus = {
+  id: string;
+  status: string;
+  note: string;
+  updated_at: string;
+};
+
+/** the far side is still an agent — find the header, then the outermost JSON */
+function parseEnvelope<T>(reply: string, header: string): T {
+  const at = reply.indexOf(header);
+  const start = reply.indexOf("{", at >= 0 ? at + header.length : 0);
+  const end = reply.lastIndexOf("}");
+  if (start < 0 || end <= start)
+    throw new Error(`no ${header} in jello's reply`);
+  return JSON.parse(reply.slice(start, end + 1)) as T;
+}
+
+const meetingIdOf = (d: string) => d.replace(/\/+$/, "").split("/").pop() || d;
+/** local action ids are per-meeting SQLite ids; the bridge needs global ones */
+const bridgeId = (d: string, actionId: number) =>
+  `${meetingIdOf(d)}#a${actionId}`;
+
+/** "HH:MM" → minutes since local midnight (NaN if malformed) */
+function hhmmToMin(t: string): number {
+  const m = /^(\d{1,2}):(\d{2})/.exec(t);
+  return m ? Number(m[1]) * 60 + Number(m[2]) : NaN;
+}
 
 /** Meeting date passed to the extractor so it can resolve "بكرا" to a real date. */
 function todayContext(): string {
@@ -89,6 +131,10 @@ function App() {
   const [personEdit, setPersonEdit] = useState<PersonRow | null>(null);
   const [showSettings, setShowSettings] = useState(false);
   const [settingsForm, setSettingsForm] = useState<Settings | null>(null);
+  const [schedule, setSchedule] = useState<JelloSchedule | null>(null);
+  const [jelloStatus, setJelloStatus] = useState<
+    Record<string, JelloFollowupStatus>
+  >({});
   const timer = useRef<number | null>(null);
 
   // whether anyone besides the user was heard (them / them2 / …)
@@ -367,46 +413,128 @@ function App() {
     }
   }
 
-  /** hand a message to jello and surface its reply */
-  async function jelloSend(message: string) {
-    setBusy("sending to jello…");
+  /** one round-trip over the bridge; null on transport failure */
+  async function jelloExchange(
+    message: string,
+    busyMsg: string,
+  ): Promise<string | null> {
+    setBusy(busyMsg);
+    setError(null);
     try {
-      const reply = await invoke<string>("send_to_jello", { message });
-      showFlash(
-        `🪼 ${reply.slice(0, 140)}${reply.length > 140 ? "…" : ""}`,
-        5000,
-      );
+      return await invoke<string>("send_to_jello", { message });
     } catch (e) {
       setError(String(e));
+      return null;
     } finally {
       setBusy(null);
     }
   }
 
-  /** the whole meeting → jello: calendar (tyme) + follow-up tracking */
+  /** hand a message to jello and surface its reply */
+  async function jelloSend(message: string) {
+    const reply = await jelloExchange(message, "sending to jello…");
+    if (reply != null)
+      showFlash(
+        `🪼 ${reply.slice(0, 140)}${reply.length > 140 ? "…" : ""}`,
+        5000,
+      );
+  }
+
+  /** the whole meeting → jello as a ZA3TAR_PACKET: calendar (tyme) +
+      follow-up tracking, acknowledged structurally */
   async function sendPacketToJello() {
-    if (!actions) return;
+    if (!actions || !dir) return;
     const contact = person.trim() ? contactOf(person.trim()) : undefined;
-    const who = person.trim()
-      ? `${person.trim()}${contact?.phone ? ` (WhatsApp ${contact.phone})` : ""}${
-          contact?.email ? ` (email ${contact.email})` : ""
-        }`
-      : "someone (untagged)";
-    let msg = `[za3tar] meeting packet — "${title.trim() || "untitled"}" with ${who}, ${new Date().toLocaleDateString()}\n\n`;
-    if (actions.decisions.length)
-      msg += `decisions:\n${actions.decisions.map((d) => `- ${d}`).join("\n")}\n\n`;
+    const created = library.find((s) => s.dir === dir)?.created;
     const open = actions.actions.filter((a) => !a.done);
-    if (open.length)
-      msg += `open action items:\n${open
-        .map(
-          (a) =>
-            `- ${a.title} — ${a.owner}${a.due_date ? `, due ${a.due_date}` : a.due_label ? `, ${a.due_label}` : ""}`,
-        )
-        .join("\n")}\n\n`;
-    msg +=
-      "please: put the dated items on my calendar (tyme), and track these follow-ups — nudge me when something's due.";
-    if (notes) msg += `\n\nnotes:\n${notes}`;
-    await jelloSend(msg);
+    const packet = {
+      meeting: {
+        id: meetingIdOf(dir),
+        title: title.trim() || "untitled",
+        started_at: created
+          ? new Date(created * 1000).toISOString()
+          : new Date().toISOString(),
+        person: { name: person.trim(), phone: contact?.phone ?? "" },
+      },
+      decisions: actions.decisions,
+      actions: open.map((a) => ({
+        id: bridgeId(dir, a.id),
+        text: a.title,
+        owner: a.owner,
+        due: a.due_date ?? "",
+      })),
+      questions: actions.questions,
+      notes_md: notes ?? "",
+    };
+    const reply = await jelloExchange(
+      `ZA3TAR_PACKET v1\n${JSON.stringify(packet)}`,
+      "sending the meeting to jello…",
+    );
+    if (reply == null) return;
+    try {
+      const ack = parseEnvelope<JelloAck>(reply, "ZA3TAR_ACK");
+      const bits = [
+        `📅 ${ack.events_created.length} on calendar`,
+        `📌 ${ack.followups_tracked.length} follow-ups tracked`,
+      ];
+      if (ack.warnings.length) bits.push(`⚠ ${ack.warnings[0]}`);
+      showFlash(`🪼 ${bits.join(" · ")}`, 6000);
+    } catch {
+      // free-form reply (older jello) — show what came back
+      showFlash(
+        `🪼 ${reply.slice(0, 140)}${reply.length > 140 ? "…" : ""}`,
+        5000,
+      );
+    }
+  }
+
+  /** ask jello for today's calendar so meetings start pre-titled */
+  async function fetchToday() {
+    const reply = await jelloExchange(
+      `ZA3TAR_QUERY v1\n{"type":"today"}`,
+      "asking jello about today…",
+    );
+    if (reply == null) return;
+    try {
+      setSchedule(parseEnvelope<JelloSchedule>(reply, "ZA3TAR_SCHEDULE"));
+    } catch {
+      setError("jello's schedule reply wasn't parseable");
+    }
+  }
+
+  /** pull real-world follow-up statuses (nudged/replied/done) back from jello */
+  async function syncFollowups() {
+    const snapshot = [...openActions];
+    const ids = snapshot.map((oa) => bridgeId(oa.dir, oa.action.id));
+    if (!ids.length) return;
+    const reply = await jelloExchange(
+      `ZA3TAR_QUERY v1\n${JSON.stringify({ type: "followups", ids })}`,
+      "syncing follow-ups with jello…",
+    );
+    if (reply == null) return;
+    try {
+      const st = parseEnvelope<{ followups: JelloFollowupStatus[] }>(
+        reply,
+        "ZA3TAR_STATUS",
+      );
+      const map: Record<string, JelloFollowupStatus> = {};
+      for (const f of st.followups) map[f.id] = f;
+      setJelloStatus(map);
+      // jello confirmed some complete → the app agrees
+      let done = 0;
+      for (const oa of snapshot) {
+        if (map[bridgeId(oa.dir, oa.action.id)]?.status === "done") {
+          markOpenDone(oa);
+          done++;
+        }
+      }
+      showFlash(
+        `🪼 synced ${st.followups.length} from jello${done ? ` · ${done} completed` : ""}`,
+        4000,
+      );
+    } catch {
+      setError("jello's status reply wasn't parseable");
+    }
   }
 
   /** jello delivers the draft to the person over WhatsApp */
@@ -779,9 +907,21 @@ function App() {
 
       {showFollowUps && (
         <section className="flex flex-col gap-1.5 rounded-2xl bg-white p-3">
-          <h2 className="px-1 text-xs font-semibold uppercase tracking-wide text-olive-deep">
-            open follow-ups · across all meetings
-          </h2>
+          <div className="flex items-center gap-2 px-1">
+            <h2 className="text-xs font-semibold uppercase tracking-wide text-olive-deep">
+              open follow-ups · across all meetings
+            </h2>
+            {openActions.length > 0 && (
+              <button
+                onClick={syncFollowups}
+                disabled={!!busy}
+                title="pull nudged/replied/done statuses back from jello"
+                className="ml-auto rounded-lg bg-sesame px-2 py-1 text-[11px] font-medium text-ink hover:bg-olive/20 disabled:opacity-60"
+              >
+                🪼 sync
+              </button>
+            )}
+          </div>
           {openActions.length === 0 && (
             <p className="px-1 py-2 text-sm text-ink-soft">
               كله سالك — nothing open 🌿
@@ -820,6 +960,17 @@ function App() {
                   </button>
                 </div>
                 <div className="flex shrink-0 items-center gap-1.5">
+                  {(() => {
+                    const js = jelloStatus[bridgeId(oa.dir, oa.action.id)];
+                    return js && js.status !== "open" ? (
+                      <span
+                        title={js.note || js.status}
+                        className="rounded bg-olive/15 px-1.5 py-0.5 text-[10px] font-medium text-olive-deep"
+                      >
+                        🪼 {js.status}
+                      </span>
+                    ) : null;
+                  })()}
                   {(oa.action.due_label || oa.action.due_date) && (
                     <span
                       className={`rounded px-1.5 py-0.5 text-[10px] ${
@@ -849,6 +1000,88 @@ function App() {
               </div>
             );
           })}
+        </section>
+      )}
+
+      {phase === "idle" && !viewingPast && (
+        <section className="flex flex-col gap-1.5">
+          {!schedule && (
+            <button
+              onClick={fetchToday}
+              disabled={!!busy}
+              title="jello reads your calendar (tyme) so meetings start pre-titled"
+              className="self-start rounded-lg bg-sesame px-2.5 py-1 text-xs text-ink-soft transition hover:bg-olive/20 hover:text-olive-deep disabled:opacity-60"
+            >
+              🪼 today's meetings
+            </button>
+          )}
+          {schedule && (
+            <div className="flex flex-col gap-1 rounded-2xl bg-white p-3">
+              <div className="flex items-center gap-2">
+                <h2 className="text-xs font-semibold uppercase tracking-wide text-olive-deep">
+                  today · from jello
+                </h2>
+                <button
+                  onClick={fetchToday}
+                  disabled={!!busy}
+                  className="ml-auto rounded-lg px-2 py-1 text-xs text-ink-soft hover:text-olive-deep disabled:opacity-60"
+                >
+                  refresh
+                </button>
+              </div>
+              {schedule.error && (
+                <p className="px-1 py-1 text-xs text-ink-soft">
+                  🫧 calendar unreachable: {schedule.error}
+                </p>
+              )}
+              {!schedule.error && schedule.events.length === 0 && (
+                <p className="px-1 py-1 text-sm text-ink-soft">
+                  رزنامتك فاضية اليوم 🌿
+                </p>
+              )}
+              {schedule.events.map((ev, i) => {
+                const nowMin =
+                  new Date().getHours() * 60 + new Date().getMinutes();
+                const s = hhmmToMin(ev.start);
+                const e = hhmmToMin(ev.end);
+                const live =
+                  !isNaN(s) && nowMin >= s - 10 && (isNaN(e) || nowMin <= e);
+                return (
+                  <button
+                    key={i}
+                    onClick={() => {
+                      setTitle(ev.title);
+                      setPerson(ev.attendees[0] ?? "");
+                    }}
+                    title="pre-fill this meeting"
+                    className={`flex items-center gap-2.5 rounded-lg px-2 py-1.5 text-left transition hover:bg-cream ${
+                      live ? "bg-olive/10" : ""
+                    }`}
+                  >
+                    <span className="shrink-0 text-[11px] tabular-nums text-ink-soft">
+                      {ev.start}
+                    </span>
+                    <span
+                      dir="auto"
+                      className="arabic min-w-0 flex-1 truncate text-start text-sm text-ink"
+                    >
+                      {ev.title}
+                    </span>
+                    {ev.attendees.length > 0 && (
+                      <span className="shrink-0 rounded bg-sesame px-1.5 py-0.5 text-[10px] text-ink-soft">
+                        {ev.attendees[0]}
+                      </span>
+                    )}
+                    {live && (
+                      <span className="shrink-0 rounded-full bg-olive/15 px-2 py-0.5 text-[10px] font-medium text-olive-deep">
+                        now — record?
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          )}
         </section>
       )}
 
