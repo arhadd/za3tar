@@ -56,6 +56,15 @@ Early build. Milestones:
   icon. Echo cancellation on the mic (AEC) so speakers don't bleed into the
   "me" track; capture runs one helper per track.
 
+- **M10 — the connected bridge** ✅ the Jello link is a protocol, not prose
+  (`docs/JELLO-PROTOCOL.md`): meeting packets go over as versioned JSON and
+  come back as a structured ack ("2 on calendar · 3 follow-ups tracked");
+  **today's meetings** load from the agent's calendar so recordings start
+  pre-titled with the person tagged ("now — record?"); the follow-ups view
+  **syncs real-world status back** (nudged / replied / done — jello's side of
+  the story), auto-completing what the agent confirmed done. Server side: a
+  deterministic router + skill on web0-core, verified end-to-end.
+
 ## Stack
 
 - **Shell**: Tauri v2 (Rust core, React/TS/Vite/Tailwind UI)
