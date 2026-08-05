@@ -56,14 +56,24 @@ Early build. Milestones:
   icon. Echo cancellation on the mic (AEC) so speakers don't bleed into the
   "me" track; capture runs one helper per track.
 
-- **M10 — the connected bridge** ✅ the Jello link is a protocol, not prose
-  (`docs/JELLO-PROTOCOL.md`): meeting packets go over as versioned JSON and
+- **M10 — the connected bridge** ✅ the agent link is a protocol, not prose
+  (`docs/AGENT-PROTOCOL.md`): meeting packets go over as versioned JSON and
   come back as a structured ack ("2 on calendar · 3 follow-ups tracked");
   **today's meetings** load from the agent's calendar so recordings start
   pre-titled with the person tagged ("now — record?"); the follow-ups view
-  **syncs real-world status back** (nudged / replied / done — jello's side of
-  the story), auto-completing what the agent confirmed done. Server side: a
-  deterministic router + skill on web0-core, verified end-to-end.
+  **syncs real-world status back** (nudged / replied / done — the agent's side
+  of the story), auto-completing what the agent confirmed done. Verified
+  end-to-end against a live Hermes agent.
+
+## Connect your agent 🪼
+
+za3tar works fully standalone, but the ladder's top rung is handing the
+meeting to **your always-on agent** — calendar, follow-up tracking, real-world
+nudges. In ⚙ settings, set an **agent name** and an **agent command**: any
+command that takes the message as its final argument and prints the agent's
+reply (an ssh one-shot, a `curl`, a script). Wire your agent to answer the
+`ZA3TAR_*` envelopes in [docs/AGENT-PROTOCOL.md](docs/AGENT-PROTOCOL.md) and
+the bridge buttons light up. No agent configured → the app simply hides them.
 
 ## Stack
 
@@ -88,4 +98,4 @@ npm run dev            # frontend only, in a browser
 
 ## License
 
-Private / unreleased.
+[Apache-2.0](LICENSE).

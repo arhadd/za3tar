@@ -51,23 +51,25 @@ type Settings = {
   elevenlabs_api_key: string;
   anthropic_api_key: string;
   user_name: string;
+  agent_name: string;
+  agent_command: string;
 };
-// jello bridge envelopes — docs/JELLO-PROTOCOL.md
-type JelloAck = {
+// agent bridge envelopes — docs/AGENT-PROTOCOL.md
+type AgentAck = {
   ok: boolean;
   events_created: { action_id: string; title: string; when: string }[];
   followups_tracked: string[];
   person: string;
   warnings: string[];
 };
-type JelloEvent = {
+type AgentEvent = {
   start: string;
   end: string;
   title: string;
   attendees: string[];
 };
-type JelloSchedule = { date: string; events: JelloEvent[]; error?: string };
-type JelloFollowupStatus = {
+type AgentSchedule = { date: string; events: AgentEvent[]; error?: string };
+type AgentFollowupStatus = {
   id: string;
   status: string;
   note: string;
@@ -80,7 +82,7 @@ function parseEnvelope<T>(reply: string, header: string): T {
   const start = reply.indexOf("{", at >= 0 ? at + header.length : 0);
   const end = reply.lastIndexOf("}");
   if (start < 0 || end <= start)
-    throw new Error(`no ${header} in jello's reply`);
+    throw new Error(`no ${header} in the agent's reply`);
   return JSON.parse(reply.slice(start, end + 1)) as T;
 }
 
@@ -131,10 +133,13 @@ function App() {
   const [personEdit, setPersonEdit] = useState<PersonRow | null>(null);
   const [showSettings, setShowSettings] = useState(false);
   const [settingsForm, setSettingsForm] = useState<Settings | null>(null);
-  const [schedule, setSchedule] = useState<JelloSchedule | null>(null);
-  const [jelloStatus, setJelloStatus] = useState<
-    Record<string, JelloFollowupStatus>
+  const [schedule, setSchedule] = useState<AgentSchedule | null>(null);
+  const [agentStatus, setAgentStatus] = useState<
+    Record<string, AgentFollowupStatus>
   >({});
+  // the bridge: your always-on agent, if you've connected one (⚙ settings)
+  const [agentAvailable, setAgentAvailable] = useState(false);
+  const [agentName, setAgentName] = useState("your agent");
   const timer = useRef<number | null>(null);
 
   // whether anyone besides the user was heard (them / them2 / …)
@@ -173,8 +178,19 @@ function App() {
   /** wa.me wants bare international digits */
   const waDigits = (phone: string) => phone.replace(/[^\d]/g, "");
 
+  async function refreshAgent() {
+    try {
+      setAgentAvailable(await invoke<boolean>("agent_available"));
+      const s = await invoke<Settings>("get_settings");
+      if (s.agent_name.trim()) setAgentName(s.agent_name.trim());
+    } catch {
+      /* bridge is best-effort */
+    }
+  }
+
   useEffect(() => {
     refreshLibrary();
+    refreshAgent();
     const un = listen<any>("capture-event", (e) => {
       const p = e.payload;
       if (p?.event === "level")
@@ -414,14 +430,14 @@ function App() {
   }
 
   /** one round-trip over the bridge; null on transport failure */
-  async function jelloExchange(
+  async function agentExchange(
     message: string,
     busyMsg: string,
   ): Promise<string | null> {
     setBusy(busyMsg);
     setError(null);
     try {
-      return await invoke<string>("send_to_jello", { message });
+      return await invoke<string>("send_to_agent", { message });
     } catch (e) {
       setError(String(e));
       return null;
@@ -430,9 +446,9 @@ function App() {
     }
   }
 
-  /** hand a message to jello and surface its reply */
-  async function jelloSend(message: string) {
-    const reply = await jelloExchange(message, "sending to jello…");
+  /** hand a message to the agent and surface its reply */
+  async function agentSend(message: string) {
+    const reply = await agentExchange(message, `sending to ${agentName}…`);
     if (reply != null)
       showFlash(
         `🪼 ${reply.slice(0, 140)}${reply.length > 140 ? "…" : ""}`,
@@ -440,9 +456,9 @@ function App() {
       );
   }
 
-  /** the whole meeting → jello as a ZA3TAR_PACKET: calendar (tyme) +
+  /** the whole meeting → the agent as a ZA3TAR_PACKET: calendar +
       follow-up tracking, acknowledged structurally */
-  async function sendPacketToJello() {
+  async function sendPacketToAgent() {
     if (!actions || !dir) return;
     const contact = person.trim() ? contactOf(person.trim()) : undefined;
     const created = library.find((s) => s.dir === dir)?.created;
@@ -466,13 +482,13 @@ function App() {
       questions: actions.questions,
       notes_md: notes ?? "",
     };
-    const reply = await jelloExchange(
+    const reply = await agentExchange(
       `ZA3TAR_PACKET v1\n${JSON.stringify(packet)}`,
-      "sending the meeting to jello…",
+      `sending the meeting to ${agentName}…`,
     );
     if (reply == null) return;
     try {
-      const ack = parseEnvelope<JelloAck>(reply, "ZA3TAR_ACK");
+      const ack = parseEnvelope<AgentAck>(reply, "ZA3TAR_ACK");
       const bits = [
         `📅 ${ack.events_created.length} on calendar`,
         `📌 ${ack.followups_tracked.length} follow-ups tracked`,
@@ -480,7 +496,7 @@ function App() {
       if (ack.warnings.length) bits.push(`⚠ ${ack.warnings[0]}`);
       showFlash(`🪼 ${bits.join(" · ")}`, 6000);
     } catch {
-      // free-form reply (older jello) — show what came back
+      // free-form reply (agent without the envelope skill) — show what came back
       showFlash(
         `🪼 ${reply.slice(0, 140)}${reply.length > 140 ? "…" : ""}`,
         5000,
@@ -488,39 +504,39 @@ function App() {
     }
   }
 
-  /** ask jello for today's calendar so meetings start pre-titled */
+  /** ask the agent for today's calendar so meetings start pre-titled */
   async function fetchToday() {
-    const reply = await jelloExchange(
+    const reply = await agentExchange(
       `ZA3TAR_QUERY v1\n{"type":"today"}`,
-      "asking jello about today…",
+      `asking ${agentName} about today…`,
     );
     if (reply == null) return;
     try {
-      setSchedule(parseEnvelope<JelloSchedule>(reply, "ZA3TAR_SCHEDULE"));
+      setSchedule(parseEnvelope<AgentSchedule>(reply, "ZA3TAR_SCHEDULE"));
     } catch {
-      setError("jello's schedule reply wasn't parseable");
+      setError("the agent's schedule reply wasn't parseable");
     }
   }
 
-  /** pull real-world follow-up statuses (nudged/replied/done) back from jello */
+  /** pull real-world follow-up statuses (nudged/replied/done) back from the agent */
   async function syncFollowups() {
     const snapshot = [...openActions];
     const ids = snapshot.map((oa) => bridgeId(oa.dir, oa.action.id));
     if (!ids.length) return;
-    const reply = await jelloExchange(
+    const reply = await agentExchange(
       `ZA3TAR_QUERY v1\n${JSON.stringify({ type: "followups", ids })}`,
-      "syncing follow-ups with jello…",
+      `syncing follow-ups with ${agentName}…`,
     );
     if (reply == null) return;
     try {
-      const st = parseEnvelope<{ followups: JelloFollowupStatus[] }>(
+      const st = parseEnvelope<{ followups: AgentFollowupStatus[] }>(
         reply,
         "ZA3TAR_STATUS",
       );
-      const map: Record<string, JelloFollowupStatus> = {};
+      const map: Record<string, AgentFollowupStatus> = {};
       for (const f of st.followups) map[f.id] = f;
-      setJelloStatus(map);
-      // jello confirmed some complete → the app agrees
+      setAgentStatus(map);
+      // the agent confirmed some complete → the app agrees
       let done = 0;
       for (const oa of snapshot) {
         if (map[bridgeId(oa.dir, oa.action.id)]?.status === "done") {
@@ -529,16 +545,16 @@ function App() {
         }
       }
       showFlash(
-        `🪼 synced ${st.followups.length} from jello${done ? ` · ${done} completed` : ""}`,
+        `🪼 synced ${st.followups.length} from ${agentName}${done ? ` · ${done} completed` : ""}`,
         4000,
       );
     } catch {
-      setError("jello's status reply wasn't parseable");
+      setError("the agent's status reply wasn't parseable");
     }
   }
 
-  /** jello delivers the draft to the person over WhatsApp */
-  async function sendDraftViaJello() {
+  /** the agent delivers the draft to the person over WhatsApp */
+  async function sendDraftViaAgent() {
     if (!draft) return;
     const contact = draft.target ? contactOf(draft.target) : undefined;
     const who = draft.target || "the other participant";
@@ -547,7 +563,7 @@ function App() {
       : contact?.email
         ? ` (email ${contact.email})`
         : " (find them in my contacts)";
-    await jelloSend(
+    await agentSend(
       `[za3tar] please send this message to ${who}${via} and confirm once delivered:\n\n${draft.body}`,
     );
   }
@@ -692,6 +708,7 @@ function App() {
       await invoke("save_settings", { settings: settingsForm });
       setShowSettings(false);
       showFlash("settings saved ✓");
+      refreshAgent();
     } catch (e) {
       setError(String(e));
     }
@@ -911,11 +928,11 @@ function App() {
             <h2 className="text-xs font-semibold uppercase tracking-wide text-olive-deep">
               open follow-ups · across all meetings
             </h2>
-            {openActions.length > 0 && (
+            {agentAvailable && openActions.length > 0 && (
               <button
                 onClick={syncFollowups}
                 disabled={!!busy}
-                title="pull nudged/replied/done statuses back from jello"
+                title={`pull nudged/replied/done statuses back from ${agentName}`}
                 className="ml-auto rounded-lg bg-sesame px-2 py-1 text-[11px] font-medium text-ink hover:bg-olive/20 disabled:opacity-60"
               >
                 🪼 sync
@@ -961,7 +978,7 @@ function App() {
                 </div>
                 <div className="flex shrink-0 items-center gap-1.5">
                   {(() => {
-                    const js = jelloStatus[bridgeId(oa.dir, oa.action.id)];
+                    const js = agentStatus[bridgeId(oa.dir, oa.action.id)];
                     return js && js.status !== "open" ? (
                       <span
                         title={js.note || js.status}
@@ -1005,11 +1022,11 @@ function App() {
 
       {phase === "idle" && !viewingPast && (
         <section className="flex flex-col gap-1.5">
-          {!schedule && (
+          {agentAvailable && !schedule && (
             <button
               onClick={fetchToday}
               disabled={!!busy}
-              title="jello reads your calendar (tyme) so meetings start pre-titled"
+              title={`${agentName} reads your calendar so meetings start pre-titled`}
               className="self-start rounded-lg bg-sesame px-2.5 py-1 text-xs text-ink-soft transition hover:bg-olive/20 hover:text-olive-deep disabled:opacity-60"
             >
               🪼 today's meetings
@@ -1019,7 +1036,7 @@ function App() {
             <div className="flex flex-col gap-1 rounded-2xl bg-white p-3">
               <div className="flex items-center gap-2">
                 <h2 className="text-xs font-semibold uppercase tracking-wide text-olive-deep">
-                  today · from jello
+                  today · from {agentName}
                 </h2>
                 <button
                   onClick={fetchToday}
@@ -1440,14 +1457,16 @@ function App() {
             >
               📅 add to Calendar
             </button>
-            <button
-              onClick={sendPacketToJello}
-              disabled={!!busy}
-              title="jello puts dated items on your calendar and tracks the follow-ups"
-              className="rounded-xl bg-olive px-3.5 py-2 text-sm font-semibold text-white hover:bg-olive-deep disabled:opacity-60"
-            >
-              🪼 send to Jello
-            </button>
+            {agentAvailable && (
+              <button
+                onClick={sendPacketToAgent}
+                disabled={!!busy}
+                title={`${agentName} puts dated items on your calendar and tracks the follow-ups`}
+                className="rounded-xl bg-olive px-3.5 py-2 text-sm font-semibold text-white hover:bg-olive-deep disabled:opacity-60"
+              >
+                🪼 send to {agentName}
+              </button>
+            )}
             <button
               onClick={copyPacket}
               className="rounded-xl bg-sesame px-3.5 py-2 text-sm font-semibold text-ink hover:bg-olive/20"
@@ -1509,14 +1528,16 @@ function App() {
             >
               copy
             </button>
-            <button
-              onClick={sendDraftViaJello}
-              disabled={!!busy}
-              title="jello sends it to them on WhatsApp and confirms"
-              className="rounded-xl bg-sesame px-3.5 py-2 text-sm font-semibold text-ink hover:bg-olive/20 disabled:opacity-60"
-            >
-              🪼 have Jello send it
-            </button>
+            {agentAvailable && (
+              <button
+                onClick={sendDraftViaAgent}
+                disabled={!!busy}
+                title={`${agentName} sends it to them on WhatsApp and confirms`}
+                className="rounded-xl bg-sesame px-3.5 py-2 text-sm font-semibold text-ink hover:bg-olive/20 disabled:opacity-60"
+              >
+                🪼 have {agentName} send it
+              </button>
+            )}
           </div>
         </section>
       )}
@@ -1576,6 +1597,42 @@ function App() {
               className="rounded-lg border border-sesame px-3 py-2 text-sm text-ink outline-none focus:border-olive"
             />
           </label>
+          <div className="mt-1 flex flex-col gap-3 border-t border-sesame pt-3">
+            <p className="text-[11px] text-ink-soft">
+              🪼 agent bridge (optional) — connect your always-on agent and
+              za3tar can put items on your calendar, deliver follow-ups, and
+              sync their status. See docs/AGENT-PROTOCOL.md.
+            </p>
+            <label className="flex flex-col gap-1 text-xs text-ink-soft">
+              agent name (what to call it in the app)
+              <input
+                value={settingsForm.agent_name}
+                onChange={(e) =>
+                  setSettingsForm({
+                    ...settingsForm,
+                    agent_name: e.target.value,
+                  })
+                }
+                placeholder="e.g. Jello"
+                className="rounded-lg border border-sesame px-3 py-2 text-sm text-ink outline-none focus:border-olive"
+              />
+            </label>
+            <label className="flex flex-col gap-1 text-xs text-ink-soft">
+              agent command — gets the message as its final argument, prints
+              the reply
+              <input
+                value={settingsForm.agent_command}
+                onChange={(e) =>
+                  setSettingsForm({
+                    ...settingsForm,
+                    agent_command: e.target.value,
+                  })
+                }
+                placeholder="e.g. ~/bin/hx -p jello -z"
+                className="rounded-lg border border-sesame px-3 py-2 font-mono text-sm text-ink outline-none focus:border-olive"
+              />
+            </label>
+          </div>
           <button
             onClick={saveSettings}
             className="self-start rounded-xl bg-olive px-4 py-2 text-sm font-semibold text-white hover:bg-olive-deep"

@@ -24,10 +24,10 @@ grant **System Audio Recording** (za3tar appears under its own name).
    - **💬 whatsapp follow-up** — a draft in *their* dialect mix; edit a word,
      hit send — it opens **in their chat** (people directory has their
      number). The wow moment.
-   - **🪼 send to Jello** — the meeting packet goes to your agent: dated
+   - **🪼 send to [your agent]** — the meeting packet goes to your agent: dated
      items onto the calendar (tyme), follow-ups tracked, nudges when due.
      "My agent now owns the follow-through" is the org pitch in one click.
-   - **🪼 have Jello send it** — on any draft: the agent delivers it on
+   - **🪼 have [your agent] send it** — on any draft: the agent delivers it on
      WhatsApp and confirms.
 5. **Show the memory** — tap **people**: everyone you've met, meetings per
    person, what's still open with each. Tap **follow-ups**: every open
@@ -46,7 +46,8 @@ grant **System Audio Recording** (za3tar appears under its own name).
   notes and actions still work.
 - **No actions extracted?** No commitments were made — it never invents
   tasks. Re-record with a real "I'll send you X by Y".
-- **Jello buttons error?** The bridge needs `~/bin/hx` and VPS reachability;
-  everything else works offline-from-Jello (drafts, wa.me, .ics).
+- **Agent buttons error?** The bridge needs your agent command (⚙ settings)
+  and its transport reachable; everything else works agent-offline (drafts,
+  wa.me, .ics).
 - **Auto-steps stalled?** An API call failed — the equivalent button retries
   that step.

@@ -20,12 +20,24 @@ pub struct Settings {
     pub anthropic_api_key: String,
     #[serde(default)]
     pub user_name: String,
+    #[serde(default)]
+    pub agent_name: String,
+    #[serde(default)]
+    pub agent_command: String,
 }
 
-const VARS: [(&str, fn(&Settings) -> &str); 3] = [
-    ("ELEVENLABS_API_KEY", |s| &s.elevenlabs_api_key),
-    ("ANTHROPIC_API_KEY", |s| &s.anthropic_api_key),
-    ("ZA3TAR_USER", |s| &s.user_name),
+const VARS: [(&str, fn(&Settings) -> &str, fn(&mut Settings) -> &mut String); 5] = [
+    ("ELEVENLABS_API_KEY", |s| &s.elevenlabs_api_key, |s| {
+        &mut s.elevenlabs_api_key
+    }),
+    ("ANTHROPIC_API_KEY", |s| &s.anthropic_api_key, |s| {
+        &mut s.anthropic_api_key
+    }),
+    ("ZA3TAR_USER", |s| &s.user_name, |s| &mut s.user_name),
+    ("ZA3TAR_AGENT_NAME", |s| &s.agent_name, |s| &mut s.agent_name),
+    ("ZA3TAR_AGENT_CMD", |s| &s.agent_command, |s| {
+        &mut s.agent_command
+    }),
 ];
 
 fn settings_path(app: &AppHandle) -> Result<PathBuf, String> {
@@ -45,7 +57,7 @@ fn read(app: &AppHandle) -> Settings {
 }
 
 fn apply(settings: &Settings, only_missing: bool) {
-    for (var, get) in VARS {
+    for (var, get, _) in VARS {
         let val = get(settings).trim();
         if val.is_empty() {
             continue;
@@ -68,19 +80,11 @@ pub fn apply_at_startup(app: &AppHandle) {
 #[tauri::command]
 pub fn get_settings(app: AppHandle) -> Settings {
     let mut s = read(&app);
-    for (var, _) in VARS {
-        let empty = match var {
-            "ELEVENLABS_API_KEY" => s.elevenlabs_api_key.is_empty(),
-            "ANTHROPIC_API_KEY" => s.anthropic_api_key.is_empty(),
-            _ => s.user_name.is_empty(),
-        };
-        if empty {
+    for (var, _, get_mut) in VARS {
+        let slot = get_mut(&mut s);
+        if slot.is_empty() {
             if let Ok(v) = std::env::var(var) {
-                match var {
-                    "ELEVENLABS_API_KEY" => s.elevenlabs_api_key = v,
-                    "ANTHROPIC_API_KEY" => s.anthropic_api_key = v,
-                    _ => s.user_name = v,
-                }
+                *slot = v;
             }
         }
     }
