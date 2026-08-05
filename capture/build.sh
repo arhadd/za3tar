@@ -7,6 +7,7 @@ set -euo pipefail
 cd "$(dirname "$0")"
 
 OUT="${1:-za3tar-capture}"
+case "$OUT" in */*) mkdir -p "$(dirname "$OUT")";; esac
 PLIST="Info.plist"
 ENTITLEMENTS="capture.entitlements"
 
