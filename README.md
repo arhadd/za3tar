@@ -1,101 +1,154 @@
 # za3tar 🌿
 
-**from meeting to done, بالعربيزي** — a Mac meeting notetaker that actually
-understands how people in the region talk, and acts on what was agreed.
+**The meeting is not done when the notes arrive.**
 
-Records your meetings without a bot (system audio + mic, captured locally),
-transcribes dialectal Arabic with Arabic/English code-switching, writes clean
-AI notes that mirror how the meeting actually sounded — Arabic in Arabic
-script, English tech terms and names left in Latin — then pulls out the
-**decisions, action items (with owners and real dates), and open questions**,
-and drafts the follow-up: a WhatsApp message or recap email in the meeting's
-own language mix, action items straight onto your Calendar. Nothing sends
-without your click.
+za3tar is a local-first Mac app for Arabic and English meetings. It records without putting a bot in the call, understands dialectal Arabic and natural Arabic/English code-switching, turns the conversation into decisions and owned actions, and hands the follow-through to you or your agent.
 
-Granola has the form factor but no Arabic. The Arabic tools are bots in your
-calls. za3tar is the pairing: no-bot native Mac app × dialectal Arabic — and
-the ladder past notes: **capture → synthesize → execute**.
+> **record → understand → follow through**
 
-Works for calls (mic = you, system audio = them) *and* in-person meetings
-(one mic track, diarized into voices, attributed by the names people actually
-say). Set `ZA3TAR_USER` in `.env` so the models know who "me" is.
+Most meeting tools stop at a transcript or summary. za3tar keeps going: draft the WhatsApp recap in the meeting's own language mix, add dated actions to Calendar, track open commitments across meetings, and optionally hand the whole packet to an always-on agent.
 
-## Status
+## Why za3tar
 
-Early build. Milestones:
+- **Built for how the region actually speaks.** Arabic stays in Arabic script; English names and technical terms stay natural instead of being awkwardly translated or transliterated.
+- **No meeting bot.** A native Mac app captures your mic and system audio locally, so no extra participant joins the call.
+- **Outcomes, not just notes.** Every meeting becomes decisions, action items with owners and dates, and open questions.
+- **Follow-through in context.** Draft WhatsApp and email follow-ups, export actions to Calendar, see what is overdue, and nudge the right person.
+- **Agent-ready, not agent-locked.** Connect any assistant that can speak za3tar's open, versioned protocol—or use the app fully standalone.
+- **Local by default.** Meetings, transcripts, and audio stay in local SQLite and files. There are no accounts, cloud sync, or telemetry. Only the APIs and agent command you configure receive data.
 
-- **M0 — scaffold** ✅ Tauri v2 + React + TS + Tailwind
-- **M1 — capture** 🚧 system-audio tap + mic → two 16 kHz WAVs (no bot). Mic
-  proven; system tap streams and writes, pending a one-time macOS permission
-  grant (see [capture/README.md](capture/README.md))
-- **M2 — ASR** ✅ ElevenLabs Scribe v2 transcribes both tracks (me/them),
-  merged by timestamp. Behind one adapter so a second engine drops in later.
-- **M3 — notes** ✅ Claude turns the transcript into structured markdown with
-  the code-switching contract (Arabic script + Latin for English terms)
-- **M4 — the app** ✅ record → auto-transcribe → notes → copy-as-markdown, with
-  a live rough-notes box, a **past-meetings library** (reopen/retranscribe/
-  rename any recording), and in-app guidance to the system-audio grant.
-  Verified end-to-end against the live APIs.
-- **M5 — dogfood** 🚧 real meetings work today (mic-only until the M1 grant).
-  Fixes from the first dogfood pass: WAVs are now header-finalized on stop (were
-  saving as 0-length despite holding audio); notes no longer truncate on long
-  meetings; two tracks transcribe in parallel. Still pending: the M1 system-audio
-  grant for the "them" track, and a Developer-ID-signed build.
-- **M6 — actions** ✅ the rung past notes. Stop → transcript → notes →
-  **decisions / action items (owners + resolved dates) / open questions**, all
-  automatic. Each meeting can then execute: WhatsApp follow-up + recap email
-  drafted in the meeting's own language mix (editable; opens in
-  WhatsApp/Mail — nothing sends itself), `.ics` export to Calendar, per-item
-  done tracking, copy-as-markdown packet. In-person meetings are diarized
-  (`voice1`/`voice2`) and attributed via the names people say + `ZA3TAR_USER`.
-  Verified against the live APIs (`cargo test --test live -- --ignored`).
-- **M7 — follow-through** ✅ open action items aggregated **across all
-  meetings** (overdue flags, owner chips, jump-to-meeting) with one-tap
-  WhatsApp nudges in the meeting's own language. In-app **Settings** (API keys
-  + your name — no `.env` needed, installable by non-developers). Real app
-  icon. Echo cancellation on the mic (AEC) so speakers don't bleed into the
-  "me" track; capture runs one helper per track.
+## What it does
 
-- **M10 — the connected bridge** ✅ the agent link is a protocol, not prose
-  (`docs/AGENT-PROTOCOL.md`): meeting packets go over as versioned JSON and
-  come back as a structured ack ("2 on calendar · 3 follow-ups tracked");
-  **today's meetings** load from the agent's calendar so recordings start
-  pre-titled with the person tagged ("now — record?"); the follow-ups view
-  **syncs real-world status back** (nudged / replied / done — the agent's side
-  of the story), auto-completing what the agent confirmed done. Verified
-  end-to-end against a live Hermes agent.
+### 1. Capture the conversation
 
-## Connect your agent 🪼
+za3tar records calls as separate **me / them** tracks using the microphone and macOS system-audio capture. In-person meetings use one echo-cancelled mic track and speaker diarization.
 
-za3tar works fully standalone, but the ladder's top rung is handing the
-meeting to **your always-on agent** — calendar, follow-up tracking, real-world
-nudges. In ⚙ settings, set an **agent name** and an **agent command**: any
-command that takes the message as its final argument and prints the agent's
-reply (an ssh one-shot, a `curl`, a script). Wire your agent to answer the
-`ZA3TAR_*` envelopes in [docs/AGENT-PROTOCOL.md](docs/AGENT-PROTOCOL.md) and
-the bridge buttons light up. No agent configured → the app simply hides them.
+### 2. Understand the way you spoke
+
+ElevenLabs Scribe transcribes the recording. Claude turns it into structured notes while preserving dialect, Arabic/English code-switching, names, and technical vocabulary.
+
+### 3. Extract what came out of it
+
+za3tar identifies:
+
+- decisions
+- action items, owners, and resolved dates
+- open questions
+
+It does not invent commitments when none were made.
+
+### 4. Move the work forward
+
+From the meeting, you can:
+
+- draft an editable WhatsApp follow-up or recap email in the same language mix
+- open the draft in WhatsApp or Mail—nothing sends without your action
+- export dated actions to Calendar
+- mark items done and review open follow-ups across every meeting
+- build a lightweight people view: meetings, contact details, and what is still open with each person
+
+### 5. Hand it to your agent (optional)
+
+Connect any always-on agent through a command-line bridge. za3tar sends a versioned meeting packet; the agent can create calendar events, track follow-ups, send nudges through its own tools, and sync real-world status back into the app.
+
+The bridge is transport-agnostic and documented in [`docs/AGENT-PROTOCOL.md`](docs/AGENT-PROTOCOL.md). With no agent configured, agent-only controls stay hidden and the rest of za3tar works normally.
+
+## The product loop
+
+```text
+meeting
+  ↓
+local no-bot capture
+  ↓
+dialect-aware transcript + structured notes
+  ↓
+decisions · owners · dates · open questions
+  ↓
+WhatsApp / email · Calendar · follow-up tracker
+  ↓ optional
+any connected agent
+```
+
+## Current status
+
+za3tar is an **early macOS build** for testing and contribution, not a finished consumer release.
+
+Working today:
+
+- native Tauri app with local mic and system-audio capture
+- separate call tracks plus in-person diarization
+- Arabic/English transcription and structured AI notes
+- decisions, actions, owners, dates, and open questions
+- editable WhatsApp/email drafts and `.ics` Calendar export
+- meeting library, people view, and cross-meeting follow-up tracking
+- in-app API-key, identity, and agent settings
+- open agent bridge with schedule and follow-up status sync
+
+Still being hardened:
+
+- macOS permission and first-run experience across fresh machines
+- signing, packaging, and distribution
+- broader dialect, device, and long-meeting testing
+
+See [`DEMO.md`](DEMO.md) for the three-minute product walkthrough.
+
+## Privacy and data flow
+
+Audio, transcripts, notes, contacts, and follow-up state are stored locally on your Mac. za3tar has no account system, telemetry, or built-in cloud sync.
+
+Configured services receive only what their step requires:
+
+- **ElevenLabs** receives audio for transcription.
+- **Anthropic** receives transcript text for notes and action extraction.
+- **Your agent command**, if enabled and explicitly used, receives the structured meeting packet described in the protocol.
+
+## Develop locally
+
+### Prerequisites
+
+- macOS
+- Node.js and npm
+- Rust via [rustup](https://rustup.rs/)
+- Xcode Command Line Tools
+- ElevenLabs and Anthropic API keys for the live pipeline
+
+### Run
+
+```bash
+git clone https://github.com/arhadd/za3tar.git
+cd za3tar
+npm install
+npm run app
+```
+
+You can enter API keys and your name in **Settings**. For local development, `.env` remains available as a fallback:
+
+```bash
+cp .env.example .env
+npm run tauri dev
+```
+
+Frontend only:
+
+```bash
+npm run dev
+```
 
 ## Stack
 
-- **Shell**: Tauri v2 (Rust core, React/TS/Vite/Tailwind UI)
-- **Capture**: Core Audio process taps (audio-only permission — no
-  screen-recording prompt), mic + system audio as separate tracks
-- **ASR**: API-first, pluggable behind one adapter
-- **Notes**: Claude API
-- **Storage**: local SQLite + audio files on disk. No accounts, no cloud sync,
-  no telemetry.
+- **Desktop shell:** Tauri v2, Rust, React, TypeScript, Vite, Tailwind CSS
+- **Capture:** Core Audio process taps; mic and system audio as separate tracks
+- **Transcription:** ElevenLabs Scribe v2 behind a pluggable ASR adapter
+- **Notes and actions:** Anthropic Claude API
+- **Storage:** local SQLite and audio files
+- **Agent integration:** command-line transport with versioned JSON envelopes
 
-## Develop
+## Contributing
 
-Prereqs: Node, Rust (via rustup), Xcode Command Line Tools.
+Contributions are welcome—especially dialect coverage, transcription and attribution fixes, ASR adapters, agent bridges, and reproducible capture bugs. Start with [`CONTRIBUTING.md`](CONTRIBUTING.md).
 
-```bash
-npm install
-cp .env.example .env   # add API keys as adapters land
-npm run tauri dev      # runs the app
-npm run dev            # frontend only, in a browser
-```
+Never attach real meeting audio or transcripts to a public issue.
 
 ## License
 
-[Apache-2.0](LICENSE).
+[Apache-2.0](LICENSE)
