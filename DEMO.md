@@ -10,6 +10,8 @@ The product is the loop: **record → understand → follow through**.
 
 za3tar runs as a native Mac app. Add your API keys and name in **Settings**. On first use, allow microphone access; for calls, also grant **System Audio Recording**.
 
+Use a synthetic demo conversation or get everyone’s permission before recording. Never demo with a real private meeting.
+
 For the full connected demo, add an agent name and command in Settings. The standalone meeting, notes, drafts, Calendar export, people, and follow-up features work without an agent.
 
 ## Demo flow
@@ -25,7 +27,7 @@ For the full connected demo, add an agent name and command in Settings. The stan
 
 4. **Show the memory.** Open **People** to see meetings and outstanding items by person, then **Follow-ups** to show overdue commitments and contextual nudges.
 
-5. **Optional: hand it to an agent.** Send the structured meeting packet to the connected agent. Show the acknowledgement—calendar events created, follow-ups tracked, and any warnings—then sync follow-up status back into the app.
+5. **Optional: hand it to a compatible agent.** Send the structured meeting packet to the connected agent. If that agent implements calendar and follow-up actions, show its acknowledgement and sync status back into the app. These outcomes come from the configured agent, not from the bridge protocol alone.
 
 ## The close
 

@@ -51,9 +51,9 @@ Reset the grant while testing: `tccutil reset SystemAudioCaptureRequests`.
 Emits one JSON event per line: `track_started`, `level` (with peak + callback
 counts), `permission_hint`, `track_stopped` (with frame totals), `stopped`.
 
-## Status (M1)
+## Current support
 
-- ✅ Mic capture → WAV: proven working end-to-end.
-- ✅ System tap: creates, clocks, and writes correctly; **streams silence until
-  the System Audio Recording permission is granted** (see above). Verified via
-  callback counts and frame totals; audible content pending the one-time grant.
+- Mic capture is available after the normal microphone permission grant.
+- Call-side system audio requires macOS 14.4+ and a one-time **System Audio
+  Recording** grant. Without it, the app detects silence and points to the
+  permission setting above.

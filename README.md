@@ -2,7 +2,7 @@
 
 **The meeting is not done when the notes arrive.**
 
-za3tar is a local-first Mac app for Arabic and English meetings. It records without putting a bot in the call, understands dialectal Arabic and natural Arabic/English code-switching, turns the conversation into decisions and owned actions, and hands the follow-through to you or your agent.
+za3tar is a private-by-default Mac meeting workspace for Arabic and English teams. It records without putting a bot in the call, preserves natural Arabic/English code-switching, turns the conversation into decisions and owned actions, and helps you carry the follow-through forward—locally or through an optional compatible agent.
 
 > **record → understand → follow through**
 
@@ -15,13 +15,13 @@ Most meeting tools stop at a transcript or summary. za3tar keeps going: draft th
 - **Outcomes, not just notes.** Every meeting becomes decisions, action items with owners and dates, and open questions.
 - **Follow-through in context.** Draft WhatsApp and email follow-ups, export actions to Calendar, see what is overdue, and nudge the right person.
 - **Agent-ready, not agent-locked.** Connect any assistant that can speak za3tar's open, versioned protocol—or use the app fully standalone.
-- **Local by default.** Meetings, transcripts, and audio stay in local SQLite and files. There are no accounts, cloud sync, or telemetry. Only the APIs and agent command you configure receive data.
+- **Local-first storage, explicit data flow.** za3tar has no account, first-party cloud, or telemetry. App data stays on your Mac; processing sends audio and transcript context to the AI providers you configure, and only an explicit bridge action sends a packet to your agent.
 
 ## What it does
 
 ### 1. Capture the conversation
 
-za3tar records calls as separate **me / them** tracks using the microphone and macOS system-audio capture. In-person meetings use one echo-cancelled mic track and speaker diarization.
+za3tar records calls as separate **me / them** tracks using the microphone and macOS system-audio capture. Call-side audio requires macOS 14.4+ and a one-time System Audio Recording grant. In-person meetings use one echo-cancelled mic track and best-effort speaker diarization.
 
 ### 2. Understand the way you spoke
 
@@ -49,7 +49,7 @@ From the meeting, you can:
 
 ### 5. Hand it to your agent (optional)
 
-Connect any always-on agent through a command-line bridge. za3tar sends a versioned meeting packet; the agent can create calendar events, track follow-ups, send nudges through its own tools, and sync real-world status back into the app.
+Connect a compatible agent through a command-line bridge. za3tar sends a versioned meeting packet; what happens next depends on that agent's tools and policies. It may create calendar events, track follow-ups, deliver messages, and sync real-world status back into the app.
 
 The bridge is transport-agnostic and documented in [`docs/AGENT-PROTOCOL.md`](docs/AGENT-PROTOCOL.md). With no agent configured, agent-only controls stay hidden and the rest of za3tar works normally.
 
@@ -86,15 +86,15 @@ Working today:
 
 Still being hardened:
 
-- macOS permission and first-run experience across fresh machines
+- macOS permission and first-run experience across fresh machines (system audio requires macOS 14.4+)
 - signing, packaging, and distribution
 - broader dialect, device, and long-meeting testing
 
-See [`DEMO.md`](DEMO.md) for the three-minute product walkthrough.
+See [`DEMO.md`](DEMO.md) for the three-minute product walkthrough, [`docs/INSTALL.md`](docs/INSTALL.md) for setup, and [`docs/PRIVACY.md`](docs/PRIVACY.md) for the full data flow.
 
 ## Privacy and data flow
 
-Audio, transcripts, notes, contacts, and follow-up state are stored locally on your Mac. za3tar has no account system, telemetry, or built-in cloud sync.
+Audio, transcripts, notes, contacts, and follow-up state are stored locally on your Mac. za3tar has no account system, first-party cloud, telemetry, or built-in cloud sync. Processing is not offline: the providers you configure receive data as described below.
 
 Configured services receive only what their step requires:
 

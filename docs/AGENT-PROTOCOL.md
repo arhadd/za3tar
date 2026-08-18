@@ -1,10 +1,10 @@
 # za3tar ↔ agent bridge protocol v1
 
-za3tar can hand meetings to **your always-on agent** — whatever assistant you
-already run (a Hermes/OpenClaw profile, a Claude agent, a plain script). The
-agent puts dated action items on your calendar, tracks follow-ups in the real
-world (nudges over WhatsApp, replies, completion), and answers "what's on
-today?" so meetings start pre-titled. The app and the agent exchange
+za3tar can hand meetings to a **compatible agent** — whatever assistant you
+already run (a Hermes/OpenClaw profile, a Claude agent, a plain script).
+This document specifies the exchange, not the receiving agent's capabilities:
+calendar writes, message delivery, follow-up tracking, and reliability are all
+implemented and governed by that agent. The app and the agent exchange
 **versioned envelopes** both directions; what the agent does with a packet is
 its business, but the reply contract is fixed.
 
