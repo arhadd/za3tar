@@ -5,16 +5,17 @@ Arabic/English code-switching this app exists for.
 
 ## Setup
 
-Prereqs: Node, Rust (rustup), Xcode Command Line Tools (macOS only — the
-capture layer is Core Audio).
+Prereqs: Node, Rust (rustup), Xcode Command Line Tools, and macOS 14.4+ (the
+capture layer uses Core Audio process taps).
 
 ```bash
 npm install
 cp .env.example .env   # bring your own ElevenLabs + Anthropic keys
-npm run tauri dev
+npm run app             # builds the native capture helper, then starts Tauri
 ```
 
-`npm run dev` runs the frontend alone in a browser (no capture/IPC).
+`npm run dev` runs the frontend alone in a browser (no capture/IPC). Direct
+`npm run tauri dev` assumes the native capture helper has already been built.
 
 ## What helps most
 
