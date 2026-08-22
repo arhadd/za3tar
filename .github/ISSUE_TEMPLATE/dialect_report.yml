@@ -1,0 +1,47 @@
+name: Dialect or code-switching problem
+description: Transcription or notes come out wrong for your dialect. No audio needed.
+labels: ["dialect"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        This is the most useful kind of issue za3tar can receive, and it needs
+        **no recording at all** — just the words that came out wrong and the
+        words that should have.
+  - type: checkboxes
+    id: privacy
+    attributes:
+      label: Privacy check
+      options:
+        - label: This report contains no real meeting audio, transcript, or notes.
+          required: true
+  - type: input
+    id: dialect
+    attributes:
+      label: Dialect
+      placeholder: Levantine (Jordanian), Gulf (Emirati), Egyptian, Maghrebi…
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What was said, and what za3tar heard
+      description: >
+        Paraphrase freely — invent an equivalent phrase rather than quoting a
+        real meeting. Arabic script, arabeezi, or both.
+      placeholder: |
+        Said:  خلص، منزبطها بكرا
+        Heard: خلص من زبطها بكرة
+    validations:
+      required: true
+  - type: dropdown
+    id: layer
+    attributes:
+      label: Where does it go wrong?
+      options:
+        - Transcript (the words themselves)
+        - Code-switching (Arabic and English in one sentence)
+        - Notes, decisions, or action items
+        - Speaker labelling
+    validations:
+      required: true
