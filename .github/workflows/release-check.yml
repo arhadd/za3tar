@@ -1,0 +1,69 @@
+name: release-check
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    name: release check (macOS)
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      # rustup ships on the macOS runners; adding components beats pulling in a
+      # third-party toolchain action for a project that ships signed binaries.
+      - name: Add Rust components
+        run: rustup component add rustfmt clippy
+
+      - name: Cache cargo
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            src-tauri/target
+          key: cargo-${{ runner.os }}-${{ hashFiles('src-tauri/Cargo.lock') }}
+          restore-keys: cargo-${{ runner.os }}-
+
+      - run: npm ci
+
+      # Versions, split-licence boundary, frontend build, fmt, clippy, Rust
+      # tests, and the native capture helper.
+      - run: npm run release:check
+
+  dco:
+    name: sign-off
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Every commit carries a Signed-off-by line
+        env:
+          BASE: ${{ github.event.pull_request.base.sha }}
+          HEAD: ${{ github.event.pull_request.head.sha }}
+        run: |
+          status=0
+          for commit in $(git rev-list --no-merges "$BASE..$HEAD"); do
+            if ! git log -1 --format='%B' "$commit" |
+                 grep -qiE '^Signed-off-by: .+ <.+@.+>'; then
+              echo "::error::missing Signed-off-by: $(git log -1 --oneline "$commit")"
+              status=1
+            fi
+          done
+          if [ "$status" -ne 0 ]; then
+            echo "Sign off with: git commit -s   (see CONTRIBUTING.md#sign-off-dco)"
+          fi
+          exit "$status"
