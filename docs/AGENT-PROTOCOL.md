@@ -89,9 +89,17 @@ A calendar failure degrades to a warning; the ack still comes back `ok`.
 ```json
 {"type": "today"}
 {"type": "followups", "ids": ["rec-…#a3"]}
+{"type": "capabilities"}
 ```
 
 `followups` without `ids` returns everything not done/dropped.
+
+`capabilities` asks what this agent can actually do, so the app can offer
+those actions and stay quiet about the rest. An agent that does not recognise
+the query should answer with a plain-text error, which the app treats as "no
+declared capabilities" — the same as an agent that is not configured at all.
+Never advertise a capability the agent cannot perform: a button that fails
+silently is worse than a button that was never shown.
 
 ## Agent → app
 
@@ -102,6 +110,34 @@ A calendar failure degrades to a warning; the ack still comes back `ok`.
 {"date": "2026-07-27",
  "events": [{"start": "14:00", "end": "15:00", "title": "…", "attendees": ["…"]}]}
 ```
+
+**ZA3TAR_CAPABILITIES v1** (for `capabilities`):
+
+```json
+{"can": ["calendar.create", "doc.append", "message.send", "followup.track"],
+ "labels": {"doc.append": "append to the Ahangama build log"}}
+```
+
+`can` is a list of verbs from the vocabulary below; anything unrecognised is
+ignored rather than rejected, so an agent may declare verbs a newer app knows
+about. `labels` is optional and purely cosmetic — where the agent knows the
+concrete destination, the app shows that instead of the generic verb, so the
+user reads "append to the Ahangama build log" rather than "append to a doc".
+
+Vocabulary v1:
+
+| verb | the agent will… |
+| --- | --- |
+| `calendar.create` | create real events for dated actions, in whatever calendar it holds |
+| `doc.append` | append the notes to a document or page it can write to |
+| `message.send` | actually deliver a drafted message, rather than opening a draft |
+| `followup.track` | track open actions, nudge them, and report status back |
+
+The app already does a local, credential-free version of the first three —
+`.ics` export, Markdown on the clipboard, and drafts opened in the user's own
+WhatsApp or Mail client. These verbs mean the agent does the part the app
+deliberately will not: acting on an account. An agent declaring nothing is
+still useful for `today` and `followups`.
 
 **ZA3TAR_STATUS v1** (for `followups`):
 
