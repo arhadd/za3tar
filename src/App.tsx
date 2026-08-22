@@ -121,6 +121,7 @@ function App() {
   const [draft, setDraft] = useState<Draft | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const [showTranscript, setShowTranscript] = useState(false);
   const [flash, setFlash] = useState<string | null>(null);
 
   const [library, setLibrary] = useState<Summary[]>([]);
@@ -236,6 +237,7 @@ function App() {
     setNotes(null);
     setActions(null);
     setDraft(null);
+    setShowTranscript(false);
     setLevels({});
     setElapsed(0);
     setViewingPast(false);
@@ -623,6 +625,7 @@ function App() {
     setError(null);
     setPermissionHint(null);
     setBusy(null);
+    setShowTranscript(false);
     try {
       const detail = await invoke<{
         title: string;
@@ -1246,75 +1249,26 @@ function App() {
         </div>
       )}
 
-      {segments && (
-        <section className="flex flex-col gap-2">
-          <h2 className="text-sm font-semibold text-ink-soft">transcript</h2>
-          <div className="flex max-h-64 flex-col gap-2 overflow-y-auto rounded-xl bg-white p-3">
-            {segments.map((s, i) => (
-              <div key={i} className="flex flex-col gap-0.5">
-                <span
-                  className="text-[11px] font-medium"
-                  style={{
-                    color:
-                      s.speaker === "me"
-                        ? "var(--color-olive)"
-                        : "var(--color-sumac)",
-                  }}
-                >
-                  {s.speaker}
-                </span>
-                <p dir="rtl" className="arabic text-right text-sm text-ink">
-                  {s.text}
-                </p>
-              </div>
-            ))}
-          </div>
-
-          {!notes && !busy && (
+      {/* the pipeline steps, kept above the results they produce */}
+      {segments && !busy && (!notes || !actions) && (
+        <div className="flex flex-wrap gap-2">
+          {!notes && (
             <button
               onClick={makeNotes}
-              className="self-start rounded-xl bg-olive px-4 py-2 text-sm font-semibold text-white hover:bg-olive-deep"
+              className="rounded-xl bg-olive px-4 py-2 text-sm font-semibold text-white hover:bg-olive-deep"
             >
               ✍️ make notes
             </button>
           )}
-        </section>
-      )}
-
-      {notes && (
-        <section className="flex flex-col gap-2">
-          <div className="flex items-center gap-2">
-            <h2 className="text-sm font-semibold text-ink-soft">notes</h2>
+          {!actions && (
             <button
-              onClick={makeNotes}
-              disabled={!!busy}
-              className="ml-auto rounded-lg px-2 py-1 text-xs text-ink-soft hover:text-olive-deep disabled:opacity-60"
+              onClick={extractActions}
+              className="rounded-xl bg-olive px-4 py-2 text-sm font-semibold text-white hover:bg-olive-deep"
             >
-              regenerate
+              🎯 pull out decisions & actions
             </button>
-            <button
-              onClick={copyPacket}
-              className="rounded-lg bg-sesame px-3 py-1 text-xs text-ink-soft hover:text-olive-deep"
-            >
-              {copied ? "copied ✓" : "copy markdown"}
-            </button>
-          </div>
-          <div
-            dir="rtl"
-            className="arabic rounded-xl bg-white p-4 text-right text-sm leading-relaxed text-ink"
-          >
-            <MarkdownLite md={notes} />
-          </div>
-        </section>
-      )}
-
-      {segments && !actions && !busy && (
-        <button
-          onClick={extractActions}
-          className="self-start rounded-xl bg-olive px-4 py-2 text-sm font-semibold text-white hover:bg-olive-deep"
-        >
-          🎯 pull out decisions & actions
-        </button>
+          )}
+        </div>
       )}
 
       {actions && (
@@ -1539,6 +1493,76 @@ function App() {
               </button>
             )}
           </div>
+        </section>
+      )}
+
+      {notes && (
+        <section className="flex flex-col gap-2">
+          <div className="flex items-center gap-2">
+            <h2 className="text-sm font-semibold text-ink-soft">notes</h2>
+            <button
+              onClick={makeNotes}
+              disabled={!!busy}
+              className="ml-auto rounded-lg px-2 py-1 text-xs text-ink-soft hover:text-olive-deep disabled:opacity-60"
+            >
+              regenerate
+            </button>
+            <button
+              onClick={copyPacket}
+              className="rounded-lg bg-sesame px-3 py-1 text-xs text-ink-soft hover:text-olive-deep"
+            >
+              {copied ? "copied ✓" : "copy markdown"}
+            </button>
+          </div>
+          <div
+            dir="rtl"
+            className="arabic rounded-xl bg-white p-4 text-right text-sm leading-relaxed text-ink"
+          >
+            <MarkdownLite md={notes} />
+          </div>
+        </section>
+      )}
+
+      {/* raw material last, and folded away: the actions above are the point */}
+      {segments && (
+        <section className="flex flex-col gap-2">
+          <button
+            onClick={() => setShowTranscript((v) => !v)}
+            className="flex items-center gap-2 rounded-xl border border-sesame px-4 py-3 text-left transition hover:bg-white"
+          >
+            <span className="text-xs text-ink-soft">
+              {showTranscript ? "▾" : "▸"}
+            </span>
+            <span className="text-sm font-medium text-ink">
+              {showTranscript ? "hide transcript" : "show transcript"}
+            </span>
+            <span className="text-xs text-ink-soft">
+              {segments.length} turn{segments.length === 1 ? "" : "s"}
+            </span>
+          </button>
+          {showTranscript && (
+            <div className="flex max-h-64 flex-col gap-2 overflow-y-auto rounded-xl bg-white p-3">
+              {segments.map((s, i) => (
+                <div key={i} className="flex flex-col gap-0.5">
+                  <span
+                    className="text-[11px] font-medium"
+                    style={{
+                      color:
+                        s.speaker === "me"
+                          ? "var(--color-olive)"
+                          : "var(--color-sumac)",
+                    }}
+                  >
+                    {s.speaker}
+                  </span>
+                  <p dir="rtl" className="arabic text-right text-sm text-ink">
+                    {s.text}
+                  </p>
+                </div>
+              ))}
+            </div>
+
+          )}
         </section>
       )}
 
