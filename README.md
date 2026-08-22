@@ -51,7 +51,7 @@ From the meeting, you can:
 
 Connect a compatible agent through a command-line bridge. za3tar sends a versioned meeting packet; what happens next depends on that agent's tools and policies. It may create calendar events, track follow-ups, deliver messages, and sync real-world status back into the app.
 
-The bridge is transport-agnostic and documented in [`docs/AGENT-PROTOCOL.md`](docs/AGENT-PROTOCOL.md). With no agent configured, agent-only controls stay hidden and the rest of za3tar works normally.
+The bridge is transport-agnostic and documented in [`docs/AGENT-PROTOCOL.md`](docs/AGENT-PROTOCOL.md), with a worked implementation in [`docs/adapters/hermes.md`](docs/adapters/hermes.md). za3tar ships no agent and bundles nothing — with none configured, agent-only controls stay hidden and the rest of za3tar works normally.
 
 ## The product loop
 
