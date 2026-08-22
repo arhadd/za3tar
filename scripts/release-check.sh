@@ -56,6 +56,10 @@ pass "frontend production build"
 
 if [[ "$(uname -s)" == "Darwin" ]]; then
   command -v cargo >/dev/null || fail "cargo is required on macOS"
+  cargo fmt --manifest-path src-tauri/Cargo.toml --all -- --check
+  pass "Rust formatting"
+  cargo clippy --manifest-path src-tauri/Cargo.toml --all-targets -- -D warnings
+  pass "Rust lints"
   cargo test --manifest-path src-tauri/Cargo.toml
   pass "Rust tests"
   npm run capture:build
