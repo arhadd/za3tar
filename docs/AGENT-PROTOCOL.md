@@ -1,4 +1,10 @@
+<!-- SPDX-License-Identifier: Apache-2.0 -->
+
 # za3tar ↔ agent bridge protocol v1
+
+This protocol specification and its example envelopes are available under the
+Apache License 2.0. Implementing this protocol does not require adopting the
+za3tar application's AGPL licence.
 
 za3tar can hand meetings to a **compatible agent** — whatever assistant you
 already run (a Hermes/OpenClaw profile, a Claude agent, a plain script).

@@ -4,7 +4,7 @@ version = "0.1.0"
 description = "Private-by-default Mac meeting workflow for Arabic and English teams"
 authors = ["Ala Haddad"]
 edition = "2021"
-license = "Apache-2.0"
+license = "AGPL-3.0-only"
 repository = "https://github.com/arhadd/za3tar"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
