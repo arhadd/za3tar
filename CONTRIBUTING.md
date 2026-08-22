@@ -40,10 +40,38 @@ npm run app             # builds the native capture helper, then starts Tauri
   no telemetry). Don't add network calls beyond the user's own configured
   APIs and agent command.
 
-## License
+## Licence and contributor rights
+
+### Inbound licence
 
 By contributing, you agree that application/runtime contributions are licensed
 under **AGPL-3.0-only**. Contributions made specifically to the protocol
 specification in `docs/AGENT-PROTOCOL.md` are licensed under **Apache-2.0**.
 See `LICENSES/README.md` before submitting code intended for a future protocol
 SDK or example implementation.
+
+### Relicensing grant
+
+In addition to the licence above, you grant the za3tar maintainer a perpetual,
+worldwide, irrevocable, royalty-free right to use, reproduce, modify and
+distribute your contribution **under other licence terms, including commercial
+and proprietary terms**.
+
+This is what keeps za3tar AGPL for everyone while leaving a paid commercial
+licence possible for organisations that cannot deploy AGPL software. You keep
+the copyright in your contribution and may use it however else you like.
+Without this grant a single merged contribution would permanently foreclose
+that option for the whole project, so it is required for application and
+runtime code.
+
+### Sign-off (DCO)
+
+Every commit must carry a `Signed-off-by` line certifying the
+[Developer Certificate of Origin 1.1](https://developercertificate.org/):
+
+```bash
+git commit -s -m "fix: the thing that was broken"
+```
+
+Signing off certifies that you wrote the contribution, or otherwise have the
+right to submit it under the terms above.
