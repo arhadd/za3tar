@@ -1,8 +1,8 @@
 pub mod actions;
+pub mod agent;
 pub mod anthropic;
 pub mod asr;
 mod capture;
-pub mod agent;
 pub mod library;
 pub mod notes;
 pub mod people;

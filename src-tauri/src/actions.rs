@@ -134,7 +134,10 @@ fn build_context(dir: &Path, title: Option<&str>, today: Option<&str>) -> Result
     let notes = std::fs::read_to_string(dir.join("notes.md")).ok();
 
     let mut p = String::from("# Context\n");
-    p.push_str(&format!("Meeting: {}\n", title.unwrap_or("(untitled meeting)")));
+    p.push_str(&format!(
+        "Meeting: {}\n",
+        title.unwrap_or("(untitled meeting)")
+    ));
     if let Some(u) = anthropic::user_context_line() {
         p.push_str(&u);
     }
@@ -162,8 +165,8 @@ pub async fn extract_actions(
     let user = build_context(&path, title.as_deref(), today.as_deref())?;
 
     let (raw, _) = anthropic::complete(EXTRACT_SYSTEM, &user, 4096).await?;
-    let mut parsed: MeetingActions = serde_json::from_str(extract_json(&raw))
-        .map_err(|e| format!("parse actions: {e}"))?;
+    let mut parsed: MeetingActions =
+        serde_json::from_str(extract_json(&raw)).map_err(|e| format!("parse actions: {e}"))?;
 
     // stable ids for done-state tracking; fresh extraction resets state
     for (i, a) in parsed.actions.iter_mut().enumerate() {
@@ -255,7 +258,9 @@ fn valid_ics_date(d: &str) -> bool {
     b.len() == 10
         && b[4] == b'-'
         && b[7] == b'-'
-        && d.chars().enumerate().all(|(i, c)| i == 4 || i == 7 || c.is_ascii_digit())
+        && d.chars()
+            .enumerate()
+            .all(|(i, c)| i == 4 || i == 7 || c.is_ascii_digit())
 }
 
 /// Escape per RFC 5545: backslash, comma, semicolon, newline.
@@ -272,7 +277,11 @@ fn build_ics(meeting: &str, actions: &[&ActionItem]) -> String {
     );
     for a in actions {
         let date = a.due_date.as_deref().unwrap_or_default().replace('-', "");
-        let owner = if a.owner == "me" { String::new() } else { format!(" ({})", a.owner) };
+        let owner = if a.owner == "me" {
+            String::new()
+        } else {
+            format!(" ({})", a.owner)
+        };
         let mut desc = format!("from meeting: {meeting}");
         if let Some(d) = &a.detail {
             desc.push_str(&format!("\n{d}"));
@@ -280,7 +289,10 @@ fn build_ics(meeting: &str, actions: &[&ActionItem]) -> String {
         out.push_str("BEGIN:VEVENT\r\n");
         out.push_str(&format!("UID:za3tar-{date}-{}@za3tar\r\n", a.id));
         out.push_str(&format!("DTSTART;VALUE=DATE:{date}\r\n"));
-        out.push_str(&format!("SUMMARY:{}\r\n", ics_escape(&format!("{}{owner}", a.title))));
+        out.push_str(&format!(
+            "SUMMARY:{}\r\n",
+            ics_escape(&format!("{}{owner}", a.title))
+        ));
         out.push_str(&format!("DESCRIPTION:{}\r\n", ics_escape(&desc)));
         out.push_str("END:VEVENT\r\n");
     }
@@ -416,6 +428,9 @@ mod tests {
     fn json_extraction() {
         assert_eq!(extract_json("```json\n{\"a\":1}\n```"), "{\"a\":1}");
         assert_eq!(extract_json("{\"a\":1}"), "{\"a\":1}");
-        assert_eq!(extract_json("Here it is:\n{\"a\": {\"b\": 2}}\ndone"), "{\"a\": {\"b\": 2}}");
+        assert_eq!(
+            extract_json("Here it is:\n{\"a\": {\"b\": 2}}\ndone"),
+            "{\"a\": {\"b\": 2}}"
+        );
     }
 }
