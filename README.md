@@ -90,7 +90,11 @@ Still being hardened:
 - signing, packaging, and distribution
 - broader dialect, device, and long-meeting testing
 
-See [`DEMO.md`](DEMO.md) for the three-minute product walkthrough, [`docs/INSTALL.md`](docs/INSTALL.md) for setup, and [`docs/PRIVACY.md`](docs/PRIVACY.md) for the full data flow.
+See [`DEMO.md`](DEMO.md) for the three-minute product walkthrough,
+[`docs/LAUNCH-VIDEO.md`](docs/LAUNCH-VIDEO.md) for the agent-made launch demo,
+[`docs/RELEASE.md`](docs/RELEASE.md) for the v0.1.0 gate,
+[`docs/INSTALL.md`](docs/INSTALL.md) for setup, and
+[`docs/PRIVACY.md`](docs/PRIVACY.md) for the full data flow.
 
 ## Privacy and data flow
 
@@ -151,4 +155,11 @@ Never attach real meeting audio or transcripts to a public issue.
 
 ## License
 
-[Apache-2.0](LICENSE)
+za3tar uses a deliberate split licence:
+
+- **The desktop application and capture/runtime code:** [GNU AGPL-3.0-only](LICENSE)
+- **The open agent protocol specification:** [Apache-2.0](LICENSES/Apache-2.0.txt)
+
+This keeps the product and improvements open while allowing any agent or
+commercial system to implement the protocol without inheriting the app's
+licence. See [`LICENSES/README.md`](LICENSES/README.md) for the exact boundary.

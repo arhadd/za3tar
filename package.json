@@ -2,6 +2,7 @@
   "name": "za3tar",
   "private": true,
   "version": "0.1.0",
+  "license": "AGPL-3.0-only",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -9,6 +10,7 @@
     "preview": "vite preview",
     "tauri": "tauri",
     "capture:build": "bash capture/build.sh \"$PWD/src-tauri/binaries/za3tar-capture\"",
+    "release:check": "bash scripts/release-check.sh",
     "app": "npm run capture:build && tauri dev"
   },
   "dependencies": {

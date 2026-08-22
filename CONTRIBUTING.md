@@ -42,5 +42,8 @@ npm run app             # builds the native capture helper, then starts Tauri
 
 ## License
 
-Apache-2.0 — by contributing you agree your contributions are licensed the
-same way.
+By contributing, you agree that application/runtime contributions are licensed
+under **AGPL-3.0-only**. Contributions made specifically to the protocol
+specification in `docs/AGENT-PROTOCOL.md` are licensed under **Apache-2.0**.
+See `LICENSES/README.md` before submitting code intended for a future protocol
+SDK or example implementation.
