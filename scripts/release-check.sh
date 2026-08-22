@@ -56,15 +56,20 @@ pass "frontend production build"
 
 if [[ "$(uname -s)" == "Darwin" ]]; then
   command -v cargo >/dev/null || fail "cargo is required on macOS"
+
+  # The helper must exist before any cargo step: tauri.conf.json lists it as a
+  # bundled resource, so the Tauri build script fails the moment it is missing.
+  # On a dev machine a stale binary hides this; on a clean checkout it does not.
+  npm run capture:build
+  [[ -x src-tauri/binaries/za3tar-capture ]] || fail "capture helper was not built"
+  pass "native capture helper"
+
   cargo fmt --manifest-path src-tauri/Cargo.toml --all -- --check
   pass "Rust formatting"
   cargo clippy --manifest-path src-tauri/Cargo.toml --all-targets -- -D warnings
   pass "Rust lints"
   cargo test --manifest-path src-tauri/Cargo.toml
   pass "Rust tests"
-  npm run capture:build
-  [[ -x src-tauri/binaries/za3tar-capture ]] || fail "capture helper was not built"
-  pass "native capture helper"
 else
   printf '↷ Rust/Tauri and native capture checks skipped (release target requires macOS)\n'
 fi
