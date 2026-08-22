@@ -47,11 +47,7 @@ pub fn user_context_line() -> Option<String> {
 }
 
 /// One completion. Returns (text, truncated).
-pub async fn complete(
-    system: &str,
-    user: &str,
-    max_tokens: u32,
-) -> Result<(String, bool), String> {
+pub async fn complete(system: &str, user: &str, max_tokens: u32) -> Result<(String, bool), String> {
     let api_key = read_key()?;
 
     let body = serde_json::json!({

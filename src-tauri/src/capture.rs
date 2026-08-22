@@ -63,9 +63,8 @@ pub fn start_recording(
         return Err("already recording".into());
     }
 
-    let helper = helper_path(&app).ok_or_else(|| {
-        "capture helper not found — build it with capture/build.sh".to_string()
-    })?;
+    let helper = helper_path(&app)
+        .ok_or_else(|| "capture helper not found — build it with capture/build.sh".to_string())?;
 
     // recordings/<unix-seconds>/ under the app data dir
     let stamp = SystemTime::now()
@@ -98,10 +97,8 @@ pub fn start_recording(
             std::thread::spawn(move || {
                 let reader = BufReader::new(stdout);
                 for line in reader.lines().map_while(Result::ok) {
-                    let payload: serde_json::Value =
-                        serde_json::from_str(&line).unwrap_or_else(|_| {
-                            serde_json::json!({ "event": "log", "message": line })
-                        });
+                    let payload: serde_json::Value = serde_json::from_str(&line)
+                        .unwrap_or_else(|_| serde_json::json!({ "event": "log", "message": line }));
                     let _ = app2.emit("capture-event", payload);
                 }
                 // stdout closed => helper exited

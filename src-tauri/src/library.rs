@@ -103,7 +103,7 @@ pub fn list_recordings(app: AppHandle) -> Result<Vec<RecordingSummary>, String> 
         });
     }
     // newest first
-    out.sort_by(|a, b| b.created.cmp(&a.created));
+    out.sort_by_key(|e| std::cmp::Reverse(e.created));
     Ok(out)
 }
 

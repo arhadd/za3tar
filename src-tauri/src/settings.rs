@@ -26,18 +26,35 @@ pub struct Settings {
     pub agent_command: String,
 }
 
-const VARS: [(&str, fn(&Settings) -> &str, fn(&mut Settings) -> &mut String); 5] = [
-    ("ELEVENLABS_API_KEY", |s| &s.elevenlabs_api_key, |s| {
-        &mut s.elevenlabs_api_key
-    }),
-    ("ANTHROPIC_API_KEY", |s| &s.anthropic_api_key, |s| {
-        &mut s.anthropic_api_key
-    }),
+/// env var name, reader, writer — one binding per settings field.
+type VarBinding = (
+    &'static str,
+    fn(&Settings) -> &str,
+    fn(&mut Settings) -> &mut String,
+);
+
+const VARS: [VarBinding; 5] = [
+    (
+        "ELEVENLABS_API_KEY",
+        |s| &s.elevenlabs_api_key,
+        |s| &mut s.elevenlabs_api_key,
+    ),
+    (
+        "ANTHROPIC_API_KEY",
+        |s| &s.anthropic_api_key,
+        |s| &mut s.anthropic_api_key,
+    ),
     ("ZA3TAR_USER", |s| &s.user_name, |s| &mut s.user_name),
-    ("ZA3TAR_AGENT_NAME", |s| &s.agent_name, |s| &mut s.agent_name),
-    ("ZA3TAR_AGENT_CMD", |s| &s.agent_command, |s| {
-        &mut s.agent_command
-    }),
+    (
+        "ZA3TAR_AGENT_NAME",
+        |s| &s.agent_name,
+        |s| &mut s.agent_name,
+    ),
+    (
+        "ZA3TAR_AGENT_CMD",
+        |s| &s.agent_command,
+        |s| &mut s.agent_command,
+    ),
 ];
 
 fn settings_path(app: &AppHandle) -> Result<PathBuf, String> {

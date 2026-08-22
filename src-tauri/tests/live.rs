@@ -10,10 +10,7 @@
 use za3tar_lib::{actions, asr};
 
 fn synthetic_dir() -> std::path::PathBuf {
-    let dir = std::env::temp_dir().join(format!(
-        "za3tar-live-test-{}",
-        std::process::id()
-    ));
+    let dir = std::env::temp_dir().join(format!("za3tar-live-test-{}", std::process::id()));
     std::fs::create_dir_all(&dir).unwrap();
 
     // A realistic Ammani business chat: Arabic/English code-switching, clear
@@ -56,11 +53,14 @@ async fn extract_actions_and_draft_followup() {
     println!("== questions ==\n{:#?}", extracted.questions);
 
     assert!(!extracted.decisions.is_empty(), "no decisions extracted");
-    assert!(extracted.actions.len() >= 2, "expected at least two actions");
+    assert!(
+        extracted.actions.len() >= 2,
+        "expected at least two actions"
+    );
     assert!(!extracted.questions.is_empty(), "venue question missed");
     // both sides committed to something
     let owners: Vec<&str> = extracted.actions.iter().map(|a| a.owner.as_str()).collect();
-    assert!(owners.iter().any(|o| *o == "me"), "no action owned by me: {owners:?}");
+    assert!(owners.contains(&"me"), "no action owned by me: {owners:?}");
     assert!(
         owners.iter().any(|o| *o != "me"),
         "no action owned by the other side: {owners:?}"
@@ -81,8 +81,12 @@ async fn extract_actions_and_draft_followup() {
         .await
         .expect("whatsapp draft failed");
     println!("== whatsapp draft ==\n{}", wa.body);
-    assert!(wa.body.chars().any(|c| ('\u{0600}'..='\u{06FF}').contains(&c)),
-        "whatsapp draft lost the Arabic");
+    assert!(
+        wa.body
+            .chars()
+            .any(|c| ('\u{0600}'..='\u{06FF}').contains(&c)),
+        "whatsapp draft lost the Arabic"
+    );
     assert!(wa.body.len() > 80, "draft suspiciously short");
 
     let em = actions::draft_followup(dir_s.clone(), "email".into(), None)
@@ -90,7 +94,13 @@ async fn extract_actions_and_draft_followup() {
         .expect("email draft failed");
     println!("== email subject ==\n{:?}", em.subject);
     println!("== email body ==\n{}", em.body);
-    assert!(em.subject.as_deref().map(|s| !s.is_empty()).unwrap_or(false), "email needs a subject");
+    assert!(
+        em.subject
+            .as_deref()
+            .map(|s| !s.is_empty())
+            .unwrap_or(false),
+        "email needs a subject"
+    );
 
     // chase the first extracted action with a nudge draft
     let first_id = extracted.actions[0].id;
@@ -99,7 +109,10 @@ async fn extract_actions_and_draft_followup() {
         .expect("nudge draft failed");
     println!("== nudge ==\n{}", nudge.body);
     assert!(
-        nudge.body.chars().any(|c| ('\u{0600}'..='\u{06FF}').contains(&c)),
+        nudge
+            .body
+            .chars()
+            .any(|c| ('\u{0600}'..='\u{06FF}').contains(&c)),
         "nudge lost the Arabic"
     );
 }

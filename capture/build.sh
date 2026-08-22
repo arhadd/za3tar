@@ -31,5 +31,9 @@ codesign --force --sign "$IDENTITY" \
   --identifier com.ala.za3tar.capture \
   "$OUT"
 
-echo "done: $(pwd)/$OUT"
+# $OUT may be absolute (the npm script passes a full path) or relative to here.
+case "$OUT" in
+  /*) echo "done: $OUT" ;;
+  *)  echo "done: $(pwd)/$OUT" ;;
+esac
 codesign -dv "$OUT" 2>&1 | sed 's/^/  /' || true

@@ -139,7 +139,11 @@ async fn transcribe_track(
 
 /// Coalesce time-sorted tagged words into speaker turns.
 fn coalesce(mut words: Vec<TaggedWord>) -> Vec<Segment> {
-    words.sort_by(|a, b| a.start.partial_cmp(&b.start).unwrap_or(std::cmp::Ordering::Equal));
+    words.sort_by(|a, b| {
+        a.start
+            .partial_cmp(&b.start)
+            .unwrap_or(std::cmp::Ordering::Equal)
+    });
     let mut segments: Vec<Segment> = Vec::new();
     for w in words {
         if let Some(last) = segments.last_mut() {
@@ -178,7 +182,7 @@ fn relabel_in_person(words: &mut [TaggedWord]) {
     if ranked.len() < 2 {
         return; // one real voice — the existing "me" labels are already right
     }
-    ranked.sort_by(|a, b| b.1.cmp(&a.1));
+    ranked.sort_by_key(|r| std::cmp::Reverse(r.1));
 
     let mut label: HashMap<String, String> = HashMap::new();
     for (rank, (id, _)) in ranked.iter().enumerate() {

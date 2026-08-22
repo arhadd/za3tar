@@ -88,7 +88,7 @@ pub fn list_people(app: AppHandle) -> Result<Vec<PersonRow>, String> {
 
     // most recently met first; contact-only cards last
     let mut out: Vec<PersonRow> = rows.into_values().collect();
-    out.sort_by(|a, b| b.last_met.cmp(&a.last_met));
+    out.sort_by_key(|p| std::cmp::Reverse(p.last_met));
     Ok(out)
 }
 
