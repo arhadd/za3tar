@@ -17,6 +17,8 @@ of this code, follow the source-availability obligations in the AGPL.
 [`Apache-2.0.txt`](Apache-2.0.txt) applies to:
 
 - `docs/AGENT-PROTOCOL.md`;
+- `docs/adapters/` — worked examples of implementing the protocol, so an
+  implementer can lift code and wording from them into their own agent;
 - the protocol envelopes and schemas shown in that specification;
 - future files placed under a `protocol/` or `sdk/` directory when those files
   carry an `SPDX-License-Identifier: Apache-2.0` notice.
