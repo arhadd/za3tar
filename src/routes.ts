@@ -54,7 +54,19 @@ export function emptySession(route: Route): RouteSession {
 export function reduce(s: RouteSession, e: any): RouteSession {
   if (e.kind === "status") {
     const status = e.status as RouteSession["status"];
-    return { ...s, status, error: null };
+    // the turn ended: nothing can still be running, whatever we missed
+    const tools =
+      status === "ready" || status === "closed"
+        ? Object.fromEntries(
+            Object.entries(s.tools).map(([k, t]) => [
+              k,
+              t.status === "in_progress" || t.status === "pending"
+                ? { ...t, status: "completed" as const }
+                : t,
+            ]),
+          )
+        : s.tools;
+    return { ...s, status, tools, error: null };
   }
   if (e.kind === "closed") return { ...s, status: "closed" };
   if (e.kind === "permission") {
