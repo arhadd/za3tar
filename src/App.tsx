@@ -991,7 +991,7 @@ function App() {
                   }
                 }
                 library={wsLibrary}
-                people={wsPeople}
+                people={wsPeople.filter((p) => p.workspaces.includes(wsId))}
                 open={wsOpen}
                 decisions={wsDecisions}
                 runtimeReady={runtimeReady}
