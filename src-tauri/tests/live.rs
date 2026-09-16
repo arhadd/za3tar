@@ -153,7 +153,13 @@ async fn onboarding_turn_creates_workspaces_and_threads() {
     println!("{}", serde_json::to_string_pretty(&v).unwrap());
     let ops = v["ops"].as_array().cloned().unwrap_or_default();
     let kinds: Vec<&str> = ops.iter().filter_map(|o| o["op"].as_str()).collect();
-    assert!(kinds.contains(&"create_workspace"), "expected a workspace op, got {kinds:?}");
-    assert!(kinds.contains(&"create_thread"), "expected a thread op, got {kinds:?}");
+    assert!(
+        kinds.contains(&"create_workspace"),
+        "expected a workspace op, got {kinds:?}"
+    );
+    assert!(
+        kinds.contains(&"create_thread"),
+        "expected a thread op, got {kinds:?}"
+    );
     assert!(!v["say"].as_str().unwrap_or("").is_empty());
 }
