@@ -8,6 +8,8 @@ import { DecisionsView } from "./views/DecisionsView";
 import { FollowUpsView } from "./views/FollowUpsView";
 import { WorkspaceView } from "./views/WorkspaceView";
 import { ThreadsView, ThreadDetail } from "./views/ThreadsView";
+import { TalkPanel, type TalkState } from "./views/TalkPanel";
+import { LiveSession, type LiveOp, type TalkLine } from "./live";
 import { SettingsView } from "./views/SettingsView";
 import { Button } from "./ui";
 import {
@@ -72,6 +74,14 @@ function App() {
   const [threads, setThreads] = useState<Thread[]>([]);
   const [questions, setQuestions] = useState<QuestionRef[]>([]);
   const [threadOpen, setThreadOpen] = useState<string | null>(null);
+
+  // talk
+  const live = useRef<LiveSession | null>(null);
+  const [talk, setTalk] = useState<TalkState>("idle");
+  const [talkLines, setTalkLines] = useState<TalkLine[]>([]);
+  // refs so the voice brain always sees current state without re-binding
+  const snap = useRef<() => string>(() => "");
+  const apply = useRef<(ops: LiveOp[]) => Promise<string[]>>(async () => []);
 
   // the workspace and its views
   const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
@@ -963,6 +973,149 @@ function App() {
     invoke("open_system_audio_settings").catch(() => {});
   }
 
+  // ── talk ──────────────────────────────────────────────────────────────
+  const refOf = (o: OpenAction) => `${meetingIdOf(o.dir)}#${o.action.id}`;
+  const dRefOf = (d: DecisionRef) => `d:${meetingIdOf(d.dir)}#${d.decision.id}`;
+
+  snap.current = () => {
+    const today = new Date().toISOString().slice(0, 10);
+    const lines: string[] = [];
+    lines.push(`workspace: ${wsName} (${wsId}) · today ${today}`);
+    const w = workspaces.find((x) => x.id === wsId);
+    if (w?.description) lines.push(`about: ${w.description}`);
+    lines.push("\nthreads:");
+    for (const t of wsThreads)
+      lines.push(
+        `- [${t.id}] ${t.title} (${t.status}${t.owner ? `, ${t.owner}` : ""}) — ${t.summary || "no state line"}`,
+      );
+    const liveOpen = wsOpen.filter((o) => !o.action.parked);
+    lines.push(`\nopen items (${liveOpen.length}):`);
+    for (const o of liveOpen.slice(0, 40)) {
+      const t = threads.find((x) => x.id === o.thread)?.title;
+      const due = o.action.due_date
+        ? ` due ${o.action.due_date}${o.action.due_date < today ? " OVERDUE" : ""}`
+        : o.action.due_label
+          ? ` (${o.action.due_label})`
+          : "";
+      lines.push(`- ${refOf(o)} [${o.action.owner}]${t ? ` {${t}}` : ""} ${o.action.title}${due}`);
+    }
+    const parked = wsOpen.filter((o) => o.action.parked);
+    if (parked.length)
+      lines.push(`\nparked: ${parked.map((o) => `${refOf(o)} ${o.action.title}`).join(" · ")}`);
+    const prop = wsDecisions.filter((d) => d.decision.status === "proposed");
+    if (prop.length) {
+      lines.push(`\ndecisions waiting for a yes:`);
+      for (const d of prop) lines.push(`- ${dRefOf(d)} ${d.decision.text}`);
+    }
+    if (wsPeople.length)
+      lines.push(
+        `\npeople: ${wsPeople
+          .map((p) => `${p.name}${p.role || p.org ? ` (${[p.role, p.org].filter(Boolean).join(", ")})` : ""}`)
+          .join(" · ")}`,
+      );
+    lines.push(
+      `\nstate: ${phase === "recording" ? "RECORDING now" : "not recording"}; view ${view}${
+        threadOpen ? `; thread open ${threadOpen}` : ""
+      }`,
+    );
+    return lines.join("\n");
+  };
+
+  apply.current = async (ops) => {
+    const out: string[] = [];
+    for (const op of ops) {
+      try {
+        if (op.op === "park" || op.op === "unpark" || op.op === "done") {
+          const oa = openActions.find((o) => refOf(o) === op.ref);
+          if (!oa) {
+            out.push(`couldn't find ${op.ref}`);
+            continue;
+          }
+          if (op.op === "done") await markOpenDone(oa);
+          else await parkAction(oa, op.op === "park");
+          out.push(`${op.op}: ${oa.action.title}`);
+        } else if (op.op === "confirm" || op.op === "supersede") {
+          const d = decisions.find((x) => dRefOf(x) === op.ref);
+          if (!d) {
+            out.push(`couldn't find ${op.ref}`);
+            continue;
+          }
+          await setDecisionStatus(d, op.op === "confirm" ? "confirmed" : "superseded");
+          out.push(`${op.op === "confirm" ? "confirmed" : "superseded"}: ${d.decision.text}`);
+        } else if (op.op === "move_thread") {
+          const t = threads.find((x) => x.id === op.id);
+          if (!t) {
+            out.push(`no thread ${op.id}`);
+            continue;
+          }
+          await saveThread({
+            ...t,
+            summary: op.summary ?? t.summary,
+            status: (op.status as Thread["status"]) ?? t.status,
+          });
+          out.push(`moved thread: ${t.title}`);
+        } else if (op.op === "open_thread") {
+          setThreadOpen(op.id);
+          setView("threads");
+          setMeetingOpen(false);
+          out.push(`opened ${threads.find((x) => x.id === op.id)?.title ?? op.id}`);
+        } else if (op.op === "go") {
+          setView(op.view as View);
+          setMeetingOpen(false);
+          out.push(`showing ${op.view}`);
+        } else if (op.op === "brief") {
+          await createBrief({ title: op.title, person: "", notes: op.notes });
+          out.push(`filed a brief: ${op.title}`);
+        } else if (op.op === "record") {
+          if (phase !== "recording") await start();
+          out.push("recording");
+        } else if (op.op === "stop_recording") {
+          if (phase === "recording") await stop();
+          out.push("stopped recording");
+        }
+      } catch (e) {
+        out.push(`failed: ${String(e)}`);
+      }
+    }
+    return out;
+  };
+
+  async function startTalk() {
+    if (live.current) return;
+    setTalkLines([]);
+    const s = new LiveSession({
+      onLine: (l) =>
+        setTalkLines((cur) => {
+          // captions replace their own last line; activity appends
+          if ((l.role === "you" || l.role === "za3tar") && cur[cur.length - 1]?.role === l.role)
+            return [...cur.slice(0, -1), l];
+          return [...cur, l].slice(-40);
+        }),
+      onState: setTalk,
+      snapshot: () => snap.current(),
+      applyOps: (ops) => apply.current(ops),
+      runtime: (m) => runtimeExchange(m, "handing it off…"),
+    });
+    live.current = s;
+    try {
+      await s.start(
+        `You are Za3tar's voice. Keep it short and warm, mirror the user's language (Arabic, English, or mixed). You do not know the workspace yourself: every substantive request is delegated to the client, which answers with what to say; speak that answer as-is. Workspace: ${wsName}.`,
+      );
+      s.prompt(
+        `Say one short greeting: you're here, in the ${wsName} workspace, what do they want to look at. Then listen.`,
+      );
+    } catch (e) {
+      setError(String(e));
+      live.current = null;
+      setTalk("idle");
+    }
+  }
+
+  async function endTalk() {
+    await live.current?.stop();
+    live.current = null;
+  }
+
   // ── render ────────────────────────────────────────────────────────────
   const wsName = workspaces.find((w) => w.id === wsId)?.name ?? "Personal";
   const headline = showSettings
@@ -1048,6 +1201,16 @@ function App() {
             </h1>
           </div>
           <div className="ml-auto flex items-center gap-3">
+            {talk === "idle" ? (
+              <Button tone="quiet" size="lg" onClick={startTalk} title="talk to Za3tar">
+                Talk
+              </Button>
+            ) : (
+              <Button tone="accent" size="lg" onClick={endTalk}>
+                <span className="pulse inline-block h-2.5 w-2.5 rounded-full bg-ink" />
+                {talk === "connecting" ? "Connecting…" : "End talk"}
+              </Button>
+            )}
             {busy && (
               <span className="flex items-center gap-2 text-[12px] text-olive">
                 <span className="pulse inline-block h-1.5 w-1.5 rounded-full bg-ink" />
@@ -1060,6 +1223,9 @@ function App() {
 
         <main className="flex-1 overflow-y-auto px-8 py-6">
           <div className="mx-auto flex max-w-3xl flex-col gap-4">
+            {talk !== "idle" && (
+              <TalkPanel state={talk} lines={talkLines} onEnd={endTalk} />
+            )}
             {flash && (
               <div className="rounded-lg border border-thyme bg-thyme/20 px-4 py-2 text-[13px]">
                 <span className="font-semibold">Za3tar</span> · {flash}

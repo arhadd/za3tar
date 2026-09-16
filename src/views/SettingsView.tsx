@@ -44,6 +44,14 @@ export function SettingsView({
           />
         </label>
         <label className="flex flex-col gap-1 text-[12px] text-olive">
+          OpenAI API key (Talk — voice)
+          <Field
+            type="password"
+            value={form.openai_api_key}
+            onChange={(e) => onChange({ ...form, openai_api_key: e.target.value })}
+          />
+        </label>
+        <label className="flex flex-col gap-1 text-[12px] text-olive">
           Anthropic API key (notes, decisions, drafts)
           <Field
             type="password"

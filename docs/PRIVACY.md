@@ -14,6 +14,7 @@ Processing a recording uses credentials you provide:
 
 - **ElevenLabs Scribe v2** receives recorded audio for transcription.
 - **Anthropic Claude** receives transcript text and relevant meeting context to produce notes, extract decisions/actions/questions, and draft follow-ups.
+- **OpenAI gpt-live-1** (optional, only during a Talk session) receives your microphone audio and speaks replies. Each spoken turn is delegated to Anthropic Claude with a snapshot of the current workspace so Za3tar can act on it. Nothing is sent when Talk is off, and no audio is stored by the app.
 
 The providers’ own terms, retention settings, and regional processing policies apply. Do not record or process material you are not permitted to share with those providers.
 

@@ -19,6 +19,8 @@ pub struct Settings {
     #[serde(default)]
     pub anthropic_api_key: String,
     #[serde(default)]
+    pub openai_api_key: String,
+    #[serde(default)]
     pub user_name: String,
     #[serde(default)]
     pub agent_name: String,
@@ -33,7 +35,7 @@ type VarBinding = (
     fn(&mut Settings) -> &mut String,
 );
 
-const VARS: [VarBinding; 5] = [
+const VARS: [VarBinding; 6] = [
     (
         "ELEVENLABS_API_KEY",
         |s| &s.elevenlabs_api_key,
@@ -43,6 +45,11 @@ const VARS: [VarBinding; 5] = [
         "ANTHROPIC_API_KEY",
         |s| &s.anthropic_api_key,
         |s| &mut s.anthropic_api_key,
+    ),
+    (
+        "OPENAI_API_KEY",
+        |s| &s.openai_api_key,
+        |s| &mut s.openai_api_key,
     ),
     ("ZA3TAR_USER", |s| &s.user_name, |s| &mut s.user_name),
     (

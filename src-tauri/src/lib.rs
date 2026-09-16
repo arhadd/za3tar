@@ -4,6 +4,7 @@ pub mod anthropic;
 pub mod asr;
 mod capture;
 pub mod library;
+pub mod live;
 pub mod notes;
 pub mod people;
 pub mod settings;
@@ -72,6 +73,7 @@ pub fn run() {
             Ok(())
         })
         .manage(CaptureState::default())
+        .manage(live::LiveState::default())
         .invoke_handler(tauri::generate_handler![
             open_system_audio_settings,
             open_path,
@@ -113,6 +115,11 @@ pub fn run() {
             threads::create_thread,
             threads::update_thread,
             threads::delete_thread,
+            live::live_session_create,
+            live::live_attach,
+            live::live_send,
+            live::live_detach,
+            live::live_turn,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

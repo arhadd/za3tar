@@ -267,6 +267,7 @@ const contacts: Record<
 let settings: Settings = {
   elevenlabs_api_key: "",
   anthropic_api_key: "",
+  openai_api_key: "",
   user_name: "Ala",
   agent_name: "",
   agent_command: "~/bin/za3tar-runtime",
@@ -625,6 +626,14 @@ export async function mockInvoke<T>(
         );
       return out("done — delivered on WhatsApp");
     }
+    case "live_session_create":
+      throw new Error("Talk needs the real app (WebRTC + your key)");
+    case "live_turn":
+      return out({ say: "mock brain: heard you.", ops: [] });
+    case "live_attach":
+    case "live_send":
+    case "live_detach":
+      return out(null);
     case "open_system_audio_settings":
       return out(null);
     default:

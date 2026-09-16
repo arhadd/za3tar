@@ -119,6 +119,7 @@ export type QuestionRef = {
 export type Settings = {
   elevenlabs_api_key: string;
   anthropic_api_key: string;
+  openai_api_key: string;
   user_name: string;
   agent_name: string;
   agent_command: string;
