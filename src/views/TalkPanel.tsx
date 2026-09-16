@@ -6,10 +6,14 @@ export type TalkState = "idle" | "connecting" | "live" | "thinking";
 export function TalkPanel({
   state,
   lines,
+  muted,
+  onMute,
   onEnd,
 }: {
   state: TalkState;
   lines: TalkLine[];
+  muted: boolean;
+  onMute: (m: boolean) => void;
   onEnd: () => void;
 }) {
   const you = [...lines].reverse().find((l) => l.role === "you");
@@ -18,16 +22,29 @@ export function TalkPanel({
   return (
     <Card className="flex flex-col gap-3 border-thyme bg-thyme/10">
       <div className="flex items-center gap-2">
-        <span className="pulse inline-block h-2.5 w-2.5 rounded-full bg-ink" />
+        <span
+          className={`inline-block h-2.5 w-2.5 rounded-full ${muted ? "bg-olive" : "pulse bg-ink"}`}
+        />
         <span className="text-[13px] font-medium">Talk</span>
-        <Chip tone={state === "thinking" ? "accent" : "outline"}>
+        <Chip tone={state === "thinking" ? "accent" : muted ? "alert" : "outline"}>
           {state === "connecting"
             ? "connecting"
             : state === "thinking"
               ? "working on it"
-              : "listening"}
+              : muted
+                ? "muted"
+                : "listening"}
         </Chip>
-        <Button tone="primary" size="sm" className="ml-auto" onClick={onEnd}>
+        <Button
+          tone={muted ? "accent" : "quiet"}
+          size="sm"
+          className="ml-auto"
+          onClick={() => onMute(!muted)}
+          title={muted ? "unmute the mic" : "mute the mic (session stays up)"}
+        >
+          {muted ? "Unmute" : "Mute"}
+        </Button>
+        <Button tone="primary" size="sm" onClick={onEnd}>
           End
         </Button>
       </div>

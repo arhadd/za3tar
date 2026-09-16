@@ -79,6 +79,7 @@ function App() {
   const live = useRef<LiveSession | null>(null);
   const [talk, setTalk] = useState<TalkState>("idle");
   const [talkLines, setTalkLines] = useState<TalkLine[]>([]);
+  const [talkMuted, setTalkMuted] = useState(false);
   // refs so the voice brain always sees current state without re-binding
   const snap = useRef<() => string>(() => "");
   const apply = useRef<(ops: LiveOp[]) => Promise<string[]>>(async () => []);
@@ -1151,7 +1152,9 @@ function App() {
       snapshot: () => snap.current(),
       applyOps: (ops) => apply.current(ops),
       runtime: (m) => runtimeExchange(m, "handing it off…"),
+      onMuted: setTalkMuted,
     });
+    setTalkMuted(false);
     live.current = s;
     try {
       await s.start(
@@ -1262,9 +1265,16 @@ function App() {
                 Talk
               </Button>
             ) : (
-              <Button tone="accent" size="lg" onClick={endTalk}>
-                <span className="pulse inline-block h-2.5 w-2.5 rounded-full bg-ink" />
-                {talk === "connecting" ? "Connecting…" : "End talk"}
+              <Button
+                tone={talkMuted ? "quiet" : "accent"}
+                size="lg"
+                onClick={() => live.current?.setMuted(!talkMuted)}
+                title={talkMuted ? "unmute" : "mute"}
+              >
+                <span
+                  className={`inline-block h-2.5 w-2.5 rounded-full ${talkMuted ? "bg-olive" : "pulse bg-ink"}`}
+                />
+                {talk === "connecting" ? "Connecting…" : talkMuted ? "Muted" : "Listening"}
               </Button>
             )}
             {busy && (
@@ -1280,7 +1290,13 @@ function App() {
         <main className="flex-1 overflow-y-auto px-8 py-6">
           <div className="mx-auto flex max-w-3xl flex-col gap-4">
             {talk !== "idle" && (
-              <TalkPanel state={talk} lines={talkLines} onEnd={endTalk} />
+              <TalkPanel
+                state={talk}
+                lines={talkLines}
+                muted={talkMuted}
+                onMute={(m) => live.current?.setMuted(m)}
+                onEnd={endTalk}
+              />
             )}
             {flash && (
               <div className="rounded-lg border border-thyme bg-thyme/20 px-4 py-2 text-[13px]">

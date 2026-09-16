@@ -43,6 +43,7 @@ type Handlers = {
   snapshot: () => string;
   applyOps: (ops: LiveOp[]) => Promise<string[]>; // returns activity lines
   runtime: (message: string) => Promise<string | null>;
+  onMuted?: (m: boolean) => void;
 };
 
 export class LiveSession {
@@ -64,6 +65,19 @@ export class LiveSession {
 
   get sessionId() {
     return this.id;
+  }
+
+  private muted = false;
+  get isMuted() {
+    return this.muted;
+  }
+
+  /** mute = the mic track sends silence; the session stays up */
+  setMuted(m: boolean) {
+    this.muted = m;
+    for (const t of this.stream?.getAudioTracks() ?? []) t.enabled = !m;
+    this.h.onLine({ role: "status", text: m ? "muted" : "listening" });
+    this.h.onMuted?.(m);
   }
 
   async start(instructions: string) {
