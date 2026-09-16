@@ -57,6 +57,24 @@ export function Sidebar({
         <span className="wordmark text-[19px] leading-none">Za3tar</span>
       </div>
 
+      <div className="px-3 pb-4">
+        <button
+          onClick={() => onView("home")}
+          className={`flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-[13px] transition-colors ${
+            view === "home"
+              ? "bg-limestone/10 text-limestone"
+              : "text-limestone/70 hover:bg-limestone/5 hover:text-limestone"
+          }`}
+        >
+          Home
+          {counts.home > 0 && (
+            <span className="ml-auto rounded bg-thyme/90 px-1.5 text-[11px] tabular-nums text-ink">
+              {counts.home}
+            </span>
+          )}
+        </button>
+      </div>
+
       <div className="px-3">
         <div className="eyebrow px-1 pb-1.5 text-limestone/45">Workspaces</div>
         <div className="flex flex-col gap-0.5">
@@ -65,14 +83,14 @@ export function Sidebar({
               key={w.id}
               onClick={() => onSelectWorkspace(w.id)}
               className={`flex items-center gap-2 rounded-md px-2 py-1.5 text-left text-[13px] transition-colors ${
-                w.id === wsId
+                w.id === wsId && view !== "home"
                   ? "bg-limestone/10 text-limestone"
                   : "text-limestone/70 hover:bg-limestone/5 hover:text-limestone"
               }`}
             >
               <span
                 className={`h-1.5 w-1.5 shrink-0 rounded-full ${
-                  w.id === wsId ? "bg-thyme" : "bg-limestone/25"
+                  w.id === wsId && view !== "home" ? "bg-thyme" : "bg-limestone/25"
                 }`}
               />
               <span className="truncate">{w.name}</span>

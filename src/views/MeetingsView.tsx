@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button, Card, Chip, Empty, Eyebrow, Field } from "../ui";
 import { fmtDur, hhmmToMin, relDate } from "../format";
 import type { RuntimeSchedule, Summary } from "../types";
@@ -12,6 +12,8 @@ export function MeetingsView({
   onFetchToday,
   onPrefill,
   onCreateBrief,
+  briefRequested,
+  onBriefShown,
   busy,
 }: {
   library: Summary[];
@@ -26,6 +28,8 @@ export function MeetingsView({
     person: string;
     notes: string;
   }) => Promise<void>;
+  briefRequested?: boolean;
+  onBriefShown?: () => void;
   busy: boolean;
 }) {
   const nowMin = new Date().getHours() * 60 + new Date().getMinutes();
@@ -35,6 +39,13 @@ export function MeetingsView({
     person: string;
     notes: string;
   } | null>(null);
+  useEffect(() => {
+    if (briefRequested) {
+      setBrief({ title: "", person: "", notes: "" });
+      onBriefShown?.();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [briefRequested]);
   const needle = q.trim().toLowerCase();
   const shown = needle
     ? library.filter(

@@ -153,6 +153,7 @@ export type RuntimeFollowupStatus = {
 };
 
 export type View =
+  | "home"
   | "overview"
   | "threads"
   | "meetings"

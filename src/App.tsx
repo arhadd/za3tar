@@ -7,6 +7,7 @@ import { PeopleView } from "./views/PeopleView";
 import { DecisionsView } from "./views/DecisionsView";
 import { FollowUpsView } from "./views/FollowUpsView";
 import { WorkspaceView } from "./views/WorkspaceView";
+import { HomeView, isMine } from "./views/HomeView";
 import { ThreadsView, ThreadDetail } from "./views/ThreadsView";
 import { TalkPanel, type TalkState } from "./views/TalkPanel";
 import { LiveSession, type LiveOp, type TalkLine } from "./live";
@@ -113,7 +114,10 @@ function App() {
       return "personal";
     }
   });
-  const [view, setView] = useState<View>("overview");
+  const [view, setView] = useState<View>("home");
+  const [userName, setUserName] = useState("");
+  const [loaded, setLoaded] = useState(false);
+  const [briefRequested, setBriefRequested] = useState(false);
   const [library, setLibrary] = useState<Summary[]>([]);
   const [openActions, setOpenActions] = useState<OpenAction[]>([]);
   const [decisions, setDecisions] = useState<DecisionRef[]>([]);
@@ -122,6 +126,7 @@ function App() {
   // settings + runtime (whatever does Za3tar's work outside the app)
   const [showSettings, setShowSettings] = useState(false);
   const [settingsForm, setSettingsForm] = useState<Settings | null>(null);
+  const [routesForm, setRoutesForm] = useState<Route[]>([]);
   const [schedule, setSchedule] = useState<RuntimeSchedule | null>(null);
   const [runtimeStatus, setRuntimeStatus] = useState<
     Record<string, RuntimeFollowupStatus>
@@ -180,6 +185,16 @@ function App() {
     } catch {
       /* best-effort */
     }
+    setLoaded(true);
+  }
+
+  async function refreshName() {
+    try {
+      const st = await invoke<Settings>("get_settings");
+      setUserName(st.user_name || "");
+    } catch {
+      /* best-effort */
+    }
   }
 
   async function refreshRuntime(ws = wsId) {
@@ -195,6 +210,7 @@ function App() {
   useEffect(() => {
     refreshAll();
     refreshRuntime();
+    refreshName();
     const un = listen<any>("capture-event", (e) => {
       const p = e.payload;
       if (p?.event === "level")
@@ -354,7 +370,7 @@ function App() {
         person: b.person,
         workspace: wsId,
         notes: b.notes,
-        thread: view === "threads" && threadOpen ? threadOpen : null,
+        thread: threadOpen ?? null,
       });
       await refreshAll();
       await openPast(d);
@@ -982,6 +998,7 @@ function App() {
   async function openSettings() {
     try {
       setSettingsForm(await invoke<Settings>("get_settings"));
+      setRoutesForm(routes.map((r) => ({ ...r })));
       setShowSettings(true);
     } catch (e) {
       setError(String(e));
@@ -992,9 +1009,12 @@ function App() {
     if (!settingsForm) return;
     try {
       await invoke("save_settings", { settings: settingsForm });
+      await invoke("save_routes", { routes: routesForm });
+      setRoutes(routesForm);
       setShowSettings(false);
       showFlash("settings saved");
       refreshRuntime();
+      refreshName();
     } catch (e) {
       setError(String(e));
     }
@@ -1028,18 +1048,27 @@ function App() {
   snap.current = () => {
     const today = new Date().toISOString().slice(0, 10);
     const lines: string[] = [];
-    lines.push(`workspace: ${wsName} (${wsId}) · today ${today}`);
+    const home = view === "home";
+    const T = home ? threads : wsThreads;
+    const O = home ? openActions.filter(isMine) : wsOpen;
+    const D = home ? decisions : wsDecisions;
+    const wsOf = (id: string) => workspaces.find((x) => x.id === id)?.name ?? id;
+    lines.push(
+      home
+        ? `HOME view: everything across all workspaces (open items below are only the user's own) · today ${today}`
+        : `workspace: ${wsName} (${wsId}) · today ${today}`,
+    );
     const w = workspaces.find((x) => x.id === wsId);
     if (w?.description) lines.push(`about: ${w.description}`);
     lines.push(
       `workspaces: ${workspaces.map((x) => `[${x.id}] ${x.name}`).join(" · ")}`,
     );
     lines.push("\nthreads:");
-    for (const t of wsThreads)
+    for (const t of T.filter((t) => !home || t.status === "active"))
       lines.push(
-        `- [${t.id}] ${t.title} (${t.status}${t.owner ? `, ${t.owner}` : ""}) — ${t.summary || "no state line"}`,
+        `- [${t.id}]${home ? ` {${wsOf(t.workspace)}}` : ""} ${t.title} (${t.status}${t.owner ? `, ${t.owner}` : ""}) — ${t.summary || "no state line"}`,
       );
-    const liveOpen = wsOpen.filter((o) => !o.action.parked);
+    const liveOpen = O.filter((o) => !o.action.parked);
     lines.push(`\nopen items (${liveOpen.length}):`);
     for (const o of liveOpen.slice(0, 40)) {
       const t = threads.find((x) => x.id === o.thread)?.title;
@@ -1048,12 +1077,14 @@ function App() {
         : o.action.due_label
           ? ` (${o.action.due_label})`
           : "";
-      lines.push(`- ${refOf(o)} [${o.action.owner}]${t ? ` {${t}}` : ""} ${o.action.title}${due}`);
+      lines.push(
+        `- ${refOf(o)} [${o.action.owner}]${home ? ` {${wsOf(o.workspace)}}` : ""}${t ? ` {${t}}` : ""} ${o.action.title}${due}`,
+      );
     }
-    const parked = wsOpen.filter((o) => o.action.parked);
+    const parked = O.filter((o) => o.action.parked);
     if (parked.length)
       lines.push(`\nparked: ${parked.map((o) => `${refOf(o)} ${o.action.title}`).join(" · ")}`);
-    const prop = wsDecisions.filter((d) => d.decision.status === "proposed");
+    const prop = D.filter((d) => d.decision.status === "proposed");
     if (prop.length) {
       lines.push(`\ndecisions waiting for a yes:`);
       for (const d of prop) lines.push(`- ${dRefOf(d)} ${d.decision.text}`);
@@ -1277,7 +1308,9 @@ function App() {
   const wsName = workspaces.find((w) => w.id === wsId)?.name ?? "Personal";
   const headline = showSettings
     ? "Settings"
-    : view === "overview"
+    : view === "home"
+      ? "Home"
+      : view === "overview"
       ? wsName
       : view === "threads"
       ? threadOpen
@@ -1334,6 +1367,13 @@ function App() {
           if (v === "meetings" && phase !== "recording") setMeetingOpen(false);
         }}
         counts={{
+          home: openActions.filter(
+            (o) =>
+              !o.action.parked &&
+              isMine(o) &&
+              !!o.action.due_date &&
+              o.action.due_date < new Date().toISOString().slice(0, 10),
+          ).length,
           overview: 0,
           threads: wsThreads.filter((t) => t.status === "active").length,
           meetings: wsLibrary.length,
@@ -1357,7 +1397,7 @@ function App() {
       <div className="flex min-w-0 flex-1 flex-col">
         <header className="flex items-center gap-4 border-b border-line px-8 py-4">
           <div className="flex min-w-0 flex-col">
-            <span className="eyebrow text-olive">{wsName}</span>
+            <span className="eyebrow text-olive">{view === "home" ? "everything" : wsName}</span>
             <h1
               dir="auto"
               className="display arabic truncate text-start text-[22px] leading-tight"
@@ -1395,6 +1435,7 @@ function App() {
 
         <main className="flex-1 overflow-y-auto px-8 py-6">
           <div className="mx-auto flex max-w-3xl flex-col gap-4">
+            {!loaded && <p className="px-1 text-[13px] text-olive">loading…</p>}
             {routeOpen && routeSessions[routeOpen] && (
               <RoutePanel
                 s={routeSessions[routeOpen]}
@@ -1435,12 +1476,43 @@ function App() {
               </div>
             )}
 
-            {showSettings && settingsForm ? (
+            {!loaded ? null : showSettings && settingsForm ? (
               <SettingsView
                 form={settingsForm}
                 onChange={setSettingsForm}
                 onSave={saveSettings}
                 onClose={() => setShowSettings(false)}
+                routes={routesForm}
+                onRoutes={setRoutesForm}
+              />
+            ) : view === "home" && !meetingOpen ? (
+              <HomeView
+                userName={userName}
+                workspaces={workspaces}
+                threads={threads}
+                open={openActions}
+                decisions={decisions}
+                library={library}
+                schedule={schedule}
+                runtimeReady={runtimeReady}
+                busy={!!busy}
+                onFetchToday={fetchToday}
+                onOpenMeeting={(d, ws) => {
+                  setWsId(ws);
+                  openPast(d);
+                }}
+                onOpenThread={(t) => {
+                  setWsId(t.workspace);
+                  setThreadOpen(t.id);
+                  setView("threads");
+                }}
+                onGoWorkspace={(id) => {
+                  setWsId(id);
+                  setView("overview");
+                }}
+                onDone={markOpenDone}
+                onPark={parkAction}
+                onDecisionStatus={setDecisionStatus}
               />
             ) : view === "overview" && !(meetingOpen && phase === "recording") ? (
               <WorkspaceView
@@ -1486,8 +1558,8 @@ function App() {
                   onNudge={nudge}
                   onDecisionStatus={setDecisionStatus}
                   onAddBrief={() => {
+                    setBriefRequested(true);
                     setView("meetings");
-                    showFlash("use + brief; it files under this thread");
                   }}
                 />
               ) : (
@@ -1564,6 +1636,8 @@ function App() {
                   showFlash("next recording pre-filled");
                 }}
                 onCreateBrief={createBrief}
+                briefRequested={briefRequested}
+                onBriefShown={() => setBriefRequested(false)}
                 busy={!!busy}
               />
             ) : view === "people" ? (
