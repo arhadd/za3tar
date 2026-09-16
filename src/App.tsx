@@ -82,6 +82,7 @@ function App() {
   const [showTranscript, setShowTranscript] = useState(false);
   const [flash, setFlash] = useState<string | null>(null);
   const [meetingOpen, setMeetingOpen] = useState(false);
+  const [meetingFrom, setMeetingFrom] = useState<{ view: View; thread: string | null } | null>(null);
   const [viewingPast, setViewingPast] = useState(false);
   const [meetingWs, setMeetingWs] = useState("personal");
   const [meetingThread, setMeetingThread] = useState("");
@@ -249,6 +250,20 @@ function App() {
       unRoute.then((f) => f());
     };
   }, []);
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== "Escape") return;
+      const tag = (e.target as HTMLElement | null)?.tagName;
+      if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return;
+      if (showSettings) setShowSettings(false);
+      else if (routeOpen) setRouteOpen(null);
+      else if (meetingOpen && phase !== "recording") closeMeeting();
+      else if (threadOpen) setThreadOpen(null);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  });
 
   useEffect(() => {
     if (phase === "recording") {
@@ -979,12 +994,23 @@ function App() {
       setDraft(null);
       setRoughNotes("");
       setViewingPast(true);
+      if (!meetingOpen) setMeetingFrom({ view, thread: threadOpen });
       setMeetingOpen(true);
-      setView("meetings");
+      if (view !== "home" && view !== "threads") setView("meetings");
       if (phase !== "recording") setPhase("done");
     } catch (e) {
       setError(String(e));
     }
+  }
+
+  /** leave the meeting page and land where it was opened from */
+  function closeMeeting() {
+    setMeetingOpen(false);
+    if (meetingFrom) {
+      setView(meetingFrom.view);
+      setThreadOpen(meetingFrom.view === "threads" ? meetingFrom.thread : null);
+    }
+    setMeetingFrom(null);
   }
 
   function saveMeta() {
@@ -1610,7 +1636,16 @@ function App() {
                 showTranscript={showTranscript}
                 setShowTranscript={setShowTranscript}
                 runtimeReady={runtimeReady}
-                onBack={() => setMeetingOpen(false)}
+                onBack={closeMeeting}
+                backLabel={
+                  meetingFrom?.view === "home"
+                    ? "home"
+                    : meetingFrom?.view === "threads" && meetingFrom.thread
+                      ? (threads.find((t) => t.id === meetingFrom.thread)?.title ?? "thread")
+                      : meetingFrom?.view === "overview"
+                        ? "overview"
+                        : "all meetings"
+                }
                 onTranscribePast={transcribePast}
                 onMakeNotes={makeNotes}
                 onExtract={extractActions}

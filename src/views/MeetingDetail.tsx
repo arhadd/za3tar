@@ -56,6 +56,7 @@ export type MeetingDetailProps = {
   runtimeReady: boolean;
 
   onBack: () => void;
+  backLabel?: string;
   onTranscribePast: () => void;
   onMakeNotes: () => void;
   onExtract: () => void;
@@ -95,7 +96,7 @@ export function MeetingDetail(p: MeetingDetailProps) {
           onClick={p.onBack}
           className="self-start text-[12px] text-olive hover:text-ink"
         >
-          ← all meetings
+          ← {p.backLabel ?? "all meetings"}
         </button>
         <div className="flex flex-wrap gap-2">
           <Field
