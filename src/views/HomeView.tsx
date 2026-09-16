@@ -32,6 +32,8 @@ function greeting(name: string) {
 
 export function HomeView({
   userName,
+  caps,
+  onSettings,
   workspaces,
   threads,
   open,
@@ -49,6 +51,8 @@ export function HomeView({
   onDecisionStatus,
 }: {
   userName: string;
+  caps: { transcription: boolean; notes: boolean; talk: boolean } | null;
+  onSettings: () => void;
   workspaces: Workspace[];
   threads: Thread[];
   open: OpenAction[];
@@ -130,6 +134,23 @@ export function HomeView({
           </p>
         </div>
       </div>
+
+      {caps && (!caps.transcription || !caps.notes) && (
+        <Card className="flex flex-col gap-2 border-thyme bg-thyme/10">
+          <Eyebrow>Set up</Eyebrow>
+          <p className="text-[13px] leading-relaxed">
+            {!caps.transcription && !caps.notes
+              ? "Za3tar needs two keys to work: ElevenLabs for transcription and Anthropic for notes, decisions and drafts."
+              : !caps.transcription
+                ? "Transcription is off: add an ElevenLabs key. Recording still works; the transcript waits."
+                : "Notes are off: add an Anthropic key. Transcripts still come in; notes and decisions wait."}
+            {!caps.talk ? " Talk is optional and needs an OpenAI key." : ""}
+          </p>
+          <Button tone="primary" size="sm" className="self-start" onClick={onSettings}>
+            open Settings
+          </Button>
+        </Card>
+      )}
 
       {runtimeReady && (
         <Card pad={false} className="p-3">

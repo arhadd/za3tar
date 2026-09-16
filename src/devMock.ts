@@ -526,6 +526,8 @@ export async function mockInvoke<T>(
         aliases: args.aliases ?? [],
       };
       return out(null);
+    case "capabilities":
+      return out({ transcription: false, notes: true, talk: false, user_name: "Ala" });
     case "get_settings":
       return out(settings);
     case "save_settings":

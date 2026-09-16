@@ -117,6 +117,7 @@ function App() {
   });
   const [view, setView] = useState<View>("home");
   const [userName, setUserName] = useState("");
+  const [caps, setCaps] = useState<{ transcription: boolean; notes: boolean; talk: boolean } | null>(null);
   const [loaded, setLoaded] = useState(false);
   const [briefRequested, setBriefRequested] = useState(false);
   const [library, setLibrary] = useState<Summary[]>([]);
@@ -191,8 +192,11 @@ function App() {
 
   async function refreshName() {
     try {
-      const st = await invoke<Settings>("get_settings");
-      setUserName(st.user_name || "");
+      const c = await invoke<{ transcription: boolean; notes: boolean; talk: boolean; user_name: string }>(
+        "capabilities",
+      );
+      setCaps(c);
+      setUserName(c.user_name || "");
     } catch {
       /* best-effort */
     }
@@ -1516,6 +1520,8 @@ function App() {
             ) : view === "home" && !meetingOpen ? (
               <HomeView
                 userName={userName}
+                caps={caps}
+                onSettings={openSettings}
                 workspaces={workspaces}
                 threads={threads}
                 open={openActions}

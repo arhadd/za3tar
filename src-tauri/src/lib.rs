@@ -98,6 +98,7 @@ pub fn run() {
             actions::list_questions,
             settings::get_settings,
             settings::save_settings,
+            settings::capabilities,
             library::list_recordings,
             library::load_recording,
             library::set_recording_title,

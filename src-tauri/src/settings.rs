@@ -126,3 +126,29 @@ pub fn save_settings(app: AppHandle, settings: Settings) -> Result<(), String> {
     apply(&settings, false);
     Ok(())
 }
+
+/// What the app can do right now, from the keys actually in the environment
+/// (settings or .env). Home uses this to say what is missing on a fresh copy.
+#[derive(Serialize)]
+pub struct Capabilities {
+    pub transcription: bool,
+    pub notes: bool,
+    pub talk: bool,
+    pub user_name: String,
+}
+
+fn has(var: &str) -> bool {
+    std::env::var(var)
+        .map(|v| !v.trim().is_empty())
+        .unwrap_or(false)
+}
+
+#[tauri::command]
+pub fn capabilities() -> Capabilities {
+    Capabilities {
+        transcription: has("ELEVENLABS_API_KEY"),
+        notes: has("ANTHROPIC_API_KEY"),
+        talk: has("OPENAI_API_KEY"),
+        user_name: std::env::var("ZA3TAR_USER").unwrap_or_default(),
+    }
+}
