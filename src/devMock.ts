@@ -275,6 +275,7 @@ let settings: Settings = {
   anthropic_api_key: "",
   openai_api_key: "",
   user_name: "Ala",
+  language: "english",
   agent_name: "",
   agent_command: "~/bin/za3tar-runtime",
 };
@@ -535,8 +536,8 @@ export async function mockInvoke<T>(
     case "capabilities":
       return out(
         FRESH
-          ? { transcription: false, notes: false, talk: false, user_name: "" }
-          : { transcription: true, notes: true, talk: false, user_name: "Ala" },
+          ? { transcription: false, notes: false, talk: false, user_name: "", language: "english" }
+          : { transcription: true, notes: true, talk: false, user_name: "Ala", language: "english" },
       );
     case "get_settings":
       return out(settings);

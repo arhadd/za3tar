@@ -203,7 +203,7 @@ export function MeetingDetail(p: MeetingDetailProps) {
         !p.permissionHint && (
           <Card className="flex flex-col gap-2 text-[13px]">
             <span>
-              sme3na بس صوتك — the other side's track was silent. Grant{" "}
+              Only your side was heard. The other side's track was silent. Grant{" "}
               <b>System Audio Recording</b> so Za3tar captures them too.
             </span>
             <Button
@@ -336,7 +336,7 @@ export function MeetingDetail(p: MeetingDetailProps) {
             actions.actions.length === 0 &&
             actions.questions.length === 0 && (
               <Card className="text-[13px] text-olive">
-                ما في قرارات أو مهام واضحة بهاللقاء — حكي حلو بس.
+                No clear decisions or actions in this one. Just a good conversation.
               </Card>
             )}
 

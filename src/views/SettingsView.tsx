@@ -41,6 +41,18 @@ export function SettingsView({
           />
         </label>
         <label className="flex flex-col gap-1 text-[12px] text-olive">
+          what Za3tar writes in (it understands Arabic, English and mixed either way)
+          <select
+            value={form.language || "english"}
+            onChange={(e) => onChange({ ...form, language: e.target.value })}
+            className="rounded-lg border border-line bg-white px-3 py-2 text-[13px] text-ink outline-none focus:border-ink"
+          >
+            <option value="english">English</option>
+            <option value="match">Match the conversation</option>
+            <option value="arabic">Arabic</option>
+          </select>
+        </label>
+        <label className="flex flex-col gap-1 text-[12px] text-olive">
           ElevenLabs API key (transcription)
           <Field
             type="password"

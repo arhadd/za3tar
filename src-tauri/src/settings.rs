@@ -22,6 +22,9 @@ pub struct Settings {
     pub openai_api_key: String,
     #[serde(default)]
     pub user_name: String,
+    /// "english" (default) | "match" | "arabic" — what Za3tar writes in
+    #[serde(default)]
+    pub language: String,
     #[serde(default)]
     pub agent_name: String,
     #[serde(default)]
@@ -35,7 +38,7 @@ type VarBinding = (
     fn(&mut Settings) -> &mut String,
 );
 
-const VARS: [VarBinding; 6] = [
+const VARS: [VarBinding; 7] = [
     (
         "ELEVENLABS_API_KEY",
         |s| &s.elevenlabs_api_key,
@@ -52,6 +55,7 @@ const VARS: [VarBinding; 6] = [
         |s| &mut s.openai_api_key,
     ),
     ("ZA3TAR_USER", |s| &s.user_name, |s| &mut s.user_name),
+    ("ZA3TAR_LANGUAGE", |s| &s.language, |s| &mut s.language),
     (
         "ZA3TAR_AGENT_NAME",
         |s| &s.agent_name,
@@ -135,6 +139,7 @@ pub struct Capabilities {
     pub notes: bool,
     pub talk: bool,
     pub user_name: String,
+    pub language: String,
 }
 
 fn has(var: &str) -> bool {
@@ -150,5 +155,6 @@ pub fn capabilities() -> Capabilities {
         notes: has("ANTHROPIC_API_KEY"),
         talk: has("OPENAI_API_KEY"),
         user_name: std::env::var("ZA3TAR_USER").unwrap_or_default(),
+        language: crate::anthropic::language(),
     }
 }

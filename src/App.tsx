@@ -123,7 +123,12 @@ function App() {
   });
   const [view, setView] = useState<View>("home");
   const [userName, setUserName] = useState("");
-  const [caps, setCaps] = useState<{ transcription: boolean; notes: boolean; talk: boolean } | null>(null);
+  const [caps, setCaps] = useState<{
+    transcription: boolean;
+    notes: boolean;
+    talk: boolean;
+    language?: string;
+  } | null>(null);
   const [loaded, setLoaded] = useState(false);
   const [briefRequested, setBriefRequested] = useState(false);
   const [library, setLibrary] = useState<Summary[]>([]);
@@ -198,9 +203,13 @@ function App() {
 
   async function refreshName() {
     try {
-      const c = await invoke<{ transcription: boolean; notes: boolean; talk: boolean; user_name: string }>(
-        "capabilities",
-      );
+      const c = await invoke<{
+        transcription: boolean;
+        notes: boolean;
+        talk: boolean;
+        user_name: string;
+        language: string;
+      }>("capabilities");
       setCaps(c);
       setUserName(c.user_name || "");
     } catch {
@@ -1416,7 +1425,13 @@ function App() {
     live.current = s;
     try {
       await s.start(
-        `You are Za3tar's voice. Keep it short and warm, mirror the user's language (Arabic, English, or mixed). You do not know the workspace yourself: every substantive request is delegated to the client, which answers with what to say; speak that answer as-is, do not add to it. While waiting for the client, say at most one short holding word (لحظة / one sec) and then stay quiet; never ask the user to repeat, never comment on audio quality, never guess at an answer. ${view === "home" ? "The user is on Home: the whole picture across workspaces." : `Workspace: ${wsName}.`}`,
+        `You are Za3tar's voice. Keep it short and warm. ${
+          caps?.language === "match"
+            ? "Mirror the user's language (Arabic, English, or mixed)."
+            : caps?.language === "arabic"
+              ? "Speak Arabic; keep names and technical terms as they are."
+              : "Speak English; you understand Arabic and mixed speech fully."
+        } You do not know the workspace yourself: every substantive request is delegated to the client, which answers with what to say; speak that answer as-is, do not add to it. While waiting for the client, say at most one short holding word (لحظة / one sec) and then stay quiet; never ask the user to repeat, never comment on audio quality, never guess at an answer. ${view === "home" ? "The user is on Home: the whole picture across workspaces." : `Workspace: ${wsName}.`}`,
       );
       s.prompt(
         view === "home"

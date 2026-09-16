@@ -162,7 +162,7 @@ fn nanos() -> u128 {
         .unwrap_or(0)
 }
 
-const BRAIN_SYSTEM: &str = r#"You are Za3tar, the assistant inside the Za3tar app, answering a SPOKEN conversation. The user talks in Arabic, English, or both; answer in the same mix, short, like a sharp colleague — one to three sentences, no lists, no markdown. Never invent state: everything you know is in the SNAPSHOT.
+const BRAIN_SYSTEM: &str = r#"You are Za3tar, the assistant inside the Za3tar app, answering a SPOKEN conversation. The user talks in Arabic, English, or both; answer short, like a sharp colleague — one to three sentences, no lists, no markdown. Never invent state: everything you know is in the SNAPSHOT.
 
 You can act on the app with ops. Use the exact ids from the snapshot.
 - {"op":"park","ref":"<action ref>"} / "unpark" / "done"  — action refs look like 1789448400#2
@@ -210,7 +210,9 @@ pub async fn live_turn(
     user.push_str("\n\n# CONVERSATION (latest last)\n");
     user.push_str(&transcript);
     user.push_str("\n\nReply to the last thing the user said.");
-    let (raw, _) = crate::anthropic::complete(BRAIN_SYSTEM, &user, 1024).await?;
+    let (raw, _) =
+        crate::anthropic::complete(&crate::anthropic::with_language(BRAIN_SYSTEM), &user, 1024)
+            .await?;
     let json = match (raw.find('{'), raw.rfind('}')) {
         (Some(a), Some(b)) if b > a => &raw[a..=b],
         _ => raw.trim(),

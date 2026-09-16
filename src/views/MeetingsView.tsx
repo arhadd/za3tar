@@ -78,7 +78,7 @@ export function MeetingsView({
           )}
           {schedule && !schedule.error && schedule.events.length === 0 && (
             <p className="px-1 py-2 text-[13px] text-olive">
-              رزنامتك فاضية اليوم
+              Nothing on the calendar today.
             </p>
           )}
           {schedule?.events.map((ev, i) => {

@@ -121,6 +121,7 @@ export type Settings = {
   anthropic_api_key: string;
   openai_api_key: string;
   user_name: string;
+  language: string;
   agent_name: string;
   agent_command: string;
 };

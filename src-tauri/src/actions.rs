@@ -222,7 +222,8 @@ pub async fn extract_actions(
     let path = PathBuf::from(&dir);
     let user = build_context(&path, title.as_deref(), today.as_deref())?;
 
-    let (raw, _) = anthropic::complete(EXTRACT_SYSTEM, &user, 4096).await?;
+    let (raw, _) =
+        anthropic::complete(&anthropic::with_language(EXTRACT_SYSTEM), &user, 4096).await?;
     let mut parsed: MeetingActions =
         serde_json::from_str(extract_json(&raw)).map_err(|e| format!("parse actions: {e}"))?;
 
@@ -382,7 +383,7 @@ pub async fn draft_followup(
         "email" => EMAIL_SYSTEM,
         other => return Err(format!("unknown draft kind: {other}")),
     };
-    let (raw, _) = anthropic::complete(system, &user, 2048).await?;
+    let (raw, _) = anthropic::complete(&anthropic::with_language(system), &user, 2048).await?;
     let draft: Draft =
         serde_json::from_str(extract_json(&raw)).map_err(|e| format!("parse draft: {e}"))?;
     if draft.body.trim().is_empty() {
@@ -534,7 +535,8 @@ pub async fn draft_nudge(dir: String, id: u32, title: Option<String>) -> Result<
     user.push_str("\n# The action item to nudge about (JSON)\n");
     user.push_str(&serde_json::to_string(item).unwrap_or_default());
 
-    let (raw, _) = anthropic::complete(NUDGE_SYSTEM, &user, 1024).await?;
+    let (raw, _) =
+        anthropic::complete(&anthropic::with_language(NUDGE_SYSTEM), &user, 1024).await?;
     let draft: Draft =
         serde_json::from_str(extract_json(&raw)).map_err(|e| format!("parse nudge: {e}"))?;
     if draft.body.trim().is_empty() {

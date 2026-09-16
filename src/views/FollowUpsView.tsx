@@ -78,7 +78,7 @@ export function FollowUpsView({
       {shown.length === 0 && (
         <Empty>
           {lens === "mine"
-            ? "كله سالك — nothing on you right now."
+            ? "Nothing on you right now."
             : lens === "parked"
               ? "Nothing parked."
               : "Nothing here."}

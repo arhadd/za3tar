@@ -96,3 +96,30 @@ pub async fn complete(system: &str, user: &str, max_tokens: u32) -> Result<(Stri
     }
     Ok((full, truncated))
 }
+
+/// The language Za3tar writes in. ZA3TAR_LANGUAGE (Settings) is
+/// "english" (default), "match" (mirror the conversation's own mix) or
+/// "arabic". Input is always understood in any mix; this only shapes output.
+pub fn language() -> String {
+    match std::env::var("ZA3TAR_LANGUAGE")
+        .unwrap_or_default()
+        .trim()
+        .to_lowercase()
+        .as_str()
+    {
+        "match" | "mirror" => "match".into(),
+        "arabic" | "ar" => "arabic".into(),
+        _ => "english".into(),
+    }
+}
+
+/// Append the output-language rule to a system prompt. It overrides any
+/// language contract written into the prompt itself.
+pub fn with_language(system: &str) -> String {
+    let rule = match language().as_str() {
+        "match" => "OUTPUT LANGUAGE (overrides any language rule above): mirror how the conversation was actually spoken — Arabic content in Arabic script, English content in English, mixed stays mixed. Keep technical terms, product/company/people names and numbers in Latin script; never transliterate them.",
+        "arabic" => "OUTPUT LANGUAGE (overrides any language rule above): write in Arabic (Levantine register is fine), but keep technical terms, product/company/people names and numbers in Latin script; never transliterate them.",
+        _ => "OUTPUT LANGUAGE (overrides any language rule above): write in plain English. You understand Arabic, Arabizi and mixed input fully; render what was said in English, keep names as the person wrote or said them, and keep a short Arabic phrase verbatim only when translating it would lose the meaning (quote it, then say what it means).",
+    };
+    format!("{system}\n\n{rule}")
+}

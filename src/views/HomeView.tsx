@@ -201,7 +201,7 @@ export function HomeView({
           )}
           {schedule && !schedule.error && schedule.events.length === 0 && (
             <p className="px-1 py-2 text-[13px] text-olive">
-              رزنامتك فاضية اليوم
+              Nothing on the calendar today.
             </p>
           )}
           {schedule?.events.map((ev, i) => (
@@ -247,7 +247,7 @@ export function HomeView({
           </div>
         )}
         {shown.length === 0 ? (
-          <Empty>كله سالك — nothing on you.</Empty>
+          <Empty>Nothing on you.</Empty>
         ) : (
           <Card pad={false} className="p-2">
             {shown.map((oa) => {
