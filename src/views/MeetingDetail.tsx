@@ -22,6 +22,7 @@ export type MeetingDetailProps = {
   dir: string | null;
   created?: number;
   duration?: number;
+  hasAudio: boolean;
   title: string;
   setTitle: (t: string) => void;
   person: string;
@@ -191,7 +192,7 @@ export function MeetingDetail(p: MeetingDetailProps) {
           </Card>
         )}
 
-      {viewingPast && !segments && !busy && (
+      {viewingPast && p.hasAudio && !segments && !busy && (
         <Button
           tone="primary"
           className="self-start"
@@ -419,10 +420,7 @@ export function MeetingDetail(p: MeetingDetailProps) {
             </Button>
           </div>
           <Card>
-            <div
-              dir="rtl"
-              className="arabic selectable text-right text-[14px] leading-relaxed"
-            >
+            <div className="arabic selectable text-[14px] leading-relaxed">
               <MarkdownLite md={notes} />
             </div>
           </Card>

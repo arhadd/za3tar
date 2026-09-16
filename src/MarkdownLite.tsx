@@ -24,7 +24,7 @@ export function MarkdownLite({ md }: { md: string }) {
   const flush = () => {
     if (bullets.length) {
       out.push(
-        <ul key={`ul-${out.length}`} className="mb-3 list-disc pr-5">
+        <ul key={`ul-${out.length}`} className="mb-3 list-disc ps-5">
           {bullets}
         </ul>,
       );
@@ -37,18 +37,26 @@ export function MarkdownLite({ md }: { md: string }) {
     if (/^##\s+/.test(line)) {
       flush();
       out.push(
-        <h3 key={i} className="mb-1 mt-3 text-[12px] font-semibold uppercase tracking-wide text-olive first:mt-0">
+        <h3
+          key={i}
+          dir="auto"
+          className="mb-1 mt-3 text-start text-[12px] font-semibold uppercase tracking-wide text-olive first:mt-0"
+        >
           {inline(line.replace(/^##\s+/, ""))}
         </h3>,
       );
     } else if (/^[-*]\s+/.test(line)) {
-      bullets.push(<li key={i}>{inline(line.replace(/^[-*]\s+/, ""))}</li>);
+      bullets.push(
+        <li key={i} dir="auto" className="text-start">
+          {inline(line.replace(/^[-*]\s+/, ""))}
+        </li>,
+      );
     } else if (line.trim() === "") {
       flush();
     } else {
       flush();
       out.push(
-        <p key={i} className="mb-2">
+        <p key={i} dir="auto" className="mb-2 text-start">
           {inline(line)}
         </p>,
       );

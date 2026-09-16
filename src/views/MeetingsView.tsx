@@ -109,10 +109,13 @@ export function MeetingsView({
                 </span>
                 <span className="text-[12px] text-olive">
                   {s.person ? `${s.person} · ` : ""}
-                  {relDate(s.created)} · {fmtDur(s.duration_secs)}
+                  {relDate(s.created)}
+                  {s.has_audio ? ` · ${fmtDur(s.duration_secs)}` : " · brief"}
                 </span>
               </div>
-              {s.has_notes ? (
+              {!s.has_audio ? (
+                <Chip tone="outline">imported</Chip>
+              ) : s.has_notes ? (
                 <Chip tone="olive">notes</Chip>
               ) : s.has_transcript ? (
                 <Chip tone="outline">transcript</Chip>

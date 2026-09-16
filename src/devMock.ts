@@ -255,6 +255,7 @@ export async function mockInvoke<T>(
           workspace: r.workspace,
           has_transcript: r.segments.length > 0,
           has_notes: !!r.notes,
+          has_audio: r.segments.length > 0 || r.duration_secs > 0,
           duration_secs: r.duration_secs,
         })),
       );

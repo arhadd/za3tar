@@ -909,7 +909,8 @@ function App() {
                 viewingPast={viewingPast}
                 dir={dir}
                 created={current?.created}
-                duration={current?.duration_secs}
+                duration={current?.has_audio ? current.duration_secs : undefined}
+                hasAudio={current?.has_audio ?? !viewingPast}
                 title={title}
                 setTitle={setTitle}
                 person={person}

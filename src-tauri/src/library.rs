@@ -35,6 +35,8 @@ pub struct RecordingSummary {
     pub workspace: String,
     pub has_transcript: bool,
     pub has_notes: bool,
+    /// false for imported briefs — notes/actions written without a recording
+    pub has_audio: bool,
     pub duration_secs: f64,
 }
 
@@ -86,8 +88,10 @@ pub fn list_recordings(app: AppHandle) -> Result<Vec<RecordingSummary>, String> 
         if !dir.is_dir() {
             continue;
         }
-        // a recording is only worth listing once it has audio
-        if !dir.join("mic.wav").exists() && !dir.join("system.wav").exists() {
+        // a recording is worth listing once it has audio — or, for an
+        // imported brief, once it has notes or outcomes to show
+        let has_audio = dir.join("mic.wav").exists() || dir.join("system.wav").exists();
+        if !has_audio && !dir.join("notes.md").exists() && !dir.join("actions.json").exists() {
             continue;
         }
         let id = dir
@@ -102,6 +106,7 @@ pub fn list_recordings(app: AppHandle) -> Result<Vec<RecordingSummary>, String> 
             workspace: crate::workspaces::or_default(&meta.workspace),
             has_transcript: dir.join("transcript.json").exists(),
             has_notes: dir.join("notes.md").exists(),
+            has_audio,
             duration_secs: duration_secs(&dir),
             id,
             created,

@@ -16,6 +16,7 @@ export type Summary = {
   workspace: string;
   has_transcript: boolean;
   has_notes: boolean;
+  has_audio: boolean;
   duration_secs: number;
 };
 
