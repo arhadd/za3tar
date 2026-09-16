@@ -118,9 +118,8 @@ export class LiveSession {
     } catch {
       return;
     }
-    if (x.type === "session.output_transcript.delta") this.pushZa3tar(x.delta);
-    else if (x.type === "session.input_transcript.delta") this.pushYou(x.delta);
-    else if (x.type === "error")
+    // transcripts arrive on the sideband too; take them from one place only
+    if (x.type === "error")
       this.h.onLine({ role: "error", text: x.error?.message ?? "voice error" });
     else if (x.type === "session.closed") this.stop();
   }
@@ -139,15 +138,15 @@ export class LiveSession {
       this.seen.add(id);
       const settle = () => {
         if (this.closed) return;
-        if (Date.now() - this.lastInputAt < 1400)
-          return void setTimeout(settle, 300);
+        if (Date.now() - this.lastInputAt < 900)
+          return void setTimeout(settle, 250);
         if (this.busy) {
           this.send(id, "one thing at a time — still on the last one.");
           return;
         }
         this.run(id);
       };
-      setTimeout(settle, 1400);
+      setTimeout(settle, 900);
     } else if (e.type === "error")
       this.h.onLine({ role: "error", text: e.error?.message ?? "voice error" });
   }
