@@ -7,7 +7,7 @@ function inline(text: string): ReactNode[] {
   return text.split(/(\*\*[^*]+\*\*)/g).map((part, i) => {
     const m = part.match(/^\*\*([^*]+)\*\*$/);
     return m ? (
-      <strong key={i} className="font-semibold text-olive-deep">
+      <strong key={i} className="font-semibold text-ink">
         {m[1]}
       </strong>
     ) : (
@@ -37,7 +37,7 @@ export function MarkdownLite({ md }: { md: string }) {
     if (/^##\s+/.test(line)) {
       flush();
       out.push(
-        <h3 key={i} className="mb-1 mt-3 font-bold text-olive-deep first:mt-0">
+        <h3 key={i} className="mb-1 mt-3 text-[12px] font-semibold uppercase tracking-wide text-olive first:mt-0">
           {inline(line.replace(/^##\s+/, ""))}
         </h3>,
       );
