@@ -62,6 +62,7 @@ export type ActionItem = {
   due_date?: string | null;
   detail?: string | null;
   done: boolean;
+  parked: boolean;
 };
 
 export type DecisionStatus = "proposed" | "confirmed" | "superseded";

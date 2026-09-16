@@ -83,6 +83,7 @@ pub fn run() {
             actions::extract_actions,
             actions::load_actions,
             actions::set_action_done,
+            actions::set_action_parked,
             actions::draft_followup,
             actions::export_calendar,
             actions::open_external,

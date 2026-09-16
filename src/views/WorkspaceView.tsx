@@ -58,7 +58,8 @@ export function WorkspaceView({
 }) {
   const [edit, setEdit] = useState<Workspace | null>(null);
   const today = new Date().toISOString().slice(0, 10);
-  const overdue = open.filter(
+  const live = open.filter((o) => !o.action.parked);
+  const overdue = live.filter(
     (o) => o.action.due_date && o.action.due_date < today,
   ).length;
   const proposed = decisions.filter(
@@ -254,7 +255,7 @@ export function WorkspaceView({
         />
         <Stat
           label={overdue ? `open · ${overdue} overdue` : "open"}
-          n={open.length}
+          n={live.length}
           accent={overdue > 0}
           onClick={() => onGo("followups")}
         />

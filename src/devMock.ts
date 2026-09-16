@@ -89,6 +89,7 @@ const act = (
   due_date,
   detail: null,
   done,
+  parked: false,
 });
 
 const recs: Rec[] = [
@@ -436,6 +437,11 @@ export async function mockInvoke<T>(
     case "set_action_done": {
       const a = byDir(args.dir)?.actions?.actions.find((x) => x.id === args.id);
       if (a) a.done = args.done;
+      return out(null);
+    }
+    case "set_action_parked": {
+      const a = byDir(args.dir)?.actions?.actions.find((x) => x.id === args.id);
+      if (a) a.parked = args.parked;
       return out(null);
     }
     case "set_decision_status": {

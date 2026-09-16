@@ -39,7 +39,7 @@ export function statsFor(
 ): ThreadStats {
   const today = todayISO();
   const mine = library.filter((s) => s.thread === t.id);
-  const o = open.filter((x) => x.thread === t.id);
+  const o = open.filter((x) => x.thread === t.id && !x.action.parked);
   return {
     open: o.length,
     overdue: o.filter((x) => x.action.due_date && x.action.due_date < today)
@@ -232,7 +232,7 @@ export function ThreadDetail({
   const [edit, setEdit] = useState<Thread | null>(null);
   const today = todayISO();
   const entries = library.filter((s) => s.thread === t.id);
-  const mineOpen = open.filter((x) => x.thread === t.id);
+  const mineOpen = open.filter((x) => x.thread === t.id && !x.action.parked);
   const mineDec = decisions.filter((d) => d.thread === t.id);
   const mineQ = questions.filter((q) => q.thread === t.id);
   const people = Array.from(

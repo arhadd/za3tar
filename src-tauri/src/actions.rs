@@ -28,6 +28,9 @@ pub struct ActionItem {
     pub detail: Option<String>,
     #[serde(default)]
     pub done: bool,
+    /// not now: still open, but deliberately out of the way
+    #[serde(default)]
+    pub parked: bool,
 }
 
 /// A decision is a record, not a sentence: it has an id, a status that moves
@@ -249,6 +252,19 @@ pub fn set_action_done(dir: String, id: u32, done: bool) -> Result<(), String> {
     for a in actions.actions.iter_mut() {
         if a.id == id {
             a.done = done;
+        }
+    }
+    save(&path, &actions)
+}
+
+/// Park or unpark an action: it stays open but leaves the daily list.
+#[tauri::command]
+pub fn set_action_parked(dir: String, id: u32, parked: bool) -> Result<(), String> {
+    let path = PathBuf::from(&dir);
+    let mut actions = load(&path).ok_or("no actions extracted yet")?;
+    for a in actions.actions.iter_mut() {
+        if a.id == id {
+            a.parked = parked;
         }
     }
     save(&path, &actions)
@@ -563,6 +579,7 @@ mod tests {
             due_date: Some("2026-07-25".into()),
             detail: Some("line1\nline2".into()),
             done: false,
+            parked: false,
         };
         let ics = build_ics("kickoff", &[&a]);
         assert!(ics.contains("DTSTART;VALUE=DATE:20260725"));

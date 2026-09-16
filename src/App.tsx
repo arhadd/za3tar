@@ -579,6 +579,19 @@ function App() {
     }
   }
 
+  async function parkAction(oa: OpenAction, parked: boolean) {
+    setOpenActions((cur) =>
+      cur.map((x) =>
+        x.dir === oa.dir && x.action.id === oa.action.id
+          ? { ...x, action: { ...x.action, parked } }
+          : x,
+      ),
+    );
+    invoke("set_action_parked", { dir: oa.dir, id: oa.action.id, parked })
+      .then(refreshAll)
+      .catch(() => {});
+  }
+
   /** mark an open action done from the follow-ups view (optimistic) */
   async function markOpenDone(oa: OpenAction) {
     setOpenActions((cur) =>
@@ -1017,7 +1030,7 @@ function App() {
           people: wsPeople.length,
           decisions: wsDecisions.filter((d) => d.decision.status === "proposed")
             .length,
-          followups: wsOpen.length,
+          followups: wsOpen.filter((o) => !o.action.parked).length,
         }}
         runtimeReady={runtimeReady}
         onSettings={openSettings}
@@ -1215,6 +1228,7 @@ function App() {
                 runtimeReady={runtimeReady}
                 onSync={syncFollowups}
                 onDone={markOpenDone}
+                onPark={parkAction}
                 onNudge={nudge}
                 onOpenMeeting={openPast}
                 busy={!!busy}

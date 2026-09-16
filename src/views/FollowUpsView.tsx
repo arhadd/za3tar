@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Button, Chip, Empty, Eyebrow, ownerTone } from "../ui";
 import { bridgeId, relDate, todayISO } from "../format";
 import type { OpenAction, RuntimeFollowupStatus } from "../types";
@@ -8,10 +9,12 @@ export function FollowUpsView({
   runtimeReady,
   onSync,
   onDone,
+  onPark,
   onNudge,
   onOpenMeeting,
   busy,
 }: {
+  onPark: (oa: OpenAction, parked: boolean) => void;
   openActions: OpenAction[];
   runtimeStatus: Record<string, RuntimeFollowupStatus>;
   runtimeReady: boolean;
@@ -22,13 +25,43 @@ export function FollowUpsView({
   busy: boolean;
 }) {
   const today = todayISO();
+  const [lens, setLens] = useState<"mine" | "others" | "all" | "parked">("mine");
+  const parkedN = openActions.filter((o) => o.action.parked).length;
+  const live = openActions.filter((o) => !o.action.parked);
+  const isMine = (o: OpenAction) =>
+    o.action.owner === "me" || /^(ala|me)\b/i.test(o.action.owner);
+  const shown =
+    lens === "parked"
+      ? openActions.filter((o) => o.action.parked)
+      : lens === "mine"
+        ? live.filter(isMine)
+        : lens === "others"
+          ? live.filter((o) => !isMine(o))
+          : live;
+  const lenses: { id: typeof lens; label: string; n: number }[] = [
+    { id: "mine", label: "on me", n: live.filter(isMine).length },
+    { id: "others", label: "waiting on others", n: live.filter((o) => !isMine(o)).length },
+    { id: "all", label: "all", n: live.length },
+    { id: "parked", label: "parked", n: parkedN },
+  ];
   return (
     <div className="flex flex-col gap-2">
       <div className="flex items-center gap-2 px-1">
         <Eyebrow>Follow-ups</Eyebrow>
-        <span className="text-[12px] text-olive">
-          everything still open across this workspace
-        </span>
+        <div className="flex gap-1">
+          {lenses.map((l) => (
+            <button
+              key={l.id}
+              onClick={() => setLens(l.id)}
+              className={`rounded-md px-2 py-0.5 text-[12px] transition-colors ${
+                lens === l.id ? "bg-ink text-limestone" : "text-olive hover:text-ink"
+              }`}
+            >
+              {l.label}
+              {l.n > 0 ? ` · ${l.n}` : ""}
+            </button>
+          ))}
+        </div>
         {runtimeReady && openActions.length > 0 && (
           <Button
             tone="ghost"
@@ -42,10 +75,18 @@ export function FollowUpsView({
           </Button>
         )}
       </div>
-      {openActions.length === 0 && <Empty>كله سالك — nothing open.</Empty>}
-      {openActions.length > 0 && (
+      {shown.length === 0 && (
+        <Empty>
+          {lens === "mine"
+            ? "كله سالك — nothing on you right now."
+            : lens === "parked"
+              ? "Nothing parked."
+              : "Nothing here."}
+        </Empty>
+      )}
+      {shown.length > 0 && (
         <div className="rounded-xl border border-line bg-paper p-2">
-          {openActions.map((oa) => {
+          {shown.map((oa) => {
             const overdue = !!oa.action.due_date && oa.action.due_date < today;
             const js = runtimeStatus[bridgeId(oa.dir, oa.action.id)];
             return (
@@ -96,6 +137,15 @@ export function FollowUpsView({
                     title="draft a WhatsApp nudge"
                   >
                     nudge
+                  </Button>
+                  <Button
+                    size="sm"
+                    tone="ghost"
+                    disabled={busy}
+                    onClick={() => onPark(oa, !oa.action.parked)}
+                    title={oa.action.parked ? "back on the list" : "not now"}
+                  >
+                    {oa.action.parked ? "unpark" : "park"}
                   </Button>
                 </div>
               </div>
