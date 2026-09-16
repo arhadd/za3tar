@@ -8,9 +8,13 @@
 // explicit click in the UI.
 
 /// Resolve the transport command line (without the message argument).
-/// Precedence: ZA3TAR_AGENT_CMD (in-app setting or env) → legacy hx bridge
-/// (ZA3TAR_HX or ~/bin/hx, kept for setups that predate the generic bridge).
-fn agent_cmd() -> Option<String> {
+/// Precedence: the workspace's own runtime (workspaces.rs) → ZA3TAR_AGENT_CMD
+/// (in-app setting or env) → legacy hx bridge (ZA3TAR_HX or ~/bin/hx, kept
+/// for setups that predate the generic bridge).
+fn agent_cmd(app: &tauri::AppHandle, workspace: Option<&str>) -> Option<String> {
+    if let Some(cmd) = workspace.and_then(|w| crate::workspaces::runtime_for(app, w)) {
+        return Some(cmd);
+    }
     if let Ok(cmd) = std::env::var("ZA3TAR_AGENT_CMD") {
         let cmd = cmd.trim().to_string();
         if !cmd.is_empty() {
@@ -32,15 +36,19 @@ fn agent_cmd() -> Option<String> {
 /// Whether a bridge is configured at all — the UI hides the agent features
 /// entirely when this is false.
 #[tauri::command]
-pub fn agent_available() -> bool {
-    agent_cmd().is_some()
+pub fn agent_available(app: tauri::AppHandle, workspace: Option<String>) -> bool {
+    agent_cmd(&app, workspace.as_deref()).is_some()
 }
 
 /// Send one message to the agent and return its reply. Runs on a blocking
 /// thread — the transport round-trip plus an agent turn can take a while.
 #[tauri::command]
-pub async fn send_to_agent(message: String) -> Result<String, String> {
-    let cmd = agent_cmd().ok_or(
+pub async fn send_to_agent(
+    app: tauri::AppHandle,
+    message: String,
+    workspace: Option<String>,
+) -> Result<String, String> {
+    let cmd = agent_cmd(&app, workspace.as_deref()).ok_or(
         "no agent connected — set the agent command in ⚙ settings \
          (any command that takes the message as an argument and prints the reply)",
     )?;

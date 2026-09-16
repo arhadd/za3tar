@@ -157,6 +157,49 @@ pub fn set_recording_person(dir: String, person: String) -> Result<(), String> {
     write_meta(&path, &meta)
 }
 
+/// An imported brief: notes written or pasted in, no recording. Gets the
+/// same directory shape as a recording so every other command works on it.
+#[tauri::command]
+pub fn create_brief(
+    app: AppHandle,
+    title: String,
+    person: String,
+    workspace: String,
+    notes: String,
+) -> Result<String, String> {
+    let root = recordings_root(&app)?;
+    std::fs::create_dir_all(&root).map_err(|e| e.to_string())?;
+    let mut secs = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .map(|d| d.as_secs())
+        .unwrap_or(0);
+    let mut dir = root.join(secs.to_string());
+    while dir.exists() {
+        secs += 1;
+        dir = root.join(secs.to_string());
+    }
+    std::fs::create_dir(&dir).map_err(|e| e.to_string())?;
+    write_meta(
+        &dir,
+        &Meta {
+            title: title.trim().to_string(),
+            person: person.trim().to_string(),
+            workspace: workspace.trim().to_string(),
+        },
+    )?;
+    let body = notes.trim();
+    std::fs::write(
+        dir.join("notes.md"),
+        if body.is_empty() {
+            "—\n".to_string()
+        } else {
+            format!("{body}\n")
+        },
+    )
+    .map_err(|e| e.to_string())?;
+    Ok(dir.to_string_lossy().to_string())
+}
+
 /// Move a recording into a workspace (workspaces.rs). Empty = default.
 #[tauri::command]
 pub fn set_recording_workspace(dir: String, workspace: String) -> Result<(), String> {

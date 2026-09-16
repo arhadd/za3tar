@@ -6,6 +6,7 @@ import { MeetingDetail } from "./views/MeetingDetail";
 import { PeopleView } from "./views/PeopleView";
 import { DecisionsView } from "./views/DecisionsView";
 import { FollowUpsView } from "./views/FollowUpsView";
+import { WorkspaceView } from "./views/WorkspaceView";
 import { SettingsView } from "./views/SettingsView";
 import { Button } from "./ui";
 import {
@@ -22,6 +23,7 @@ import type {
   Draft,
   DraftKind,
   Level,
+  Link,
   MeetingActions,
   OpenAction,
   PersonRow,
@@ -73,7 +75,7 @@ function App() {
       return "personal";
     }
   });
-  const [view, setView] = useState<View>("meetings");
+  const [view, setView] = useState<View>("overview");
   const [library, setLibrary] = useState<Summary[]>([]);
   const [openActions, setOpenActions] = useState<OpenAction[]>([]);
   const [decisions, setDecisions] = useState<DecisionRef[]>([]);
@@ -127,9 +129,11 @@ function App() {
     }
   }
 
-  async function refreshRuntime() {
+  async function refreshRuntime(ws = wsId) {
     try {
-      setRuntimeReady(await invoke<boolean>("agent_available"));
+      setRuntimeReady(
+        await invoke<boolean>("agent_available", { workspace: ws }),
+      );
     } catch {
       /* best-effort */
     }
@@ -177,6 +181,8 @@ function App() {
     } catch {
       /* fine */
     }
+    refreshRuntime(wsId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [wsId]);
 
   // if the remembered workspace no longer exists, fall back
@@ -222,6 +228,68 @@ function App() {
       await refreshAll();
       setWsId(ws.id);
       setMeetingOpen(false);
+    } catch (e) {
+      setError(String(e));
+    }
+  }
+
+  async function saveWorkspace(w: Workspace) {
+    try {
+      await invoke("update_workspace", {
+        id: w.id,
+        name: w.name,
+        description: w.description,
+        links: w.links,
+        runtimeCommand: w.runtime_command,
+      });
+      await refreshAll();
+      refreshRuntime();
+      showFlash("workspace saved");
+    } catch (e) {
+      setError(String(e));
+    }
+  }
+
+  async function openLink(l: Link) {
+    try {
+      if (/^https?:\/\//i.test(l.target))
+        await invoke("open_external", { url: l.target });
+      else await invoke("open_path", { path: l.target });
+    } catch (e) {
+      setError(String(e));
+    }
+  }
+
+  async function createBrief(b: {
+    title: string;
+    person: string;
+    notes: string;
+  }) {
+    try {
+      const d = await invoke<string>("create_brief", {
+        title: b.title,
+        person: b.person,
+        workspace: wsId,
+        notes: b.notes,
+      });
+      await refreshAll();
+      await openPast(d);
+      if (b.notes.trim()) {
+        setBusy("pulling out decisions & actions…");
+        try {
+          const a = await invoke<MeetingActions>("extract_actions", {
+            dir: d,
+            title: b.title.trim() || null,
+            today: todayContext(),
+          });
+          setActions(a);
+          refreshAll();
+        } catch (e) {
+          setError(String(e));
+        } finally {
+          setBusy(null);
+        }
+      }
     } catch (e) {
       setError(String(e));
     }
@@ -590,7 +658,10 @@ function App() {
     setBusy(busyMsg);
     setError(null);
     try {
-      return await invoke<string>("send_to_agent", { message });
+      return await invoke<string>("send_to_agent", {
+        message,
+        workspace: meetingOpen && dir ? meetingWs : wsId,
+      });
     } catch (e) {
       setError(String(e));
       return null;
@@ -797,7 +868,9 @@ function App() {
   const wsName = workspaces.find((w) => w.id === wsId)?.name ?? "Personal";
   const headline = showSettings
     ? "Settings"
-    : view === "meetings"
+    : view === "overview"
+      ? wsName
+      : view === "meetings"
       ? meetingOpen
         ? phase === "recording"
           ? "Recording"
@@ -835,6 +908,7 @@ function App() {
         onSelectWorkspace={(id) => {
           setWsId(id);
           setShowSettings(false);
+          setView("overview");
           if (phase !== "recording") setMeetingOpen(false);
         }}
         onCreateWorkspace={createWorkspace}
@@ -845,6 +919,7 @@ function App() {
           if (v === "meetings" && phase !== "recording") setMeetingOpen(false);
         }}
         counts={{
+          overview: 0,
           meetings: wsLibrary.length,
           people: wsPeople.length,
           decisions: wsDecisions.filter((d) => d.decision.status === "proposed")
@@ -903,7 +978,29 @@ function App() {
                 onSave={saveSettings}
                 onClose={() => setShowSettings(false)}
               />
-            ) : view === "meetings" && meetingOpen ? (
+            ) : view === "overview" && !(meetingOpen && phase === "recording") ? (
+              <WorkspaceView
+                ws={
+                  workspaces.find((w) => w.id === wsId) ?? {
+                    id: wsId,
+                    name: wsName,
+                    created: 0,
+                    description: "",
+                    links: [],
+                    runtime_command: "",
+                  }
+                }
+                library={wsLibrary}
+                people={wsPeople}
+                open={wsOpen}
+                decisions={wsDecisions}
+                runtimeReady={runtimeReady}
+                onSave={saveWorkspace}
+                onOpenLink={openLink}
+                onGo={setView}
+                onOpenMeeting={openPast}
+              />
+            ) : (view === "meetings" || view === "overview") && meetingOpen ? (
               <MeetingDetail
                 phase={phase}
                 viewingPast={viewingPast}
@@ -963,6 +1060,7 @@ function App() {
                   setPerson(who);
                   showFlash("next recording pre-filled");
                 }}
+                onCreateBrief={createBrief}
                 busy={!!busy}
               />
             ) : view === "people" ? (

@@ -5,7 +5,15 @@ export type Level = { peak: number; seconds: number };
 export type Segment = { speaker: string; start: number; text: string };
 export type Phase = "idle" | "recording" | "processing" | "done";
 
-export type Workspace = { id: string; name: string; created: number };
+export type Link = { kind: string; label: string; target: string };
+export type Workspace = {
+  id: string;
+  name: string;
+  created: number;
+  description: string;
+  links: Link[];
+  runtime_command: string;
+};
 
 export type Summary = {
   dir: string;
@@ -118,4 +126,4 @@ export type RuntimeFollowupStatus = {
   updated_at: string;
 };
 
-export type View = "meetings" | "people" | "decisions" | "followups";
+export type View = "overview" | "meetings" | "people" | "decisions" | "followups";

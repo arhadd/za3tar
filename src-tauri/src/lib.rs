@@ -27,6 +27,30 @@ fn open_system_audio_settings() -> Result<(), String> {
     Ok(())
 }
 
+/// Reveal a local file or folder (a workspace's associated files). Only
+/// paths that exist; `~` expands to the home directory.
+#[tauri::command]
+fn open_path(path: String) -> Result<(), String> {
+    let mut p = path.trim().to_string();
+    if let Some(rest) = p.strip_prefix("~") {
+        if let Some(home) = std::env::var_os("HOME") {
+            p = format!("{}{}", home.to_string_lossy(), rest);
+        }
+    }
+    let pb = std::path::PathBuf::from(&p);
+    if !pb.exists() {
+        return Err(format!("not on this Mac: {p}"));
+    }
+    #[cfg(target_os = "macos")]
+    {
+        std::process::Command::new("open")
+            .arg(&pb)
+            .spawn()
+            .map_err(|e| e.to_string())?;
+    }
+    Ok(())
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     // load API keys from .env in dev (searches CWD and ancestors). A bundled
@@ -49,6 +73,7 @@ pub fn run() {
         .manage(CaptureState::default())
         .invoke_handler(tauri::generate_handler![
             open_system_audio_settings,
+            open_path,
             capture::start_recording,
             capture::stop_recording,
             capture::is_recording,
@@ -71,6 +96,7 @@ pub fn run() {
             library::set_recording_title,
             library::set_recording_person,
             library::set_recording_workspace,
+            library::create_brief,
             people::list_people,
             people::save_person,
             agent::send_to_agent,
@@ -78,6 +104,7 @@ pub fn run() {
             workspaces::list_workspaces,
             workspaces::create_workspace,
             workspaces::rename_workspace,
+            workspaces::update_workspace,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

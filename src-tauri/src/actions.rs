@@ -178,9 +178,15 @@ fn save(dir: &Path, actions: &MeetingActions) -> Result<(), String> {
 }
 
 fn build_context(dir: &Path, title: Option<&str>, today: Option<&str>) -> Result<String, String> {
-    let segments = crate::asr::load_transcript(dir)?;
-    let transcript = crate::asr::render(&segments);
     let notes = std::fs::read_to_string(dir.join("notes.md")).ok();
+    // an imported brief has no transcript: its notes are the material
+    let transcript = match crate::asr::load_transcript(dir) {
+        Ok(segments) => crate::asr::render(&segments),
+        Err(e) => match &notes {
+            Some(n) if !n.trim().is_empty() => format!("[brief] {}", n.trim()),
+            _ => return Err(e),
+        },
+    };
 
     let mut p = String::from("# Context\n");
     p.push_str(&format!(

@@ -29,9 +29,37 @@ const day = 86400;
 const iso = (d: number) => new Date(d * 1000).toISOString().slice(0, 10);
 
 const workspaces: Workspace[] = [
-  { id: "personal", name: "Personal", created: 0 },
-  { id: "madar", name: "Madar", created: now - 20 * day },
-  { id: "house", name: "The House", created: now - 9 * day },
+  {
+    id: "personal",
+    name: "Personal",
+    created: 0,
+    description: "",
+    links: [],
+    runtime_command: "",
+  },
+  {
+    id: "madar",
+    name: "Madar",
+    created: now - 20 * day,
+    description:
+      "Madar's onboarding and pricing work. Lina is the product lead; done means a bilingual launch with Stripe live.",
+    links: [
+      { kind: "source", label: "Madar x Za3tar WhatsApp group", target: "" },
+      { kind: "source", label: "weekly sync notes", target: "~/Documents/madar/notes.md" },
+      { kind: "repo", label: "madar/app", target: "https://github.com/example/madar" },
+      { kind: "folder", label: "design files", target: "~/Documents/madar" },
+      { kind: "url", label: "staging", target: "https://staging.example.com" },
+    ],
+    runtime_command: "~/bin/hx -p madar -z",
+  },
+  {
+    id: "house",
+    name: "The House",
+    created: now - 9 * day,
+    description: "",
+    links: [],
+    runtime_command: "",
+  },
 ];
 
 const dec = (
@@ -238,12 +266,47 @@ export async function mockInvoke<T>(
       const id = String(args.name)
         .toLowerCase()
         .replace(/[^a-z0-9]+/g, "-");
-      const ws = { id, name: args.name, created: now };
+      const ws = {
+        id,
+        name: args.name,
+        created: now,
+        description: "",
+        links: [],
+        runtime_command: "",
+      };
       workspaces.push(ws);
       return out(ws);
     }
     case "rename_workspace":
       return out(null);
+    case "update_workspace": {
+      const w = workspaces.find((x) => x.id === args.id)!;
+      Object.assign(w, {
+        name: args.name,
+        description: args.description,
+        links: args.links,
+        runtime_command: args.runtimeCommand,
+      });
+      return out(w);
+    }
+    case "open_path":
+      return out(null);
+    case "create_brief": {
+      const r: Rec = {
+        dir: `/mock/${recs.length + 1}`,
+        id: String(recs.length + 1),
+        created: now,
+        title: args.title,
+        person: args.person,
+        workspace: args.workspace,
+        duration_secs: 0,
+        segments: [],
+        notes: args.notes || "—",
+        actions: null,
+      };
+      recs.unshift(r);
+      return out(r.dir);
+    }
     case "list_recordings":
       return out(
         recs.map((r) => ({
@@ -370,8 +433,12 @@ export async function mockInvoke<T>(
     case "save_settings":
       settings = args.settings;
       return out(null);
-    case "agent_available":
-      return out(settings.agent_command.trim().length > 0);
+    case "agent_available": {
+      const w = workspaces.find((x) => x.id === args.workspace);
+      return out(
+        !!w?.runtime_command.trim() || settings.agent_command.trim().length > 0,
+      );
+    }
     case "start_recording":
       recording = true;
       levelTimer = window.setInterval(() => {

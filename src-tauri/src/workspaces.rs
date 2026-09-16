@@ -12,12 +12,35 @@ use tauri::{AppHandle, Manager};
 
 pub const DEFAULT_ID: &str = "personal";
 
+/// Something a workspace points at: a repo, a folder on this Mac, a URL, a
+/// chat channel, a doc, a data source. `target` is a path or URL; the app
+/// opens it with the system handler.
+#[derive(Serialize, Deserialize, Clone, Debug, Default)]
+pub struct Link {
+    #[serde(default)]
+    pub kind: String, // "source" | "repo" | "folder" | "url" | "channel" | "doc"
+    #[serde(default)]
+    pub label: String,
+    #[serde(default)]
+    pub target: String,
+}
+
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct Workspace {
     pub id: String,
     pub name: String,
     #[serde(default)]
     pub created: u64,
+    /// what this workspace is, in a sentence or two
+    #[serde(default)]
+    pub description: String,
+    /// where its information comes from, and the files/links behind it
+    #[serde(default)]
+    pub links: Vec<Link>,
+    /// optional runtime override: the command Za3tar uses for work in THIS
+    /// workspace (a different agent per client). Empty = the global one.
+    #[serde(default)]
+    pub runtime_command: String,
 }
 
 fn path(app: &AppHandle) -> Result<PathBuf, String> {
@@ -85,6 +108,9 @@ pub fn list_workspaces(app: AppHandle) -> Result<Vec<Workspace>, String> {
                 id: DEFAULT_ID.into(),
                 name: "Personal".into(),
                 created: 0,
+                description: String::new(),
+                links: Vec::new(),
+                runtime_command: String::new(),
             },
         );
     }
@@ -109,6 +135,9 @@ pub fn create_workspace(app: AppHandle, name: String) -> Result<Workspace, Strin
         id,
         name,
         created: now(),
+        description: String::new(),
+        links: Vec::new(),
+        runtime_command: String::new(),
     };
     list.push(ws.clone());
     write(&app, &list)?;
@@ -127,6 +156,50 @@ pub fn rename_workspace(app: AppHandle, id: String, name: String) -> Result<(), 
     };
     ws.name = name;
     write(&app, &list)
+}
+
+/// Edit everything about a workspace except its id.
+#[tauri::command]
+pub fn update_workspace(
+    app: AppHandle,
+    id: String,
+    name: String,
+    description: String,
+    links: Vec<Link>,
+    runtime_command: String,
+) -> Result<Workspace, String> {
+    let name = name.trim().to_string();
+    if name.is_empty() {
+        return Err("a workspace needs a name".into());
+    }
+    let mut list = list_workspaces(app.clone())?;
+    let Some(ws) = list.iter_mut().find(|w| w.id == id) else {
+        return Err("no such workspace".into());
+    };
+    ws.name = name;
+    ws.description = description.trim().to_string();
+    ws.links = links
+        .into_iter()
+        .map(|l| Link {
+            kind: l.kind.trim().to_string(),
+            label: l.label.trim().to_string(),
+            target: l.target.trim().to_string(),
+        })
+        .filter(|l| !l.label.is_empty() || !l.target.is_empty())
+        .collect();
+    ws.runtime_command = runtime_command.trim().to_string();
+    let out = ws.clone();
+    write(&app, &list)?;
+    Ok(out)
+}
+
+/// The runtime command a workspace wants, if it set one.
+pub fn runtime_for(app: &AppHandle, id: &str) -> Option<String> {
+    read(app)
+        .into_iter()
+        .find(|w| w.id == or_default(id))
+        .map(|w| w.runtime_command)
+        .filter(|c| !c.trim().is_empty())
 }
 
 /// Resolve an empty/missing id to the default workspace.

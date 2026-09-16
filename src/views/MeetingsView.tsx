@@ -1,4 +1,5 @@
-import { Button, Card, Chip, Empty, Eyebrow } from "../ui";
+import { useState } from "react";
+import { Button, Card, Chip, Empty, Eyebrow, Field } from "../ui";
 import { fmtDur, hhmmToMin, relDate } from "../format";
 import type { RuntimeSchedule, Summary } from "../types";
 
@@ -10,6 +11,7 @@ export function MeetingsView({
   schedule,
   onFetchToday,
   onPrefill,
+  onCreateBrief,
   busy,
 }: {
   library: Summary[];
@@ -19,9 +21,28 @@ export function MeetingsView({
   schedule: RuntimeSchedule | null;
   onFetchToday: () => void;
   onPrefill: (title: string, person: string) => void;
+  onCreateBrief: (b: {
+    title: string;
+    person: string;
+    notes: string;
+  }) => Promise<void>;
   busy: boolean;
 }) {
   const nowMin = new Date().getHours() * 60 + new Date().getMinutes();
+  const [q, setQ] = useState("");
+  const [brief, setBrief] = useState<{
+    title: string;
+    person: string;
+    notes: string;
+  } | null>(null);
+  const needle = q.trim().toLowerCase();
+  const shown = needle
+    ? library.filter(
+        (s) =>
+          s.title.toLowerCase().includes(needle) ||
+          s.person.toLowerCase().includes(needle),
+      )
+    : library;
 
   return (
     <div className="flex flex-col gap-6">
@@ -83,14 +104,78 @@ export function MeetingsView({
       )}
 
       <div className="flex flex-col gap-2">
-        <Eyebrow className="px-1">Meetings</Eyebrow>
-        {library.length === 0 && (
+        <div className="flex items-center gap-2 px-1">
+          <Eyebrow>Meetings & briefs</Eyebrow>
+          <Field
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+            placeholder="find by title or person"
+            className="ml-auto w-56 py-1 text-[12px]"
+          />
+          <Button
+            tone="quiet"
+            size="sm"
+            onClick={() =>
+              setBrief(brief ? null : { title: "", person: "", notes: "" })
+            }
+          >
+            {brief ? "cancel" : "+ brief"}
+          </Button>
+        </div>
+        {brief && (
+          <form
+            onSubmit={async (e) => {
+              e.preventDefault();
+              await onCreateBrief(brief);
+              setBrief(null);
+            }}
+            className="flex flex-col gap-2 rounded-xl border border-ink/40 bg-paper p-4"
+          >
+            <span className="text-[12px] text-olive">
+              A brief is a meeting without a recording: paste notes, a thread,
+              a message. Za3tar pulls out decisions and actions from it.
+            </span>
+            <div className="flex gap-2">
+              <Field
+                dir="auto"
+                autoFocus
+                value={brief.title}
+                onChange={(e) => setBrief({ ...brief, title: e.target.value })}
+                placeholder="what is this about?"
+                className="arabic flex-[2]"
+              />
+              <Field
+                dir="auto"
+                value={brief.person}
+                onChange={(e) => setBrief({ ...brief, person: e.target.value })}
+                placeholder="with whom?"
+                className="arabic flex-1"
+              />
+            </div>
+            <textarea
+              dir="auto"
+              value={brief.notes}
+              onChange={(e) => setBrief({ ...brief, notes: e.target.value })}
+              placeholder="notes, in whatever language they came in"
+              className="arabic min-h-32 rounded-lg border border-line bg-white p-3 text-start text-[13px] outline-none focus:border-ink"
+            />
+            <div>
+              <Button tone="primary" size="sm" type="submit" disabled={busy}>
+                add brief
+              </Button>
+            </div>
+          </form>
+        )}
+        {library.length === 0 && !brief && (
           <Empty>
-            No meetings in this workspace yet. Hit Record when one starts.
+            Nothing here yet. Hit Record when a meeting starts, or add a brief.
           </Empty>
         )}
+        {library.length > 0 && shown.length === 0 && (
+          <Empty>Nothing matches "{q}".</Empty>
+        )}
         <div className="flex flex-col gap-1">
-          {library.map((s) => (
+          {shown.map((s) => (
             <button
               key={s.id}
               onClick={() => onOpen(s.dir)}
