@@ -21,6 +21,18 @@ export type LiveOp =
   | { op: "brief"; title: string; notes: string }
   | { op: "record" }
   | { op: "stop_recording" }
+  | { op: "workspace"; id: string }
+  | { op: "open_meeting"; id: string }
+  | { op: "draft"; kind: "whatsapp" | "email" }
+  | { op: "nudge"; ref: string }
+  | {
+      op: "person";
+      name: string;
+      phone?: string;
+      email?: string;
+      org?: string;
+      role?: string;
+    }
   | { op: "runtime"; message: string };
 
 export type LiveTurn = { say: string; ops: LiveOp[] };

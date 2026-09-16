@@ -983,6 +983,9 @@ function App() {
     lines.push(`workspace: ${wsName} (${wsId}) · today ${today}`);
     const w = workspaces.find((x) => x.id === wsId);
     if (w?.description) lines.push(`about: ${w.description}`);
+    lines.push(
+      `workspaces: ${workspaces.map((x) => `[${x.id}] ${x.name}`).join(" · ")}`,
+    );
     lines.push("\nthreads:");
     for (const t of wsThreads)
       lines.push(
@@ -1007,6 +1010,14 @@ function App() {
       lines.push(`\ndecisions waiting for a yes:`);
       for (const d of prop) lines.push(`- ${dRefOf(d)} ${d.decision.text}`);
     }
+    const recent = wsLibrary.slice(0, 15);
+    if (recent.length) {
+      lines.push(`\nmeetings & briefs (newest first):`);
+      for (const m of recent)
+        lines.push(
+          `- [${m.id}] ${m.title || "untitled"}${m.person ? ` with ${m.person}` : ""} · ${new Date(m.created * 1000).toISOString().slice(0, 10)}${m.has_audio ? "" : " (brief)"}`,
+        );
+    }
     if (wsPeople.length)
       lines.push(
         `\npeople: ${wsPeople
@@ -1016,7 +1027,7 @@ function App() {
     lines.push(
       `\nstate: ${phase === "recording" ? "RECORDING now" : "not recording"}; view ${view}${
         threadOpen ? `; thread open ${threadOpen}` : ""
-      }`,
+      }${meetingOpen && dir ? `; meeting open [${meetingIdOf(dir)}]${actions ? " with outcomes" : ""}` : ""}`,
     );
     return lines.join("\n");
   };
@@ -1072,6 +1083,51 @@ function App() {
         } else if (op.op === "stop_recording") {
           if (phase === "recording") await stop();
           out.push("stopped recording");
+        } else if (op.op === "workspace") {
+          const w = workspaces.find((x) => x.id === op.id);
+          if (!w) {
+            out.push(`no workspace ${op.id}`);
+            continue;
+          }
+          setWsId(w.id);
+          setView("overview");
+          setThreadOpen(null);
+          if (phase !== "recording") setMeetingOpen(false);
+          out.push(`switched to ${w.name}`);
+        } else if (op.op === "open_meeting") {
+          const m = library.find((x) => x.id === op.id);
+          if (!m) {
+            out.push(`no meeting ${op.id}`);
+            continue;
+          }
+          await openPast(m.dir);
+          out.push(`opened ${m.title || "untitled meeting"}`);
+        } else if (op.op === "draft") {
+          if (!dir || !actions) {
+            out.push("open a meeting with outcomes first");
+            continue;
+          }
+          await makeDraft(op.kind);
+          out.push(`drafted the ${op.kind === "email" ? "recap email" : "WhatsApp follow-up"}`);
+        } else if (op.op === "nudge") {
+          const oa = openActions.find((o) => refOf(o) === op.ref);
+          if (!oa) {
+            out.push(`couldn't find ${op.ref}`);
+            continue;
+          }
+          await nudge(oa);
+          out.push(`drafted a nudge: ${oa.action.title}`);
+        } else if (op.op === "person") {
+          const cur = people.find((p) => p.name === op.name || p.aliases.includes(op.name));
+          await savePerson({
+            name: cur?.name ?? op.name,
+            phone: op.phone ?? cur?.phone ?? "",
+            email: op.email ?? cur?.email ?? "",
+            org: op.org ?? cur?.org ?? "",
+            role: op.role ?? cur?.role ?? "",
+            aliases: cur?.aliases ?? [],
+          });
+          out.push(`saved ${cur?.name ?? op.name}`);
         }
       } catch (e) {
         out.push(`failed: ${String(e)}`);
