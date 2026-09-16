@@ -19,6 +19,9 @@ struct Meta {
     title: String,
     #[serde(default)]
     person: String,
+    /// workspace id (workspaces.rs); empty = the default workspace
+    #[serde(default)]
+    workspace: String,
 }
 
 /// One row in the library list.
@@ -29,6 +32,7 @@ pub struct RecordingSummary {
     pub created: u64,
     pub title: String,
     pub person: String,
+    pub workspace: String,
     pub has_transcript: bool,
     pub has_notes: bool,
     pub duration_secs: f64,
@@ -40,6 +44,7 @@ pub struct RecordingDetail {
     pub dir: String,
     pub title: String,
     pub person: String,
+    pub workspace: String,
     pub segments: Vec<Segment>,
     pub notes: Option<String>,
 }
@@ -94,6 +99,7 @@ pub fn list_recordings(app: AppHandle) -> Result<Vec<RecordingSummary>, String> 
         out.push(RecordingSummary {
             title: meta.title,
             person: meta.person,
+            workspace: crate::workspaces::or_default(&meta.workspace),
             has_transcript: dir.join("transcript.json").exists(),
             has_notes: dir.join("notes.md").exists(),
             duration_secs: duration_secs(&dir),
@@ -116,6 +122,7 @@ pub fn load_recording(dir: String) -> Result<RecordingDetail, String> {
     Ok(RecordingDetail {
         title: meta.title,
         person: meta.person,
+        workspace: crate::workspaces::or_default(&meta.workspace),
         segments,
         notes,
         dir,
@@ -142,6 +149,15 @@ pub fn set_recording_person(dir: String, person: String) -> Result<(), String> {
     let path = PathBuf::from(&dir);
     let mut meta = read_meta(&path);
     meta.person = person.trim().to_string();
+    write_meta(&path, &meta)
+}
+
+/// Move a recording into a workspace (workspaces.rs). Empty = default.
+#[tauri::command]
+pub fn set_recording_workspace(dir: String, workspace: String) -> Result<(), String> {
+    let path = PathBuf::from(&dir);
+    let mut meta = read_meta(&path);
+    meta.workspace = workspace.trim().to_string();
     write_meta(&path, &meta)
 }
 

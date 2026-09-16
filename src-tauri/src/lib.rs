@@ -7,6 +7,7 @@ pub mod library;
 pub mod notes;
 pub mod people;
 pub mod settings;
+pub mod workspaces;
 
 use capture::CaptureState;
 
@@ -61,16 +62,22 @@ pub fn run() {
             actions::open_external,
             actions::list_open_actions,
             actions::draft_nudge,
+            actions::set_decision_status,
+            actions::list_decisions,
             settings::get_settings,
             settings::save_settings,
             library::list_recordings,
             library::load_recording,
             library::set_recording_title,
             library::set_recording_person,
+            library::set_recording_workspace,
             people::list_people,
             people::save_person,
             agent::send_to_agent,
             agent::agent_available,
+            workspaces::list_workspaces,
+            workspaces::create_workspace,
+            workspaces::rename_workspace,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
