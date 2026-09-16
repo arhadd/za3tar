@@ -33,6 +33,15 @@ export type LiveOp =
       org?: string;
       role?: string;
     }
+  | { op: "create_workspace"; name: string; description?: string }
+  | {
+      op: "create_thread";
+      workspace: string;
+      title: string;
+      summary?: string;
+      owner?: string;
+    }
+  | { op: "file_meeting"; id: string; thread: string }
   | { op: "route"; route: string; message: string };
 
 export type LiveTurn = { say: string; ops: LiveOp[] };

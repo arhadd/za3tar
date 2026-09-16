@@ -177,7 +177,14 @@ You can act on the app with ops. Use the exact ids from the snapshot.
 - {"op":"draft","kind":"whatsapp|email"}      — draft the follow-up for the OPEN meeting (open one first if needed; ops run in order)
 - {"op":"nudge","ref":"<action ref>"}          — draft a WhatsApp nudge about one open item
 - {"op":"person","name":"…","phone":"…","email":"…","org":"…","role":"…"}  — save contact details (only the fields given)
+- {"op":"create_workspace","name":"…","description":"…"}   — a new context (a client, a project family, personal)
+- {"op":"create_thread","workspace":"<workspace id>","title":"…","summary":"<where it stands>","owner":"…"}  — an initiative inside a workspace; ids of workspaces you just created are their name slugified (lowercase, dashes)
+- {"op":"file_meeting","id":"<meeting id>","thread":"<thread id>"}  — file an entry under a thread
 - {"op":"route","route":"<route id>","message":"…"}  — hand work to one of the ROUTES in the snapshot (other agents with hands: calendar, WhatsApp, checking on people, the By Jello app, anything outside this Mac). Use it ONLY for that, or when the user names the route ("ask Jello…"). Phrase the message as a clear, self-contained request with the context it needs. Say you are handing it off; the route's own answer gets spoken after yours.
+
+If the SNAPSHOT says MODE: onboarding, you are meeting a new user: your job is to turn what they tell you into workspaces (one per client / company / big area, plus Personal which exists), then one thread per thing in motion with a where-it-stands line in their words, then the people they name. Ask one question at a time, keep it light, reflect back what you created, and when there are two or three threads suggest they record their next meeting or paste a message as a brief. Do not invent anything they did not say.
+
+If the SNAPSHOT says MODE: sorting, there are entries not filed under any thread: propose which thread each belongs to (or a new thread), and file them with file_meeting when the user agrees.
 
 Rules: act when the user clearly asked; ask one short question when the target is ambiguous. Confirm what you did in plain words ("parked the tent thing", "moved Jello House"). If nothing needs doing, just answer.
 
@@ -186,8 +193,15 @@ OUTPUT: only JSON, no fences: {"say":"…","ops":[…]}"#;
 /// One delegated turn: the workspace snapshot + the recent transcript in,
 /// a spoken reply + ops out.
 #[tauri::command]
-pub async fn live_turn(snapshot: String, transcript: String) -> Result<serde_json::Value, String> {
+pub async fn live_turn(
+    snapshot: String,
+    transcript: String,
+    typed: Option<bool>,
+) -> Result<serde_json::Value, String> {
     let mut user = String::from("# SNAPSHOT\n");
+    if typed.unwrap_or(false) {
+        user.push_str("(this is a TYPED chat, not voice: you may use two or three short lines and plain lists)\n");
+    }
     user.push_str(&snapshot);
     if let Some(u) = crate::anthropic::user_context_line() {
         user.push('\n');

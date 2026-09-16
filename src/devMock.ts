@@ -26,6 +26,8 @@ type Rec = {
   actions: MeetingActions | null;
 };
 
+const FRESH =
+  typeof location !== "undefined" && /[?&]fresh=1/.test(location.search);
 const now = Math.floor(Date.now() / 1000);
 const day = 86400;
 const iso = (d: number) => new Date(d * 1000).toISOString().slice(0, 10);
@@ -92,7 +94,7 @@ const act = (
   parked: false,
 });
 
-const recs: Rec[] = [
+const recsSeed: Rec[] = [
   {
     dir: "/mock/1",
     id: "1",
@@ -210,7 +212,8 @@ const recs: Rec[] = [
   },
 ];
 
-const threads: Thread[] = [
+const recs: Rec[] = FRESH ? [] : recsSeed;
+const threadsSeed: Thread[] = [
   {
     id: "madar-onboarding",
     workspace: "madar",
@@ -244,7 +247,8 @@ const threads: Thread[] = [
   },
 ];
 
-const contacts: Record<
+const threads: Thread[] = FRESH ? [] : threadsSeed;
+const contactsSeed: Record<
   string,
   { phone: string; email: string; org: string; role: string; aliases: string[] }
 > = {
@@ -264,6 +268,8 @@ const contacts: Record<
   },
 };
 
+const contacts: typeof contactsSeed = FRESH ? {} : contactsSeed;
+if (FRESH) workspaces.splice(1);
 let settings: Settings = {
   elevenlabs_api_key: "",
   anthropic_api_key: "",
@@ -527,7 +533,11 @@ export async function mockInvoke<T>(
       };
       return out(null);
     case "capabilities":
-      return out({ transcription: false, notes: true, talk: false, user_name: "Ala" });
+      return out(
+        FRESH
+          ? { transcription: false, notes: false, talk: false, user_name: "" }
+          : { transcription: true, notes: true, talk: false, user_name: "Ala" },
+      );
     case "get_settings":
       return out(settings);
     case "save_settings":
@@ -637,6 +647,7 @@ export async function mockInvoke<T>(
     case "live_detach":
       return out(null);
     case "list_routes":
+      if (FRESH) return out([]);
       return out([
         {
           id: "jello",

@@ -106,6 +106,7 @@ export function ThreadsView({
   decisions,
   onOpen,
   onCreate,
+  onSort,
 }: {
   threads: Thread[];
   library: Summary[];
@@ -113,6 +114,7 @@ export function ThreadsView({
   decisions: DecisionRef[];
   onOpen: (id: string) => void;
   onCreate: (title: string) => Promise<void>;
+  onSort?: () => void;
 }) {
   const [adding, setAdding] = useState(false);
   const [title, setTitle] = useState("");
@@ -189,10 +191,17 @@ export function ThreadsView({
         );
       })}
       {unfiled > 0 && (
-        <p className="px-1 text-[12px] text-olive">
-          {unfiled} {unfiled === 1 ? "entry" : "entries"} in this workspace not
-          filed under a thread yet. Open one and pick its thread.
-        </p>
+        <div className="flex items-center gap-2 rounded-lg border border-line bg-paper px-3 py-2 text-[12px] text-olive">
+          <span>
+            {unfiled} {unfiled === 1 ? "entry" : "entries"} here not filed under a
+            thread yet.
+          </span>
+          {onSort && (
+            <Button size="sm" tone="quiet" className="ml-auto" onClick={onSort}>
+              sort with Za3tar
+            </Button>
+          )}
+        </div>
       )}
     </div>
   );

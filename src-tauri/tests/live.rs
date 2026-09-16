@@ -136,3 +136,24 @@ async fn diarized_in_person_transcription() {
     }
     assert!(!segments.is_empty());
 }
+
+/// The onboarding conversation: a new user names what they work on, the
+/// brain must answer with workspaces and threads, not prose. Needs
+/// ANTHROPIC_API_KEY; run with `cargo test --test live -- --ignored onboarding`.
+#[tokio::test]
+#[ignore]
+async fn onboarding_turn_creates_workspaces_and_threads() {
+    let _ = dotenvy::dotenv();
+    let _ = dotenvy::from_path(std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../.env"));
+    let snapshot = "MODE: onboarding — new user, empty app; build workspaces, threads, people from what they say.\nHOME view: everything across all workspaces · today 2026-09-17\nworkspaces: [personal] Personal\n\nthreads:\n\nopen items (0):\n\nstate: not recording; view home";
+    let transcript = "Za3tar: Hi, I'm Za3tar. What are you working on these days? Name the two or three things, in any language.\nUser: طيب، عندي شركة اسمها Madar بنعمل onboarding لعملاء جداد مع Lina، وعندي بيت في سريلانكا عم نبنيه لازم يخلص قبل رأس السنة، وشغلة شخصية: interview prep.";
+    let v = za3tar_lib::live::live_turn(snapshot.into(), transcript.into(), Some(true))
+        .await
+        .expect("turn");
+    println!("{}", serde_json::to_string_pretty(&v).unwrap());
+    let ops = v["ops"].as_array().cloned().unwrap_or_default();
+    let kinds: Vec<&str> = ops.iter().filter_map(|o| o["op"].as_str()).collect();
+    assert!(kinds.contains(&"create_workspace"), "expected a workspace op, got {kinds:?}");
+    assert!(kinds.contains(&"create_thread"), "expected a thread op, got {kinds:?}");
+    assert!(!v["say"].as_str().unwrap_or("").is_empty());
+}

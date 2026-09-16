@@ -34,6 +34,8 @@ export function HomeView({
   userName,
   caps,
   onSettings,
+  fresh,
+  onStartConversation,
   workspaces,
   threads,
   open,
@@ -53,6 +55,8 @@ export function HomeView({
   userName: string;
   caps: { transcription: boolean; notes: boolean; talk: boolean } | null;
   onSettings: () => void;
+  fresh: boolean;
+  onStartConversation: () => void;
   workspaces: Workspace[];
   threads: Thread[];
   open: OpenAction[];
@@ -152,6 +156,30 @@ export function HomeView({
         </Card>
       )}
 
+      {fresh && (
+        <Card className="flex flex-col gap-2 border-ink/40">
+          <Eyebrow>Start here</Eyebrow>
+          <p className="text-[14px] leading-relaxed">
+            Nothing in here yet. The quickest way in is a two-minute conversation:
+            tell Za3tar what you are working on and it sets up your workspaces,
+            the threads in motion, and the people. Then record your next meeting
+            and watch it land in the right place.
+          </p>
+          <div className="flex items-center gap-2">
+            <Button
+              tone="primary"
+              size="sm"
+              onClick={onStartConversation}
+              disabled={!!caps && !caps.notes}
+            >
+              start with a conversation
+            </Button>
+            {caps && !caps.notes && (
+              <span className="text-[12px] text-olive">needs the Anthropic key first</span>
+            )}
+          </div>
+        </Card>
+      )}
       {runtimeReady && (
         <Card pad={false} className="p-3">
           <div className="flex items-center gap-2 px-1">

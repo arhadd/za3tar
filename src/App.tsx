@@ -10,6 +10,7 @@ import { WorkspaceView } from "./views/WorkspaceView";
 import { HomeView, isMine } from "./views/HomeView";
 import { ThreadsView, ThreadDetail } from "./views/ThreadsView";
 import { TalkPanel, type TalkState } from "./views/TalkPanel";
+import { ChatPanel, type ChatLine } from "./views/ChatPanel";
 import { LiveSession, type LiveOp, type TalkLine } from "./live";
 import { RoutePanel } from "./views/RoutePanel";
 import {
@@ -95,6 +96,11 @@ function App() {
   const [talk, setTalk] = useState<TalkState>("idle");
   const [talkLines, setTalkLines] = useState<TalkLine[]>([]);
   const [talkMuted, setTalkMuted] = useState(false);
+
+  // typed chat with Za3tar (same brain as Talk)
+  const [chatMode, setChatMode] = useState<"chat" | "onboarding" | "sorting" | null>(null);
+  const [chatLines, setChatLines] = useState<ChatLine[]>([]);
+  const [chatBusy, setChatBusy] = useState(false);
 
   // routes — other agents with hands
   const [routes, setRoutes] = useState<Route[]>([]);
@@ -261,6 +267,7 @@ function App() {
       const tag = (e.target as HTMLElement | null)?.tagName;
       if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return;
       if (showSettings) setShowSettings(false);
+      else if (chatMode) setChatMode(null);
       else if (routeOpen) setRouteOpen(null);
       else if (meetingOpen && phase !== "recording") closeMeeting();
       else if (threadOpen) setThreadOpen(null);
@@ -1233,6 +1240,39 @@ function App() {
           }
           await nudge(oa);
           out.push(`drafted a nudge: ${oa.action.title}`);
+        } else if (op.op === "create_workspace") {
+          const w = await invoke<Workspace>("create_workspace", { name: op.name });
+          if (op.description)
+            await invoke("update_workspace", {
+              id: w.id,
+              name: w.name,
+              description: op.description,
+              links: [],
+              runtimeCommand: "",
+            });
+          await refreshAll();
+          out.push(`new workspace: ${w.name}`);
+        } else if (op.op === "create_thread") {
+          const wsid =
+            workspaces.find((x) => x.id === op.workspace || x.name.toLowerCase() === op.workspace.toLowerCase())?.id ??
+            op.workspace;
+          const t = await invoke<Thread>("create_thread", {
+            workspace: wsid,
+            title: op.title,
+            summary: op.summary ?? null,
+            owner: op.owner ?? null,
+          });
+          await refreshAll();
+          out.push(`new thread: ${t.title}`);
+        } else if (op.op === "file_meeting") {
+          const m = library.find((x) => x.id === op.id);
+          if (!m) {
+            out.push(`no meeting ${op.id}`);
+            continue;
+          }
+          await invoke("set_recording_thread", { dir: m.dir, thread: op.thread });
+          await refreshAll();
+          out.push(`filed ${m.title || "untitled"} under ${threads.find((t) => t.id === op.thread)?.title ?? op.thread}`);
         } else if (op.op === "person") {
           const cur = people.find((p) => p.name === op.name || p.aliases.includes(op.name));
           await savePerson({
@@ -1294,6 +1334,65 @@ function App() {
       return n;
     });
     setRouteOpen(null);
+  }
+
+  // ── chat ──────────────────────────────────────────────────────────────
+  function openChat(mode: "chat" | "onboarding" | "sorting") {
+    setChatMode(mode);
+    const opener =
+      mode === "onboarding"
+        ? "Hi, I'm Za3tar. Let's set this up in a minute. What are you working on these days? Name the two or three things, in any language."
+        : mode === "sorting"
+          ? `There ${wsLibrary.filter((x) => !x.thread).length === 1 ? "is one entry" : `are ${wsLibrary.filter((x) => !x.thread).length} entries`} here not filed under a thread. Want me to sort them? Say go, or tell me how.`
+          : "What do you want to look at?";
+    setChatLines([{ role: "za3tar", text: opener }]);
+  }
+
+  async function sendChat(text: string) {
+    if (!chatMode) return;
+    const next: ChatLine[] = [...chatLines, { role: "you", text }];
+    setChatLines(next);
+    setChatBusy(true);
+    try {
+      const transcript = next
+        .filter((l) => l.role === "you" || l.role === "za3tar")
+        .slice(-16)
+        .map((l) => `${l.role === "you" ? "User" : "Za3tar"}: ${l.text}`)
+        .join("\n");
+      const modeLine =
+        chatMode === "onboarding"
+          ? "MODE: onboarding — new user, empty app; build workspaces, threads, people from what they say.\n"
+          : chatMode === "sorting"
+            ? `MODE: sorting — unfiled entries: ${wsLibrary
+                .filter((x) => !x.thread)
+                .map((x) => `[${x.id}] ${x.title || "untitled"}${x.person ? ` with ${x.person}` : ""}`)
+                .join("; ")}\n`
+            : "";
+      const turn = await invoke<{ say: string; ops: LiveOp[] }>("live_turn", {
+        snapshot: modeLine + snap.current(),
+        transcript,
+        typed: true,
+      });
+      const ops = Array.isArray(turn.ops) ? turn.ops : [];
+      const local = ops.filter((o) => o.op !== "route");
+      const routed = ops.filter((o) => o.op === "route") as Extract<LiveOp, { op: "route" }>[];
+      const activity = local.length ? await apply.current(local) : [];
+      let say = turn.say?.trim() || "";
+      for (const r of routed) {
+        activity.push(`handing to ${r.route}: ${r.message}`);
+        const reply = await askRoute(r.route, r.message);
+        if (reply) say = `${say}\n${reply}`.trim();
+      }
+      setChatLines((cur) => [
+        ...cur,
+        ...activity.map((a) => ({ role: "activity" as const, text: a })),
+        { role: "za3tar", text: say || "done." },
+      ]);
+    } catch (e) {
+      setChatLines((cur) => [...cur, { role: "error", text: String(e) }]);
+    } finally {
+      setChatBusy(false);
+    }
   }
 
   async function startTalk() {
@@ -1438,6 +1537,11 @@ function App() {
             </h1>
           </div>
           <div className="ml-auto flex items-center gap-3">
+            {!chatMode && (
+              <Button tone="quiet" size="lg" onClick={() => openChat("chat")} title="type to Za3tar">
+                Chat
+              </Button>
+            )}
             {talk === "idle" ? (
               <Button tone="quiet" size="lg" onClick={startTalk} title="talk to Za3tar">
                 Talk
@@ -1480,6 +1584,21 @@ function App() {
                 }}
                 onCancel={() => cancelRoute(routeOpen).catch(() => {})}
                 onClose={() => closeRoute(routeOpen)}
+              />
+            )}
+            {chatMode && (
+              <ChatPanel
+                title={
+                  chatMode === "onboarding"
+                    ? "Setting up with Za3tar"
+                    : chatMode === "sorting"
+                      ? "Sorting with Za3tar"
+                      : "Za3tar"
+                }
+                lines={chatLines}
+                busy={chatBusy}
+                onSend={sendChat}
+                onClose={() => setChatMode(null)}
               />
             )}
             {talk !== "idle" && (
@@ -1547,6 +1666,8 @@ function App() {
                 onDone={markOpenDone}
                 onPark={parkAction}
                 onDecisionStatus={setDecisionStatus}
+                fresh={threads.length === 0 && library.length === 0}
+                onStartConversation={() => openChat("onboarding")}
               />
             ) : view === "overview" && !(meetingOpen && phase === "recording") ? (
               <WorkspaceView
@@ -1604,6 +1725,7 @@ function App() {
                   decisions={wsDecisions}
                   onOpen={setThreadOpen}
                   onCreate={createThread}
+                  onSort={() => openChat("sorting")}
                 />
               )
             ) : meetingOpen ? (
