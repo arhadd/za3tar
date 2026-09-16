@@ -28,6 +28,7 @@ export function Sidebar({
 
   const nav: { id: View; label: string }[] = [
     { id: "overview", label: "Overview" },
+    { id: "threads", label: "Threads" },
     { id: "meetings", label: "Meetings" },
     { id: "people", label: "People" },
     { id: "decisions", label: "Decisions" },

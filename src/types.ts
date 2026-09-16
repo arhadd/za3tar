@@ -15,6 +15,18 @@ export type Workspace = {
   runtime_command: string;
 };
 
+export type ThreadStatus = "active" | "parked" | "done";
+export type Thread = {
+  id: string;
+  workspace: string;
+  title: string;
+  summary: string;
+  status: ThreadStatus;
+  owner: string;
+  created: number;
+  updated: number;
+};
+
 export type Summary = {
   dir: string;
   id: string;
@@ -22,6 +34,7 @@ export type Summary = {
   title: string;
   person: string;
   workspace: string;
+  thread: string;
   has_transcript: boolean;
   has_notes: boolean;
   has_audio: boolean;
@@ -79,6 +92,7 @@ export type OpenAction = {
   meeting_created: number;
   person: string;
   workspace: string;
+  thread: string;
   action: ActionItem;
 };
 
@@ -88,7 +102,17 @@ export type DecisionRef = {
   meeting_created: number;
   person: string;
   workspace: string;
+  thread: string;
   decision: Decision;
+};
+
+export type QuestionRef = {
+  dir: string;
+  meeting_title: string;
+  meeting_created: number;
+  workspace: string;
+  thread: string;
+  text: string;
 };
 
 export type Settings = {
@@ -126,4 +150,10 @@ export type RuntimeFollowupStatus = {
   updated_at: string;
 };
 
-export type View = "overview" | "meetings" | "people" | "decisions" | "followups";
+export type View =
+  | "overview"
+  | "threads"
+  | "meetings"
+  | "people"
+  | "decisions"
+  | "followups";

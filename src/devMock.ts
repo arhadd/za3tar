@@ -8,6 +8,7 @@ import type {
   MeetingActions,
   Segment,
   Settings,
+  Thread,
   Workspace,
 } from "./types";
 
@@ -18,6 +19,7 @@ type Rec = {
   title: string;
   person: string;
   workspace: string;
+  thread?: string;
   duration_secs: number;
   segments: Segment[];
   notes: string | null;
@@ -97,6 +99,7 @@ const recs: Rec[] = [
     title: "Madar — onboarding kickoff",
     person: "Lina",
     workspace: "madar",
+    thread: "madar-onboarding",
     duration_secs: 41 * 60 + 12,
     segments: [
       {
@@ -149,6 +152,7 @@ const recs: Rec[] = [
     title: "Madar — pricing follow-up",
     person: "Lina",
     workspace: "madar",
+    thread: "madar-pricing",
     duration_secs: 18 * 60 + 5,
     segments: [
       { speaker: "me", start: 0, text: "خلينا نراجع الـ pricing tiers." },
@@ -202,6 +206,40 @@ const recs: Rec[] = [
     segments: [],
     notes: null,
     actions: null,
+  },
+];
+
+const threads: Thread[] = [
+  {
+    id: "madar-onboarding",
+    workspace: "madar",
+    title: "Onboarding launch",
+    summary:
+      "Design done, Stripe not wired. Demo Thursday. Bilingual from day one is decided.",
+    status: "active",
+    owner: "Ala",
+    created: now - 12 * day,
+    updated: now - 2 * 3600,
+  },
+  {
+    id: "madar-pricing",
+    workspace: "madar",
+    title: "Pricing",
+    summary: "Free tier without a card is confirmed; pricing page still not published.",
+    status: "parked",
+    owner: "Lina",
+    created: now - 10 * day,
+    updated: now - 3 * day,
+  },
+  {
+    id: "house-build",
+    workspace: "house",
+    title: "Winter-proofing",
+    summary: "",
+    status: "active",
+    owner: "",
+    created: now - 5 * day,
+    updated: now - 5 * day,
   },
 ];
 
@@ -299,6 +337,7 @@ export async function mockInvoke<T>(
         title: args.title,
         person: args.person,
         workspace: args.workspace,
+        thread: args.thread ?? "",
         duration_secs: 0,
         segments: [],
         notes: args.notes || "—",
@@ -316,6 +355,7 @@ export async function mockInvoke<T>(
           title: r.title,
           person: r.person,
           workspace: r.workspace,
+          thread: r.thread ?? "",
           has_transcript: r.segments.length > 0,
           has_notes: !!r.notes,
           has_audio: r.segments.length > 0 || r.duration_secs > 0,
@@ -329,10 +369,59 @@ export async function mockInvoke<T>(
         title: r.title,
         person: r.person,
         workspace: r.workspace,
+        thread: r.thread ?? "",
         segments: r.segments,
         notes: r.notes,
       });
     }
+    case "set_recording_thread":
+      byDir(args.dir)!.thread = args.thread;
+      return out(null);
+    case "list_threads":
+      return out(threads);
+    case "create_thread": {
+      const t: Thread = {
+        id: `${args.workspace}-${String(args.title).toLowerCase().replace(/[^a-z0-9]+/g, "-")}`,
+        workspace: args.workspace,
+        title: args.title,
+        summary: args.summary ?? "",
+        status: "active",
+        owner: args.owner ?? "",
+        created: now,
+        updated: now,
+      };
+      threads.push(t);
+      return out(t);
+    }
+    case "update_thread": {
+      const t = threads.find((x) => x.id === args.id)!;
+      Object.assign(t, {
+        title: args.title,
+        summary: args.summary,
+        status: args.status,
+        owner: args.owner,
+        updated: now,
+      });
+      return out(t);
+    }
+    case "delete_thread": {
+      const i = threads.findIndex((x) => x.id === args.id);
+      if (i >= 0) threads.splice(i, 1);
+      return out(null);
+    }
+    case "list_questions":
+      return out(
+        recs.flatMap((r) =>
+          (r.actions?.questions ?? []).map((q) => ({
+            dir: r.dir,
+            meeting_title: r.title,
+            meeting_created: r.created,
+            workspace: r.workspace,
+            thread: r.thread ?? "",
+            text: q,
+          })),
+        ),
+      );
     case "load_actions":
       return out(byDir(args.dir)?.actions ?? null);
     case "set_recording_title":
@@ -367,6 +456,7 @@ export async function mockInvoke<T>(
               meeting_created: r.created,
               person: r.person,
               workspace: r.workspace,
+              thread: r.thread ?? "",
               action: a,
             })),
         ),
@@ -380,6 +470,7 @@ export async function mockInvoke<T>(
             meeting_created: r.created,
             person: r.person,
             workspace: r.workspace,
+            thread: r.thread ?? "",
             decision: d,
           })),
         ),

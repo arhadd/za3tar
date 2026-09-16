@@ -22,6 +22,9 @@ struct Meta {
     /// workspace id (workspaces.rs); empty = the default workspace
     #[serde(default)]
     workspace: String,
+    /// thread id (threads.rs); empty = unfiled
+    #[serde(default)]
+    thread: String,
 }
 
 /// One row in the library list.
@@ -33,6 +36,7 @@ pub struct RecordingSummary {
     pub title: String,
     pub person: String,
     pub workspace: String,
+    pub thread: String,
     pub has_transcript: bool,
     pub has_notes: bool,
     /// false for imported briefs — notes/actions written without a recording
@@ -47,6 +51,7 @@ pub struct RecordingDetail {
     pub title: String,
     pub person: String,
     pub workspace: String,
+    pub thread: String,
     pub segments: Vec<Segment>,
     pub notes: Option<String>,
 }
@@ -104,6 +109,7 @@ pub fn list_recordings(app: AppHandle) -> Result<Vec<RecordingSummary>, String> 
             title: meta.title,
             person: meta.person,
             workspace: crate::workspaces::or_default(&meta.workspace),
+            thread: meta.thread,
             has_transcript: dir.join("transcript.json").exists(),
             has_notes: dir.join("notes.md").exists(),
             has_audio,
@@ -128,6 +134,7 @@ pub fn load_recording(dir: String) -> Result<RecordingDetail, String> {
         title: meta.title,
         person: meta.person,
         workspace: crate::workspaces::or_default(&meta.workspace),
+        thread: meta.thread,
         segments,
         notes,
         dir,
@@ -166,6 +173,7 @@ pub fn create_brief(
     person: String,
     workspace: String,
     notes: String,
+    thread: Option<String>,
 ) -> Result<String, String> {
     let root = recordings_root(&app)?;
     std::fs::create_dir_all(&root).map_err(|e| e.to_string())?;
@@ -185,6 +193,7 @@ pub fn create_brief(
             title: title.trim().to_string(),
             person: person.trim().to_string(),
             workspace: workspace.trim().to_string(),
+            thread: thread.unwrap_or_default().trim().to_string(),
         },
     )?;
     let body = notes.trim();
@@ -198,6 +207,15 @@ pub fn create_brief(
     )
     .map_err(|e| e.to_string())?;
     Ok(dir.to_string_lossy().to_string())
+}
+
+/// File a recording under a thread (threads.rs). Empty = unfiled.
+#[tauri::command]
+pub fn set_recording_thread(dir: String, thread: String) -> Result<(), String> {
+    let path = PathBuf::from(&dir);
+    let mut meta = read_meta(&path);
+    meta.thread = thread.trim().to_string();
+    write_meta(&path, &meta)
 }
 
 /// Move a recording into a workspace (workspaces.rs). Empty = default.

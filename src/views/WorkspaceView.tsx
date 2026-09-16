@@ -5,12 +5,14 @@
 import { useState } from "react";
 import { Button, Card, Chip, Empty, Eyebrow, Field } from "../ui";
 import { relDate } from "../format";
+import { ThreadCard, statsFor } from "./ThreadsView";
 import type {
   DecisionRef,
   Link,
   OpenAction,
   PersonRow,
   Summary,
+  Thread,
   View,
   Workspace,
 } from "../types";
@@ -33,13 +35,17 @@ export function WorkspaceView({
   people,
   open,
   decisions,
+  threads,
   runtimeReady,
   onSave,
   onOpenLink,
   onGo,
   onOpenMeeting,
+  onOpenThread,
 }: {
   ws: Workspace;
+  threads: Thread[];
+  onOpenThread: (id: string) => void;
   library: Summary[];
   people: PersonRow[];
   open: OpenAction[];
@@ -236,9 +242,9 @@ export function WorkspaceView({
 
       <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
         <Stat
-          label="meetings & briefs"
-          n={library.length}
-          onClick={() => onGo("meetings")}
+          label="threads in motion"
+          n={threads.filter((t) => t.status === "active").length}
+          onClick={() => onGo("threads")}
         />
         <Stat label="people" n={people.length} onClick={() => onGo("people")} />
         <Stat
@@ -253,6 +259,35 @@ export function WorkspaceView({
           onClick={() => onGo("followups")}
         />
       </div>
+
+      <section className="flex flex-col gap-2">
+        <div className="flex items-baseline gap-2 px-1">
+          <Eyebrow>In motion</Eyebrow>
+          <span className="text-[12px] text-olive">the threads that are moving</span>
+          <button
+            onClick={() => onGo("threads")}
+            className="ml-auto text-[12px] text-olive hover:text-ink"
+          >
+            all threads →
+          </button>
+        </div>
+        {threads.filter((t) => t.status === "active").length === 0 ? (
+          <Empty>Nothing in motion. Add a thread for each initiative or project here.</Empty>
+        ) : (
+          <div className="flex flex-col gap-1.5">
+            {threads
+              .filter((t) => t.status === "active")
+              .map((t) => (
+                <ThreadCard
+                  key={t.id}
+                  t={t}
+                  stats={statsFor(t, library, open, decisions)}
+                  onOpen={onOpenThread}
+                />
+              ))}
+          </div>
+        )}
+      </section>
 
       <section className="flex flex-col gap-2">
         <div className="flex items-baseline gap-2 px-1">

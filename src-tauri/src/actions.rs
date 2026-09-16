@@ -285,7 +285,41 @@ pub struct DecisionRef {
     pub meeting_created: u64,
     pub person: String,
     pub workspace: String,
+    pub thread: String,
     pub decision: Decision,
+}
+
+/// One open question somewhere in the library.
+#[derive(Serialize, Clone)]
+pub struct QuestionRef {
+    pub dir: String,
+    pub meeting_title: String,
+    pub meeting_created: u64,
+    pub workspace: String,
+    pub thread: String,
+    pub text: String,
+}
+
+/// Every open question across all recordings, newest meeting first.
+#[tauri::command]
+pub fn list_questions(app: tauri::AppHandle) -> Result<Vec<QuestionRef>, String> {
+    let mut out = Vec::new();
+    for rec in crate::library::list_recordings(app)? {
+        let Some(acts) = load(Path::new(&rec.dir)) else {
+            continue;
+        };
+        for q in acts.questions {
+            out.push(QuestionRef {
+                dir: rec.dir.clone(),
+                meeting_title: rec.title.clone(),
+                meeting_created: rec.created,
+                workspace: rec.workspace.clone(),
+                thread: rec.thread.clone(),
+                text: q,
+            });
+        }
+    }
+    Ok(out)
 }
 
 /// Every decision across all recordings, newest meeting first — the ledger
@@ -304,6 +338,7 @@ pub fn list_decisions(app: tauri::AppHandle) -> Result<Vec<DecisionRef>, String>
                 meeting_created: rec.created,
                 person: rec.person.clone(),
                 workspace: rec.workspace.clone(),
+                thread: rec.thread.clone(),
                 decision: d,
             });
         }
@@ -426,6 +461,7 @@ pub struct OpenAction {
     pub meeting_created: u64,
     pub person: String,
     pub workspace: String,
+    pub thread: String,
     pub action: ActionItem,
 }
 
@@ -446,6 +482,7 @@ pub fn list_open_actions(app: tauri::AppHandle) -> Result<Vec<OpenAction>, Strin
                 meeting_created: rec.created,
                 person: rec.person.clone(),
                 workspace: rec.workspace.clone(),
+                thread: rec.thread.clone(),
                 action: a,
             });
         }

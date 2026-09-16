@@ -7,6 +7,7 @@ import { PeopleView } from "./views/PeopleView";
 import { DecisionsView } from "./views/DecisionsView";
 import { FollowUpsView } from "./views/FollowUpsView";
 import { WorkspaceView } from "./views/WorkspaceView";
+import { ThreadsView, ThreadDetail } from "./views/ThreadsView";
 import { SettingsView } from "./views/SettingsView";
 import { Button } from "./ui";
 import {
@@ -28,12 +29,14 @@ import type {
   OpenAction,
   PersonRow,
   Phase,
+  QuestionRef,
   RuntimeAck,
   RuntimeFollowupStatus,
   RuntimeSchedule,
   Segment,
   Settings,
   Summary,
+  Thread,
   View,
   Workspace,
 } from "./types";
@@ -65,6 +68,10 @@ function App() {
   const [meetingOpen, setMeetingOpen] = useState(false);
   const [viewingPast, setViewingPast] = useState(false);
   const [meetingWs, setMeetingWs] = useState("personal");
+  const [meetingThread, setMeetingThread] = useState("");
+  const [threads, setThreads] = useState<Thread[]>([]);
+  const [questions, setQuestions] = useState<QuestionRef[]>([]);
+  const [threadOpen, setThreadOpen] = useState<string | null>(null);
 
   // the workspace and its views
   const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
@@ -124,6 +131,16 @@ function App() {
     }
     try {
       setPeople(await invoke<PersonRow[]>("list_people"));
+    } catch {
+      /* best-effort */
+    }
+    try {
+      setThreads(await invoke<Thread[]>("list_threads"));
+    } catch {
+      /* best-effort */
+    }
+    try {
+      setQuestions(await invoke<QuestionRef[]>("list_questions"));
     } catch {
       /* best-effort */
     }
@@ -203,6 +220,14 @@ function App() {
     () => decisions.filter((d) => d.workspace === wsId),
     [decisions, wsId],
   );
+  const wsThreads = useMemo(
+    () => threads.filter((t) => t.workspace === wsId),
+    [threads, wsId],
+  );
+  const wsQuestions = useMemo(
+    () => questions.filter((q) => q.workspace === wsId),
+    [questions, wsId],
+  );
   const wsPeople = useMemo(
     () =>
       people.filter(
@@ -271,6 +296,7 @@ function App() {
         person: b.person,
         workspace: wsId,
         notes: b.notes,
+        thread: view === "threads" && threadOpen ? threadOpen : null,
       });
       await refreshAll();
       await openPast(d);
@@ -290,6 +316,59 @@ function App() {
           setBusy(null);
         }
       }
+    } catch (e) {
+      setError(String(e));
+    }
+  }
+
+  async function createThread(title: string) {
+    try {
+      const t = await invoke<Thread>("create_thread", {
+        workspace: wsId,
+        title,
+        summary: null,
+        owner: null,
+      });
+      await refreshAll();
+      setThreadOpen(t.id);
+      setView("threads");
+    } catch (e) {
+      setError(String(e));
+    }
+  }
+
+  async function saveThread(t: Thread) {
+    try {
+      await invoke("update_thread", {
+        id: t.id,
+        title: t.title,
+        summary: t.summary,
+        status: t.status,
+        owner: t.owner,
+      });
+      await refreshAll();
+      showFlash("thread moved");
+    } catch (e) {
+      setError(String(e));
+    }
+  }
+
+  async function deleteThread(t: Thread) {
+    try {
+      await invoke("delete_thread", { id: t.id });
+      await refreshAll();
+      setThreadOpen(null);
+    } catch (e) {
+      setError(String(e));
+    }
+  }
+
+  async function moveMeetingThread(thread: string) {
+    if (!dir) return;
+    setMeetingThread(thread);
+    try {
+      await invoke("set_recording_thread", { dir, thread });
+      await refreshAll();
     } catch (e) {
       setError(String(e));
     }
@@ -324,6 +403,7 @@ function App() {
     setRoughNotes("");
     setViewingPast(false);
     setMeetingWs(wsId);
+    setMeetingThread(view === "threads" && threadOpen ? threadOpen : "");
     setView("meetings");
     setShowSettings(false);
     setMeetingOpen(true);
@@ -375,6 +455,10 @@ function App() {
       invoke("set_recording_workspace", { dir: d, workspace: meetingWs }).catch(
         () => {},
       );
+      if (meetingThread)
+        invoke("set_recording_thread", { dir: d, thread: meetingThread }).catch(
+          () => {},
+        );
       if (title.trim())
         invoke("set_recording_title", { dir: d, title: title.trim() }).catch(
           () => {},
@@ -790,6 +874,7 @@ function App() {
         title: string;
         person: string;
         workspace: string;
+        thread: string;
         segments: Segment[];
         notes: string | null;
       }>("load_recording", { dir: recDir });
@@ -800,6 +885,7 @@ function App() {
       setTitle(detail.title);
       setPerson(detail.person);
       setMeetingWs(detail.workspace);
+      setMeetingThread(detail.thread);
       setSegments(detail.segments.length ? detail.segments : null);
       setNotes(detail.notes);
       setActions(past);
@@ -870,6 +956,10 @@ function App() {
     ? "Settings"
     : view === "overview"
       ? wsName
+      : view === "threads"
+      ? threadOpen
+        ? (threads.find((t) => t.id === threadOpen)?.title ?? "Thread")
+        : "Threads"
       : view === "meetings"
       ? meetingOpen
         ? phase === "recording"
@@ -909,6 +999,7 @@ function App() {
           setWsId(id);
           setShowSettings(false);
           setView("overview");
+          setThreadOpen(null);
           if (phase !== "recording") setMeetingOpen(false);
         }}
         onCreateWorkspace={createWorkspace}
@@ -916,10 +1007,12 @@ function App() {
         onView={(v) => {
           setView(v);
           setShowSettings(false);
+          if (v === "threads") setThreadOpen(null);
           if (v === "meetings" && phase !== "recording") setMeetingOpen(false);
         }}
         counts={{
           overview: 0,
+          threads: wsThreads.filter((t) => t.status === "active").length,
           meetings: wsLibrary.length,
           people: wsPeople.length,
           decisions: wsDecisions.filter((d) => d.decision.status === "proposed")
@@ -994,13 +1087,49 @@ function App() {
                 people={wsPeople.filter((p) => p.workspaces.includes(wsId))}
                 open={wsOpen}
                 decisions={wsDecisions}
+                threads={wsThreads}
+                onOpenThread={(id) => {
+                  setThreadOpen(id);
+                  setView("threads");
+                }}
                 runtimeReady={runtimeReady}
                 onSave={saveWorkspace}
                 onOpenLink={openLink}
                 onGo={setView}
                 onOpenMeeting={openPast}
               />
-            ) : (view === "meetings" || view === "overview") && meetingOpen ? (
+            ) : view === "threads" && !meetingOpen ? (
+              threadOpen && threads.find((t) => t.id === threadOpen) ? (
+                <ThreadDetail
+                  t={threads.find((t) => t.id === threadOpen)!}
+                  library={wsLibrary}
+                  open={wsOpen}
+                  decisions={wsDecisions}
+                  questions={wsQuestions}
+                  busy={!!busy}
+                  onBack={() => setThreadOpen(null)}
+                  onSave={saveThread}
+                  onDelete={deleteThread}
+                  onOpenMeeting={openPast}
+                  onDone={markOpenDone}
+                  onNudge={nudge}
+                  onDecisionStatus={setDecisionStatus}
+                  onAddBrief={() => {
+                    setView("meetings");
+                    showFlash("use + brief; it files under this thread");
+                  }}
+                />
+              ) : (
+                <ThreadsView
+                  threads={wsThreads}
+                  library={wsLibrary}
+                  open={wsOpen}
+                  decisions={wsDecisions}
+                  onOpen={setThreadOpen}
+                  onCreate={createThread}
+                />
+              )
+            ) : meetingOpen ? (
               <MeetingDetail
                 phase={phase}
                 viewingPast={viewingPast}
@@ -1017,6 +1146,9 @@ function App() {
                 workspaces={workspaces}
                 meetingWs={meetingWs}
                 onMoveWorkspace={moveMeeting}
+                threads={threads}
+                meetingThread={meetingThread}
+                onMoveThread={moveMeetingThread}
                 levels={levels}
                 roughNotes={roughNotes}
                 setRoughNotes={setRoughNotes}
@@ -1047,7 +1179,7 @@ function App() {
                 onTrack={trackAndSchedule}
                 onCopyPacket={copyPacket}
               />
-            ) : view === "meetings" ? (
+            ) : view === "meetings" || view === "overview" || view === "threads" ? (
               <MeetingsView
                 library={wsLibrary}
                 currentDir={dir}

@@ -13,6 +13,7 @@ import type {
   PersonRow,
   Phase,
   Segment,
+  Thread,
   Workspace,
 } from "../types";
 
@@ -32,6 +33,9 @@ export type MeetingDetailProps = {
   workspaces: Workspace[];
   meetingWs: string;
   onMoveWorkspace: (ws: string) => void;
+  threads: Thread[];
+  meetingThread: string;
+  onMoveThread: (thread: string) => void;
 
   levels: { mic?: Level; system?: Level };
   roughNotes: string;
@@ -79,6 +83,7 @@ export function MeetingDetail(p: MeetingDetailProps) {
     meeting_created: p.created ?? 0,
     person: p.person,
     workspace: p.meetingWs,
+    thread: p.meetingThread,
     decision: d,
   });
 
@@ -134,6 +139,25 @@ export function MeetingDetail(p: MeetingDetailProps) {
                     {w.name}
                   </option>
                 ))}
+              </select>
+            </label>
+          )}
+          {dir && (
+            <label className="flex items-center gap-1.5">
+              thread
+              <select
+                value={p.meetingThread}
+                onChange={(e) => p.onMoveThread(e.target.value)}
+                className="max-w-[260px] rounded-md border border-line bg-white px-1.5 py-0.5 text-[12px] text-ink outline-none focus:border-ink"
+              >
+                <option value="">unfiled</option>
+                {p.threads
+                  .filter((t) => t.workspace === p.meetingWs)
+                  .map((t) => (
+                    <option key={t.id} value={t.id}>
+                      {t.title}
+                    </option>
+                  ))}
               </select>
             </label>
           )}
