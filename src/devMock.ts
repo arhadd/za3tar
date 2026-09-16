@@ -634,6 +634,37 @@ export async function mockInvoke<T>(
     case "live_send":
     case "live_detach":
       return out(null);
+    case "list_routes":
+      return out([
+        {
+          id: "jello",
+          label: "Jello",
+          description: "the always-on operator (mock)",
+          kind: "acp",
+          command: "mock",
+          cwd: "",
+          enabled: true,
+        },
+      ]);
+    case "save_routes":
+      return out(null);
+    case "acp_start":
+      setTimeout(() => emit("acp-event", { route: args.route, kind: "status", status: "ready" }), 300);
+      return out("mock-session");
+    case "acp_prompt": {
+      const r = args.route;
+      emit("acp-event", { route: r, kind: "status", status: "working" });
+      setTimeout(() => emit("acp-event", { route: r, kind: "update", update: { sessionUpdate: "tool_call", toolCallId: "t1", title: "read: /srv/jello/THREADS.md", kind: "read", status: "in_progress" } }), 200);
+      setTimeout(() => emit("acp-event", { route: r, kind: "update", update: { sessionUpdate: "tool_call_update", toolCallId: "t1", status: "completed" } }), 700);
+      setTimeout(() => emit("acp-event", { route: r, kind: "update", update: { sessionUpdate: "agent_message_chunk", content: { type: "text", text: "Mock Jello: read it, nothing moved since yesterday." } } }), 900);
+      await new Promise((res) => setTimeout(res, 1100));
+      emit("acp-event", { route: r, kind: "status", status: "ready" });
+      return out({ stopReason: "end_turn", text: "Mock Jello: read it, nothing moved since yesterday." });
+    }
+    case "acp_permission":
+    case "acp_cancel":
+    case "acp_stop":
+      return out(null);
     case "open_system_audio_settings":
       return out(null);
     default:

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Mark } from "../brand/Mark";
 import type { View, Workspace } from "../types";
+import type { Route } from "../routes";
 
 export function Sidebar({
   workspaces,
@@ -12,7 +13,13 @@ export function Sidebar({
   counts,
   runtimeReady,
   onSettings,
+  routes,
+  routeStatus,
+  onRoute,
 }: {
+  routes: Route[];
+  routeStatus: Record<string, string>;
+  onRoute: (id: string) => void;
   workspaces: Workspace[];
   wsId: string;
   onSelectWorkspace: (id: string) => void;
@@ -126,14 +133,48 @@ export function Sidebar({
       </nav>
 
       <div className="mt-auto flex flex-col gap-1 border-t border-hairline px-3 py-3">
-        <div className="flex items-center gap-2 px-2 py-1 text-[12px] text-limestone/60">
-          <span
-            className={`h-1.5 w-1.5 rounded-full ${
-              runtimeReady ? "bg-thyme" : "bg-limestone/25"
-            }`}
-          />
-          {runtimeReady ? "Za3tar can do work for you" : "Za3tar works locally"}
-        </div>
+        {routes.length > 0 && (
+          <>
+            <div className="eyebrow px-2 pb-1 text-limestone/45">Hands</div>
+            {routes.map((r) => {
+              const st = routeStatus[r.id];
+              return (
+                <button
+                  key={r.id}
+                  onClick={() => onRoute(r.id)}
+                  title={r.description}
+                  className="flex items-center gap-2 rounded-md px-2 py-1.5 text-left text-[13px] text-limestone/70 transition-colors hover:bg-limestone/5 hover:text-limestone"
+                >
+                  <span
+                    className={`h-1.5 w-1.5 shrink-0 rounded-full ${
+                      st === "working" || st === "connecting"
+                        ? "pulse bg-thyme"
+                        : st === "ready"
+                          ? "bg-thyme"
+                          : "bg-limestone/25"
+                    }`}
+                  />
+                  <span className="truncate">{r.label}</span>
+                  {st && (
+                    <span className="ml-auto text-[11px] text-limestone/45">
+                      {st === "working" ? "working" : st === "ready" ? "ready" : st}
+                    </span>
+                  )}
+                </button>
+              );
+            })}
+          </>
+        )}
+        {routes.length === 0 && (
+          <div className="flex items-center gap-2 px-2 py-1 text-[12px] text-limestone/60">
+            <span
+              className={`h-1.5 w-1.5 rounded-full ${
+                runtimeReady ? "bg-thyme" : "bg-limestone/25"
+              }`}
+            />
+            {runtimeReady ? "Za3tar can do work for you" : "Za3tar works locally"}
+          </div>
+        )}
         <button
           onClick={onSettings}
           className="rounded-md px-2 py-1.5 text-left text-[13px] text-limestone/70 transition-colors hover:bg-limestone/5 hover:text-limestone"

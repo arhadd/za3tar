@@ -10,6 +10,19 @@ import { WorkspaceView } from "./views/WorkspaceView";
 import { ThreadsView, ThreadDetail } from "./views/ThreadsView";
 import { TalkPanel, type TalkState } from "./views/TalkPanel";
 import { LiveSession, type LiveOp, type TalkLine } from "./live";
+import { RoutePanel } from "./views/RoutePanel";
+import {
+  answerPermission,
+  cancelRoute,
+  emptySession,
+  onRouteEvent,
+  promptRoute,
+  reduce,
+  startRoute,
+  stopRoute,
+  type Route,
+  type RouteSession,
+} from "./routes";
 import { SettingsView } from "./views/SettingsView";
 import { Button } from "./ui";
 import {
@@ -80,6 +93,13 @@ function App() {
   const [talk, setTalk] = useState<TalkState>("idle");
   const [talkLines, setTalkLines] = useState<TalkLine[]>([]);
   const [talkMuted, setTalkMuted] = useState(false);
+
+  // routes — other agents with hands
+  const [routes, setRoutes] = useState<Route[]>([]);
+  const [routeSessions, setRouteSessions] = useState<Record<string, RouteSession>>({});
+  const [routeOpen, setRouteOpen] = useState<string | null>(null);
+  const routesRef = useRef<Route[]>([]);
+  routesRef.current = routes;
   // refs so the voice brain always sees current state without re-binding
   const snap = useRef<() => string>(() => "");
   const apply = useRef<(ops: LiveOp[]) => Promise<string[]>>(async () => []);
@@ -155,6 +175,11 @@ function App() {
     } catch {
       /* best-effort */
     }
+    try {
+      setRoutes(await invoke<Route[]>("list_routes"));
+    } catch {
+      /* best-effort */
+    }
   }
 
   async function refreshRuntime(ws = wsId) {
@@ -182,8 +207,30 @@ function App() {
       else if (p?.event === "error")
         setError(`${p.track ? p.track + ": " : ""}${p.message}`);
     });
+    const unRoute = onRouteEvent((e) => {
+      if (!e?.route) return;
+      setRouteSessions((cur) => {
+        const base =
+          cur[e.route] ??
+          emptySession(
+            routesRef.current.find((r) => r.id === e.route) ?? {
+              id: e.route,
+              label: e.route,
+              description: "",
+              kind: "acp",
+              command: "",
+              cwd: "",
+              enabled: true,
+            },
+          );
+        const next = reduce(base, e);
+        // a new prompt's text starts fresh (status → working)
+        return { ...cur, [e.route]: next };
+      });
+    });
     return () => {
       un.then((f) => f());
+      unRoute.then((f) => f());
     };
   }, []);
 
@@ -1025,6 +1072,13 @@ function App() {
           .map((p) => `${p.name}${p.role || p.org ? ` (${[p.role, p.org].filter(Boolean).join(", ")})` : ""}`)
           .join(" · ")}`,
       );
+    const enabledRoutes = routes.filter((r) => r.enabled);
+    if (enabledRoutes.length)
+      lines.push(
+        `\nroutes (other agents you can hand work to): ${enabledRoutes
+          .map((r) => `[${r.id}] ${r.label} — ${r.description}`)
+          .join(" · ")}`,
+      );
     lines.push(
       `\nstate: ${phase === "recording" ? "RECORDING now" : "not recording"}; view ${view}${
         threadOpen ? `; thread open ${threadOpen}` : ""
@@ -1137,6 +1191,50 @@ function App() {
     return out;
   };
 
+  // ── routes ────────────────────────────────────────────────────────────
+  async function ensureRoute(routeId: string): Promise<Route> {
+    const r = routes.find((x) => x.id === routeId && x.enabled);
+    if (!r) throw new Error(`no route ${routeId}`);
+    const cur = routeSessions[routeId];
+    if (r.kind === "acp" && (!cur || cur.status === "closed")) {
+      setRouteSessions((c) => ({ ...c, [routeId]: emptySession(r) }));
+      setRouteOpen(routeId);
+      await startRoute(r, r.cwd || undefined);
+    }
+    return r;
+  }
+
+  /** send text to a route and wait for its answer; the panel shows the work */
+  async function askRoute(routeId: string, text: string): Promise<string | null> {
+    try {
+      const r = await ensureRoute(routeId);
+      setRouteOpen(routeId);
+      if (r.kind !== "acp") return runtimeExchange(text, `asking ${r.label}…`);
+      setRouteSessions((c) => ({
+        ...c,
+        [routeId]: { ...(c[routeId] ?? emptySession(r)), text: "", tools: {}, lastPrompt: text, error: null },
+      }));
+      const res = await promptRoute(routeId, text);
+      return res.text || null;
+    } catch (e) {
+      setRouteSessions((c) =>
+        c[routeId] ? { ...c, [routeId]: { ...c[routeId], error: String(e), status: "closed" } } : c,
+      );
+      setError(String(e));
+      return null;
+    }
+  }
+
+  async function closeRoute(routeId: string) {
+    await stopRoute(routeId).catch(() => {});
+    setRouteSessions((c) => {
+      const n = { ...c };
+      delete n[routeId];
+      return n;
+    });
+    setRouteOpen(null);
+  }
+
   async function startTalk() {
     if (live.current) return;
     setTalkLines([]);
@@ -1151,7 +1249,7 @@ function App() {
       onState: setTalk,
       snapshot: () => snap.current(),
       applyOps: (ops) => apply.current(ops),
-      runtime: (m) => runtimeExchange(m, "handing it off…"),
+      runtime: (route, m) => askRoute(route, m),
       onMuted: setTalkMuted,
     });
     setTalkMuted(false);
@@ -1246,6 +1344,14 @@ function App() {
         }}
         runtimeReady={runtimeReady}
         onSettings={openSettings}
+        routes={routes.filter((r) => r.enabled)}
+        routeStatus={Object.fromEntries(
+          Object.values(routeSessions).map((x) => [x.route, x.status]),
+        )}
+        onRoute={(id) => {
+          setRouteOpen(id);
+          ensureRoute(id).catch((e) => setError(String(e)));
+        }}
       />
 
       <div className="flex min-w-0 flex-1 flex-col">
@@ -1289,6 +1395,20 @@ function App() {
 
         <main className="flex-1 overflow-y-auto px-8 py-6">
           <div className="mx-auto flex max-w-3xl flex-col gap-4">
+            {routeOpen && routeSessions[routeOpen] && (
+              <RoutePanel
+                s={routeSessions[routeOpen]}
+                onSend={(t) => {
+                  askRoute(routeOpen, t);
+                }}
+                onPermission={(rpcId, optionId) => {
+                  answerPermission(routeOpen, rpcId, optionId).catch((e) => setError(String(e)));
+                  setRouteSessions((c) => ({ ...c, [routeOpen]: { ...c[routeOpen], permission: null } }));
+                }}
+                onCancel={() => cancelRoute(routeOpen).catch(() => {})}
+                onClose={() => closeRoute(routeOpen)}
+              />
+            )}
             {talk !== "idle" && (
               <TalkPanel
                 state={talk}

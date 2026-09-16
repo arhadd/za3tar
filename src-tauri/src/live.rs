@@ -177,7 +177,7 @@ You can act on the app with ops. Use the exact ids from the snapshot.
 - {"op":"draft","kind":"whatsapp|email"}      — draft the follow-up for the OPEN meeting (open one first if needed; ops run in order)
 - {"op":"nudge","ref":"<action ref>"}          — draft a WhatsApp nudge about one open item
 - {"op":"person","name":"…","phone":"…","email":"…","org":"…","role":"…"}  — save contact details (only the fields given)
-- {"op":"runtime","message":"…"}  — ONLY for work outside this Mac (send a message to someone, put something on the calendar, check on a person). Phrase the message as a clear request. Tell the user you are handing it off.
+- {"op":"route","route":"<route id>","message":"…"}  — hand work to one of the ROUTES in the snapshot (other agents with hands: calendar, WhatsApp, checking on people, the By Jello app, anything outside this Mac). Use it ONLY for that, or when the user names the route ("ask Jello…"). Phrase the message as a clear, self-contained request with the context it needs. Say you are handing it off; the route's own answer gets spoken after yours.
 
 Rules: act when the user clearly asked; ask one short question when the target is ambiguous. Confirm what you did in plain words ("parked the tent thing", "moved Jello House"). If nothing needs doing, just answer.
 

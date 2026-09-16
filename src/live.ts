@@ -33,7 +33,7 @@ export type LiveOp =
       org?: string;
       role?: string;
     }
-  | { op: "runtime"; message: string };
+  | { op: "route"; route: string; message: string };
 
 export type LiveTurn = { say: string; ops: LiveOp[] };
 
@@ -42,7 +42,7 @@ type Handlers = {
   onState: (s: "idle" | "connecting" | "live" | "thinking") => void;
   snapshot: () => string;
   applyOps: (ops: LiveOp[]) => Promise<string[]>; // returns activity lines
-  runtime: (message: string) => Promise<string | null>;
+  runtime: (route: string, message: string) => Promise<string | null>;
   onMuted?: (m: boolean) => void;
 };
 
@@ -199,18 +199,18 @@ export class LiveSession {
       });
       let say = turn.say?.trim() || "";
       const ops = Array.isArray(turn.ops) ? turn.ops : [];
-      const runtimeOps = ops.filter((o) => o.op === "runtime") as Extract<
+      const runtimeOps = ops.filter((o) => o.op === "route") as Extract<
         LiveOp,
-        { op: "runtime" }
+        { op: "route" }
       >[];
-      const local = ops.filter((o) => o.op !== "runtime");
+      const local = ops.filter((o) => o.op !== "route");
       if (local.length) {
         const lines = await this.h.applyOps(local);
         for (const l of lines) this.h.onLine({ role: "activity", text: l });
       }
       for (const r of runtimeOps) {
-        this.h.onLine({ role: "activity", text: "asking the runtime…" });
-        const reply = await this.h.runtime(r.message);
+        this.h.onLine({ role: "activity", text: `handing to ${r.route}: ${r.message}` });
+        const reply = await this.h.runtime(r.route, r.message);
         if (reply) say = `${say} ${reply}`.trim();
       }
       if (!say) say = "done.";

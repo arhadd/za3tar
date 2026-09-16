@@ -1,3 +1,4 @@
+pub mod acp;
 pub mod actions;
 pub mod agent;
 pub mod anthropic;
@@ -74,6 +75,7 @@ pub fn run() {
         })
         .manage(CaptureState::default())
         .manage(live::LiveState::default())
+        .manage(acp::AcpState::default())
         .invoke_handler(tauri::generate_handler![
             open_system_audio_settings,
             open_path,
@@ -120,6 +122,13 @@ pub fn run() {
             live::live_send,
             live::live_detach,
             live::live_turn,
+            acp::list_routes,
+            acp::save_routes,
+            acp::acp_start,
+            acp::acp_prompt,
+            acp::acp_permission,
+            acp::acp_cancel,
+            acp::acp_stop,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
