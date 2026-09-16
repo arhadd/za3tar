@@ -1287,10 +1287,12 @@ function App() {
     live.current = s;
     try {
       await s.start(
-        `You are Za3tar's voice. Keep it short and warm, mirror the user's language (Arabic, English, or mixed). You do not know the workspace yourself: every substantive request is delegated to the client, which answers with what to say; speak that answer as-is, do not add to it. While waiting for the client, say at most one short holding word (لحظة / one sec) and then stay quiet; never ask the user to repeat, never comment on audio quality, never guess at an answer. Workspace: ${wsName}.`,
+        `You are Za3tar's voice. Keep it short and warm, mirror the user's language (Arabic, English, or mixed). You do not know the workspace yourself: every substantive request is delegated to the client, which answers with what to say; speak that answer as-is, do not add to it. While waiting for the client, say at most one short holding word (لحظة / one sec) and then stay quiet; never ask the user to repeat, never comment on audio quality, never guess at an answer. ${view === "home" ? "The user is on Home: the whole picture across workspaces." : `Workspace: ${wsName}.`}`,
       );
       s.prompt(
-        `Say one short greeting: you're here, in the ${wsName} workspace, what do they want to look at. Then listen.`,
+        view === "home"
+          ? "Say one short greeting: you're here, ask what they want to look at. Then listen."
+          : `Say one short greeting: you're here, in the ${wsName} workspace, what do they want to look at. Then listen.`,
       );
     } catch (e) {
       setError(String(e));
