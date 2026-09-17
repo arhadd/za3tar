@@ -530,32 +530,30 @@ function App() {
   /** notes + actions for a given recording; each step fails soft so the
    *  matching button stays available instead of killing the whole flow. */
   async function synthesize(d: string) {
-    try {
-      setBusy("writing your notes…");
-      const md = await invoke<string>("generate_notes", {
-        dir: d,
-        roughNotes: roughNotes.trim() || null,
-        title: title.trim() || null,
-      });
-      setNotes(md);
-    } catch (e) {
-      setError(String(e));
-    }
-    try {
-      setBusy("pulling out decisions & actions…");
-      const a = await invoke<MeetingActions>("extract_actions", {
-        dir: d,
-        title: title.trim() || null,
-        today: todayContext(),
-      });
-      setActions(a);
-      setDraft(null);
-    } catch (e) {
-      setError(String(e));
-    } finally {
-      setBusy(null);
-      refreshAll();
-    }
+    // notes and outcomes run at the same time; each fails soft on its own
+    setBusy("writing notes and pulling out decisions…");
+    const notesP = invoke<string>("generate_notes", {
+      dir: d,
+      roughNotes: roughNotes.trim() || null,
+      title: title.trim() || null,
+    }).then(
+      (md) => setNotes(md),
+      (e) => setError(String(e)),
+    );
+    const actionsP = invoke<MeetingActions>("extract_actions", {
+      dir: d,
+      title: title.trim() || null,
+      today: todayContext(),
+    }).then(
+      (a) => {
+        setActions(a);
+        setDraft(null);
+      },
+      (e) => setError(String(e)),
+    );
+    await Promise.allSettled([notesP, actionsP]);
+    setBusy(null);
+    refreshAll();
   }
 
   async function stop() {
