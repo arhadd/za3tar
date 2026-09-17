@@ -225,7 +225,7 @@ export function HomeView({
               start with a conversation
             </Button>
             {caps && !caps.notes && (
-              <span className="text-[12px] text-olive">needs the Anthropic key first</span>
+              <span className="text-[12px] text-olive">sign in or add a key first</span>
             )}
           </div>
         </Card>
