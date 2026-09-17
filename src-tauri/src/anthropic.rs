@@ -48,8 +48,6 @@ pub fn user_context_line() -> Option<String> {
 
 /// One completion. Returns (text, truncated).
 pub async fn complete(system: &str, user: &str, max_tokens: u32) -> Result<(String, bool), String> {
-    let api_key = read_key()?;
-
     let body = serde_json::json!({
         "model": MODEL,
         "max_tokens": max_tokens,
@@ -58,11 +56,20 @@ pub async fn complete(system: &str, user: &str, max_tokens: u32) -> Result<(Stri
     });
 
     let client = reqwest::Client::new();
-    let resp = client
-        .post(ANTHROPIC_URL)
-        .header("x-api-key", api_key)
-        .header("anthropic-version", "2023-06-01")
-        .header("content-type", "application/json")
+    // signed in with Za3tar → through the proxy; otherwise your own key
+    let req = if let Some((base, token)) = crate::hosted::hosted() {
+        client
+            .post(format!("{base}/v1/anthropic/messages"))
+            .bearer_auth(token)
+            .header("content-type", "application/json")
+    } else {
+        client
+            .post(ANTHROPIC_URL)
+            .header("x-api-key", read_key()?)
+            .header("anthropic-version", "2023-06-01")
+            .header("content-type", "application/json")
+    };
+    let resp = req
         .json(&body)
         .send()
         .await
@@ -70,6 +77,9 @@ pub async fn complete(system: &str, user: &str, max_tokens: u32) -> Result<(Stri
 
     let status = resp.status();
     let text = resp.text().await.map_err(|e| e.to_string())?;
+    if crate::hosted::hosted().is_some() && !status.is_success() {
+        return Err(crate::hosted::error_message(status, &text));
+    }
     let parsed: AnthropicResponse =
         serde_json::from_str(&text).map_err(|e| format!("parse anthropic response: {e}"))?;
 

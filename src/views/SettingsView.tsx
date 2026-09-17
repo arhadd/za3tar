@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Button, Card, Eyebrow, Field } from "../ui";
 import type { Settings } from "../types";
 import type { Route } from "../routes";
@@ -9,7 +10,13 @@ export function SettingsView({
   onClose,
   routes,
   onRoutes,
+  hosted,
+  onSignIn,
+  onSignOut,
 }: {
+  hosted: boolean;
+  onSignIn: (code: string, name: string) => Promise<void>;
+  onSignOut: () => Promise<void>;
   form: Settings;
   onChange: (s: Settings) => void;
   onSave: () => void;
@@ -17,6 +24,8 @@ export function SettingsView({
   routes: Route[];
   onRoutes: (r: Route[]) => void;
 }) {
+  const [code, setCode] = useState("");
+  const [name, setName] = useState("");
   const setRoute = (i: number, patch: Partial<Route>) =>
     onRoutes(routes.map((r, j) => (j === i ? { ...r, ...patch } : r)));
   return (
@@ -30,6 +39,38 @@ export function SettingsView({
           close
         </Button>
       </div>
+
+      <Card className="flex flex-col gap-3">
+        <div className="flex flex-col gap-1">
+          <Eyebrow>Za3tar account</Eyebrow>
+          <p className="text-[12px] leading-relaxed text-olive">
+            {hosted
+              ? "Signed in. Transcription, notes and Talk run through Za3tar's own keys and are metered monthly. Your own keys below are ignored while signed in."
+              : "Not signed in. Sign in with an invite code to run through Za3tar's keys, or fill in your own keys below."}
+          </p>
+        </div>
+        {hosted ? (
+          <Button tone="quiet" size="sm" className="self-start" onClick={onSignOut}>
+            sign out
+          </Button>
+        ) : (
+          <form
+            onSubmit={async (e) => {
+              e.preventDefault();
+              if (!code.trim()) return;
+              await onSignIn(code.trim(), name.trim() || form.user_name);
+              setCode("");
+            }}
+            className="flex flex-wrap gap-2"
+          >
+            <Field value={code} onChange={(e) => setCode(e.target.value)} placeholder="invite code" className="w-48" mono />
+            <Field value={name} onChange={(e) => setName(e.target.value)} placeholder="your name" className="w-40" />
+            <Button tone="primary" size="sm" type="submit" disabled={!code.trim()}>
+              sign in
+            </Button>
+          </form>
+        )}
+      </Card>
 
       <Card className="flex flex-col gap-3">
         <label className="flex flex-col gap-1 text-[12px] text-olive">

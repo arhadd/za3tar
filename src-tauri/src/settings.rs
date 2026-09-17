@@ -29,6 +29,12 @@ pub struct Settings {
     pub agent_name: String,
     #[serde(default)]
     pub agent_command: String,
+    /// hosted mode: the account token from Sign in with Za3tar
+    #[serde(default)]
+    pub za3tar_token: String,
+    /// hosted mode: proxy base URL (empty = the default host)
+    #[serde(default)]
+    pub za3tar_base: String,
 }
 
 /// env var name, reader, writer — one binding per settings field.
@@ -38,7 +44,7 @@ type VarBinding = (
     fn(&mut Settings) -> &mut String,
 );
 
-const VARS: [VarBinding; 7] = [
+const VARS: [VarBinding; 9] = [
     (
         "ELEVENLABS_API_KEY",
         |s| &s.elevenlabs_api_key,
@@ -56,6 +62,8 @@ const VARS: [VarBinding; 7] = [
     ),
     ("ZA3TAR_USER", |s| &s.user_name, |s| &mut s.user_name),
     ("ZA3TAR_LANGUAGE", |s| &s.language, |s| &mut s.language),
+    ("ZA3TAR_TOKEN", |s| &s.za3tar_token, |s| &mut s.za3tar_token),
+    ("ZA3TAR_BASE", |s| &s.za3tar_base, |s| &mut s.za3tar_base),
     (
         "ZA3TAR_AGENT_NAME",
         |s| &s.agent_name,
@@ -140,6 +148,8 @@ pub struct Capabilities {
     pub talk: bool,
     pub user_name: String,
     pub language: String,
+    /// signed in with Za3tar (providers through the proxy)
+    pub hosted: bool,
 }
 
 fn has(var: &str) -> bool {
@@ -150,10 +160,12 @@ fn has(var: &str) -> bool {
 
 #[tauri::command]
 pub fn capabilities() -> Capabilities {
+    let hosted = crate::hosted::hosted().is_some();
     Capabilities {
-        transcription: has("ELEVENLABS_API_KEY"),
-        notes: has("ANTHROPIC_API_KEY"),
-        talk: has("OPENAI_API_KEY"),
+        transcription: hosted || has("ELEVENLABS_API_KEY"),
+        notes: hosted || has("ANTHROPIC_API_KEY"),
+        talk: hosted || has("OPENAI_API_KEY"),
+        hosted,
         user_name: std::env::var("ZA3TAR_USER").unwrap_or_default(),
         language: crate::anthropic::language(),
     }

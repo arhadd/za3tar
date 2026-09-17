@@ -50,9 +50,16 @@ pub async fn live_session_create(
         },
         "transport": { "type": "webrtc", "sdp": sdp }
     });
+    let (url, auth) = match crate::hosted::hosted() {
+        Some((base, token)) => (format!("{base}/v1/live/sessions"), token),
+        None => (
+            "https://api.openai.com/v1/live/sessions".to_string(),
+            key()?,
+        ),
+    };
     let r = reqwest::Client::new()
-        .post("https://api.openai.com/v1/live/sessions")
-        .bearer_auth(key()?)
+        .post(url)
+        .bearer_auth(auth)
         .json(&body)
         .timeout(std::time::Duration::from_secs(25))
         .send()
@@ -61,6 +68,9 @@ pub async fn live_session_create(
     let status = r.status();
     let v: serde_json::Value = r.json().await.map_err(|e| e.to_string())?;
     if !status.is_success() {
+        if crate::hosted::hosted().is_some() {
+            return Err(crate::hosted::error_message(status, &v.to_string()));
+        }
         let msg = v["error"]["message"]
             .as_str()
             .unwrap_or("voice service could not start")

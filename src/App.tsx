@@ -128,6 +128,7 @@ function App() {
     notes: boolean;
     talk: boolean;
     language?: string;
+    hosted?: boolean;
   } | null>(null);
   const [loaded, setLoaded] = useState(false);
   const [briefRequested, setBriefRequested] = useState(false);
@@ -209,6 +210,7 @@ function App() {
         talk: boolean;
         user_name: string;
         language: string;
+        hosted: boolean;
       }>("capabilities");
       setCaps(c);
       setUserName(c.user_name || "");
@@ -1066,6 +1068,30 @@ function App() {
     }
   }
 
+  async function hostedSignIn(code: string, name: string) {
+    try {
+      const acc = await invoke<{ id: string; name: string }>("hosted_sign_in", {
+        code,
+        name,
+        base: null,
+      });
+      await refreshName();
+      showFlash(`signed in as ${acc.name || "you"}`);
+    } catch (e) {
+      setError(String(e));
+    }
+  }
+
+  async function hostedSignOut() {
+    try {
+      await invoke("hosted_sign_out");
+      await refreshName();
+      showFlash("signed out");
+    } catch (e) {
+      setError(String(e));
+    }
+  }
+
   async function savePerson(e: {
     name: string;
     phone: string;
@@ -1650,6 +1676,9 @@ function App() {
                 onClose={() => setShowSettings(false)}
                 routes={routesForm}
                 onRoutes={setRoutesForm}
+                hosted={!!caps?.hosted}
+                onSignIn={hostedSignIn}
+                onSignOut={hostedSignOut}
               />
             ) : view === "home" && !meetingOpen ? (
               <HomeView
@@ -1683,6 +1712,7 @@ function App() {
                 onDecisionStatus={setDecisionStatus}
                 fresh={threads.length === 0 && library.length === 0}
                 onStartConversation={() => openChat("onboarding")}
+                onSignIn={hostedSignIn}
               />
             ) : view === "overview" && !(meetingOpen && phase === "recording") ? (
               <WorkspaceView

@@ -278,6 +278,8 @@ let settings: Settings = {
   language: "english",
   agent_name: "",
   agent_command: "~/bin/za3tar-runtime",
+  za3tar_token: "",
+  za3tar_base: "",
 };
 
 let recording = false;
@@ -536,9 +538,13 @@ export async function mockInvoke<T>(
     case "capabilities":
       return out(
         FRESH
-          ? { transcription: false, notes: false, talk: false, user_name: "", language: "english" }
-          : { transcription: true, notes: true, talk: false, user_name: "Ala", language: "english" },
+          ? { transcription: false, notes: false, talk: false, user_name: "", language: "english", hosted: false }
+          : { transcription: true, notes: true, talk: false, user_name: "Ala", language: "english", hosted: false },
       );
+    case "hosted_sign_in":
+      return out({ id: "acc_mock", name: args.name || "you" });
+    case "hosted_sign_out":
+      return out(null);
     case "get_settings":
       return out(settings);
     case "save_settings":

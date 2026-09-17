@@ -1,7 +1,8 @@
 // Home: hi, and everything you have to think about, across every workspace.
 // On you first (overdue, then dated, then the rest), then what is waiting for
 // a yes, what is in motion, who you are waiting on, and what just came in.
-import { Button, Card, Chip, Empty, Eyebrow, ownerTone } from "../ui";
+import { useState } from "react";
+import { Button, Card, Chip, Empty, Eyebrow, Field, ownerTone } from "../ui";
 import { relDate, todayISO } from "../format";
 import { threadTone } from "./ThreadsView";
 import type {
@@ -36,6 +37,7 @@ export function HomeView({
   onSettings,
   fresh,
   onStartConversation,
+  onSignIn,
   workspaces,
   threads,
   open,
@@ -57,6 +59,7 @@ export function HomeView({
   onSettings: () => void;
   fresh: boolean;
   onStartConversation: () => void;
+  onSignIn: (code: string, name: string) => Promise<void>;
   workspaces: Workspace[];
   threads: Thread[];
   open: OpenAction[];
@@ -73,6 +76,9 @@ export function HomeView({
   onPark: (oa: OpenAction, parked: boolean) => void;
   onDecisionStatus: (d: DecisionRef, s: DecisionStatus) => void;
 }) {
+  const [code, setCode] = useState("");
+  const [name, setName] = useState("");
+  const [ownKeys, setOwnKeys] = useState(false);
   const today = todayISO();
   const week = new Date(Date.now() + 7 * 86400000).toISOString().slice(0, 10);
   const wsName = (id: string) =>
@@ -140,22 +146,66 @@ export function HomeView({
       </div>
 
       {caps && (!caps.transcription || !caps.notes) && (
-        <Card className="flex flex-col gap-2 border-thyme bg-thyme/10">
+        <Card className="flex flex-col gap-3 border-thyme bg-thyme/10">
           <Eyebrow>Set up</Eyebrow>
-          <p className="text-[13px] leading-relaxed">
-            {!caps.transcription && !caps.notes
-              ? "Za3tar needs two keys to work: ElevenLabs for transcription and Anthropic for notes, decisions and drafts."
-              : !caps.transcription
-                ? "Transcription is off: add an ElevenLabs key. Recording still works; the transcript waits."
-                : "Notes are off: add an Anthropic key. Transcripts still come in; notes and decisions wait."}
-            {!caps.talk ? " Talk is optional and needs an OpenAI key." : ""}
-          </p>
-          <Button tone="primary" size="sm" className="self-start" onClick={onSettings}>
-            open Settings
-          </Button>
+          {!ownKeys ? (
+            <>
+              <p className="text-[13px] leading-relaxed">
+                Two ways to run Za3tar. Sign in with an invite code and it just
+                works, through Za3tar's own keys. Or use your own provider keys
+                and nothing leaves this Mac except to the providers you chose.
+              </p>
+              <form
+                onSubmit={async (e) => {
+                  e.preventDefault();
+                  if (!code.trim()) return;
+                  await onSignIn(code.trim(), name.trim());
+                }}
+                className="flex flex-wrap gap-2"
+              >
+                <Field
+                  value={code}
+                  onChange={(e) => setCode(e.target.value)}
+                  placeholder="invite code"
+                  className="w-48"
+                  mono
+                />
+                <Field
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="your name"
+                  className="w-40"
+                />
+                <Button tone="primary" size="sm" type="submit" disabled={!code.trim()}>
+                  sign in with Za3tar
+                </Button>
+                <Button tone="ghost" size="sm" type="button" onClick={() => setOwnKeys(true)}>
+                  I have my own keys
+                </Button>
+              </form>
+            </>
+          ) : (
+            <>
+              <p className="text-[13px] leading-relaxed">
+                {!caps.transcription && !caps.notes
+                  ? "Za3tar needs two keys: ElevenLabs for transcription and Anthropic for notes, decisions and drafts."
+                  : !caps.transcription
+                    ? "Transcription is off: add an ElevenLabs key. Recording still works; the transcript waits."
+                    : "Notes are off: add an Anthropic key. Transcripts still come in; notes and decisions wait."}
+                {!caps.talk ? " Talk is optional and needs an OpenAI key." : ""}
+              </p>
+              <div className="flex gap-2">
+                <Button tone="primary" size="sm" onClick={onSettings}>
+                  open Settings
+                </Button>
+                <Button tone="ghost" size="sm" onClick={() => setOwnKeys(false)}>
+                  back
+                </Button>
+              </div>
+            </>
+          )}
         </Card>
       )}
-
       {fresh && (
         <Card className="flex flex-col gap-2 border-ink/40">
           <Eyebrow>Start here</Eyebrow>

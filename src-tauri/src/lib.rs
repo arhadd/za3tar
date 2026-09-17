@@ -4,6 +4,7 @@ pub mod agent;
 pub mod anthropic;
 pub mod asr;
 mod capture;
+pub mod hosted;
 pub mod library;
 pub mod live;
 pub mod notes;
@@ -99,6 +100,9 @@ pub fn run() {
             settings::get_settings,
             settings::save_settings,
             settings::capabilities,
+            hosted::hosted_sign_in,
+            hosted::hosted_sign_out,
+            hosted::hosted_me,
             library::list_recordings,
             library::load_recording,
             library::set_recording_title,

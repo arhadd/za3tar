@@ -88,9 +88,14 @@ async fn transcribe_track(
         form = form.text("diarize", "true");
     }
 
-    let resp = client
-        .post(ELEVENLABS_URL)
-        .header("xi-api-key", api_key)
+    let req = if let Some((base, token)) = crate::hosted::hosted() {
+        client
+            .post(format!("{base}/v1/elevenlabs/speech-to-text"))
+            .bearer_auth(token)
+    } else {
+        client.post(ELEVENLABS_URL).header("xi-api-key", api_key)
+    };
+    let resp = req
         .multipart(form)
         .send()
         .await
@@ -99,6 +104,9 @@ async fn transcribe_track(
     let status = resp.status();
     let body = resp.text().await.map_err(|e| e.to_string())?;
     if !status.is_success() {
+        if crate::hosted::hosted().is_some() {
+            return Err(crate::hosted::error_message(status, &body));
+        }
         return Err(format!("elevenlabs {status}: {}", truncate(&body, 300)));
     }
 
@@ -200,7 +208,12 @@ fn relabel_in_person(words: &mut [TaggedWord]) {
 
 /// Transcribe both tracks in a recording directory and return a merged transcript.
 pub async fn transcribe_dir(dir: &Path) -> Result<Vec<Segment>, String> {
-    let api_key = read_key()?;
+    // signed in with Za3tar → the proxy holds the key
+    let api_key = if crate::hosted::hosted().is_some() {
+        String::new()
+    } else {
+        read_key()?
+    };
     let client = reqwest::Client::new();
 
     let mic = dir.join("mic.wav");
