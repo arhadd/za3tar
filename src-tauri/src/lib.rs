@@ -1,12 +1,18 @@
+pub mod acp;
 pub mod actions;
 pub mod agent;
 pub mod anthropic;
 pub mod asr;
 mod capture;
+pub mod compose;
+pub mod hosted;
 pub mod library;
+pub mod live;
 pub mod notes;
 pub mod people;
 pub mod settings;
+pub mod threads;
+pub mod workspaces;
 
 use capture::CaptureState;
 
@@ -20,6 +26,30 @@ fn open_system_audio_settings() -> Result<(), String> {
     {
         std::process::Command::new("open")
             .arg("x-apple.systempreferences:com.apple.preference.security?Privacy_ScreenCapture")
+            .spawn()
+            .map_err(|e| e.to_string())?;
+    }
+    Ok(())
+}
+
+/// Reveal a local file or folder (a workspace's associated files). Only
+/// paths that exist; `~` expands to the home directory.
+#[tauri::command]
+fn open_path(path: String) -> Result<(), String> {
+    let mut p = path.trim().to_string();
+    if let Some(rest) = p.strip_prefix("~") {
+        if let Some(home) = std::env::var_os("HOME") {
+            p = format!("{}{}", home.to_string_lossy(), rest);
+        }
+    }
+    let pb = std::path::PathBuf::from(&p);
+    if !pb.exists() {
+        return Err(format!("not on this Mac: {p}"));
+    }
+    #[cfg(target_os = "macos")]
+    {
+        std::process::Command::new("open")
+            .arg(&pb)
             .spawn()
             .map_err(|e| e.to_string())?;
     }
@@ -46,8 +76,11 @@ pub fn run() {
             Ok(())
         })
         .manage(CaptureState::default())
+        .manage(live::LiveState::default())
+        .manage(acp::AcpState::default())
         .invoke_handler(tauri::generate_handler![
             open_system_audio_settings,
+            open_path,
             capture::start_recording,
             capture::stop_recording,
             capture::is_recording,
@@ -56,21 +89,54 @@ pub fn run() {
             actions::extract_actions,
             actions::load_actions,
             actions::set_action_done,
+            actions::set_action_parked,
             actions::draft_followup,
             actions::export_calendar,
             actions::open_external,
             actions::list_open_actions,
             actions::draft_nudge,
+            actions::set_decision_status,
+            actions::list_decisions,
+            actions::list_questions,
+            compose::compose,
             settings::get_settings,
             settings::save_settings,
+            settings::capabilities,
+            settings::set_onboarded,
+            hosted::hosted_sign_in,
+            hosted::hosted_sign_out,
+            hosted::hosted_me,
             library::list_recordings,
             library::load_recording,
             library::set_recording_title,
             library::set_recording_person,
+            library::set_recording_workspace,
+            library::create_brief,
+            library::set_recording_thread,
             people::list_people,
             people::save_person,
             agent::send_to_agent,
             agent::agent_available,
+            workspaces::list_workspaces,
+            workspaces::create_workspace,
+            workspaces::rename_workspace,
+            workspaces::update_workspace,
+            threads::list_threads,
+            threads::create_thread,
+            threads::update_thread,
+            threads::delete_thread,
+            live::live_session_create,
+            live::live_attach,
+            live::live_send,
+            live::live_detach,
+            live::live_turn,
+            acp::list_routes,
+            acp::save_routes,
+            acp::acp_start,
+            acp::acp_prompt,
+            acp::acp_permission,
+            acp::acp_cancel,
+            acp::acp_stop,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

@@ -8,6 +8,9 @@ za3tar application's AGPL licence.
 
 za3tar can hand meetings to a **compatible agent** — whatever assistant you
 already run (a Hermes/OpenClaw profile, a Claude agent, a plain script).
+Inside the app this agent is never surfaced by name: the user sees Za3tar
+doing the work ("track & schedule", "Za3tar sends it"), and the agent is the
+runtime behind it. The envelopes below are unchanged by that framing.
 This document specifies the exchange, not the receiving agent's capabilities:
 calendar writes, message delivery, follow-up tracking, and reliability are all
 implemented and governed by that agent. The app and the agent exchange
@@ -16,7 +19,7 @@ its business, but the reply contract is fixed.
 
 ## Transport
 
-Any command line. In ⚙ settings (or `ZA3TAR_AGENT_CMD`), configure a command
+Any command line. Under Settings → Za3tar runtime (or `ZA3TAR_AGENT_CMD`), configure a command
 that:
 
 1. receives the message as its **final argument** (za3tar runs

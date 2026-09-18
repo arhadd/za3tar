@@ -19,6 +19,12 @@ struct Meta {
     title: String,
     #[serde(default)]
     person: String,
+    /// workspace id (workspaces.rs); empty = the default workspace
+    #[serde(default)]
+    workspace: String,
+    /// thread id (threads.rs); empty = unfiled
+    #[serde(default)]
+    thread: String,
 }
 
 /// One row in the library list.
@@ -29,8 +35,12 @@ pub struct RecordingSummary {
     pub created: u64,
     pub title: String,
     pub person: String,
+    pub workspace: String,
+    pub thread: String,
     pub has_transcript: bool,
     pub has_notes: bool,
+    /// false for imported briefs — notes/actions written without a recording
+    pub has_audio: bool,
     pub duration_secs: f64,
 }
 
@@ -40,6 +50,8 @@ pub struct RecordingDetail {
     pub dir: String,
     pub title: String,
     pub person: String,
+    pub workspace: String,
+    pub thread: String,
     pub segments: Vec<Segment>,
     pub notes: Option<String>,
 }
@@ -81,8 +93,10 @@ pub fn list_recordings(app: AppHandle) -> Result<Vec<RecordingSummary>, String> 
         if !dir.is_dir() {
             continue;
         }
-        // a recording is only worth listing once it has audio
-        if !dir.join("mic.wav").exists() && !dir.join("system.wav").exists() {
+        // a recording is worth listing once it has audio — or, for an
+        // imported brief, once it has notes or outcomes to show
+        let has_audio = dir.join("mic.wav").exists() || dir.join("system.wav").exists();
+        if !has_audio && !dir.join("notes.md").exists() && !dir.join("actions.json").exists() {
             continue;
         }
         let id = dir
@@ -94,8 +108,11 @@ pub fn list_recordings(app: AppHandle) -> Result<Vec<RecordingSummary>, String> 
         out.push(RecordingSummary {
             title: meta.title,
             person: meta.person,
+            workspace: crate::workspaces::or_default(&meta.workspace),
+            thread: meta.thread,
             has_transcript: dir.join("transcript.json").exists(),
             has_notes: dir.join("notes.md").exists(),
+            has_audio,
             duration_secs: duration_secs(&dir),
             id,
             created,
@@ -116,6 +133,8 @@ pub fn load_recording(dir: String) -> Result<RecordingDetail, String> {
     Ok(RecordingDetail {
         title: meta.title,
         person: meta.person,
+        workspace: crate::workspaces::or_default(&meta.workspace),
+        thread: meta.thread,
         segments,
         notes,
         dir,
@@ -142,6 +161,69 @@ pub fn set_recording_person(dir: String, person: String) -> Result<(), String> {
     let path = PathBuf::from(&dir);
     let mut meta = read_meta(&path);
     meta.person = person.trim().to_string();
+    write_meta(&path, &meta)
+}
+
+/// An imported brief: notes written or pasted in, no recording. Gets the
+/// same directory shape as a recording so every other command works on it.
+#[tauri::command]
+pub fn create_brief(
+    app: AppHandle,
+    title: String,
+    person: String,
+    workspace: String,
+    notes: String,
+    thread: Option<String>,
+) -> Result<String, String> {
+    let root = recordings_root(&app)?;
+    std::fs::create_dir_all(&root).map_err(|e| e.to_string())?;
+    let mut secs = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .map(|d| d.as_secs())
+        .unwrap_or(0);
+    let mut dir = root.join(secs.to_string());
+    while dir.exists() {
+        secs += 1;
+        dir = root.join(secs.to_string());
+    }
+    std::fs::create_dir(&dir).map_err(|e| e.to_string())?;
+    write_meta(
+        &dir,
+        &Meta {
+            title: title.trim().to_string(),
+            person: person.trim().to_string(),
+            workspace: workspace.trim().to_string(),
+            thread: thread.unwrap_or_default().trim().to_string(),
+        },
+    )?;
+    let body = notes.trim();
+    std::fs::write(
+        dir.join("notes.md"),
+        if body.is_empty() {
+            "—\n".to_string()
+        } else {
+            format!("{body}\n")
+        },
+    )
+    .map_err(|e| e.to_string())?;
+    Ok(dir.to_string_lossy().to_string())
+}
+
+/// File a recording under a thread (threads.rs). Empty = unfiled.
+#[tauri::command]
+pub fn set_recording_thread(dir: String, thread: String) -> Result<(), String> {
+    let path = PathBuf::from(&dir);
+    let mut meta = read_meta(&path);
+    meta.thread = thread.trim().to_string();
+    write_meta(&path, &meta)
+}
+
+/// Move a recording into a workspace (workspaces.rs). Empty = default.
+#[tauri::command]
+pub fn set_recording_workspace(dir: String, workspace: String) -> Result<(), String> {
+    let path = PathBuf::from(&dir);
+    let mut meta = read_meta(&path);
+    meta.workspace = workspace.trim().to_string();
     write_meta(&path, &meta)
 }
 

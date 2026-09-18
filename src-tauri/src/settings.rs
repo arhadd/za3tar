@@ -19,11 +19,25 @@ pub struct Settings {
     #[serde(default)]
     pub anthropic_api_key: String,
     #[serde(default)]
+    pub openai_api_key: String,
+    #[serde(default)]
     pub user_name: String,
+    /// "english" (default) | "match" | "arabic" — what Za3tar writes in
+    #[serde(default)]
+    pub language: String,
     #[serde(default)]
     pub agent_name: String,
     #[serde(default)]
     pub agent_command: String,
+    /// hosted mode: the account token from Sign in with Za3tar
+    #[serde(default)]
+    pub za3tar_token: String,
+    /// hosted mode: proxy base URL (empty = the default host)
+    #[serde(default)]
+    pub za3tar_base: String,
+    /// when setup was finished (ISO date). Empty = never onboarded.
+    #[serde(default)]
+    pub onboarded: String,
 }
 
 /// env var name, reader, writer — one binding per settings field.
@@ -33,7 +47,7 @@ type VarBinding = (
     fn(&mut Settings) -> &mut String,
 );
 
-const VARS: [VarBinding; 5] = [
+const VARS: [VarBinding; 9] = [
     (
         "ELEVENLABS_API_KEY",
         |s| &s.elevenlabs_api_key,
@@ -44,7 +58,15 @@ const VARS: [VarBinding; 5] = [
         |s| &s.anthropic_api_key,
         |s| &mut s.anthropic_api_key,
     ),
+    (
+        "OPENAI_API_KEY",
+        |s| &s.openai_api_key,
+        |s| &mut s.openai_api_key,
+    ),
     ("ZA3TAR_USER", |s| &s.user_name, |s| &mut s.user_name),
+    ("ZA3TAR_LANGUAGE", |s| &s.language, |s| &mut s.language),
+    ("ZA3TAR_TOKEN", |s| &s.za3tar_token, |s| &mut s.za3tar_token),
+    ("ZA3TAR_BASE", |s| &s.za3tar_base, |s| &mut s.za3tar_base),
     (
         "ZA3TAR_AGENT_NAME",
         |s| &s.agent_name,
@@ -118,4 +140,69 @@ pub fn save_settings(app: AppHandle, settings: Settings) -> Result<(), String> {
     std::fs::write(&path, json).map_err(|e| e.to_string())?;
     apply(&settings, false);
     Ok(())
+}
+
+/// What the app can do right now, from the keys actually in the environment
+/// (settings or .env). Home uses this to say what is missing on a fresh copy.
+#[derive(Serialize)]
+pub struct Capabilities {
+    pub transcription: bool,
+    pub notes: bool,
+    pub talk: bool,
+    pub user_name: String,
+    pub language: String,
+    /// signed in with Za3tar (providers through the proxy)
+    pub hosted: bool,
+    /// setup has been done at least once
+    pub onboarded: bool,
+}
+
+fn has(var: &str) -> bool {
+    std::env::var(var)
+        .map(|v| !v.trim().is_empty())
+        .unwrap_or(false)
+}
+
+#[tauri::command]
+pub fn capabilities(app: AppHandle) -> Capabilities {
+    let hosted = crate::hosted::hosted().is_some();
+    let onboarded = !read(&app).onboarded.trim().is_empty();
+    Capabilities {
+        transcription: hosted || has("ELEVENLABS_API_KEY"),
+        notes: hosted || has("ANTHROPIC_API_KEY"),
+        talk: hosted || has("OPENAI_API_KEY"),
+        hosted,
+        onboarded,
+        user_name: std::env::var("ZA3TAR_USER").unwrap_or_default(),
+        language: crate::anthropic::language(),
+    }
+}
+
+/// Mark setup as done (or, with false, ask for it again next launch).
+#[tauri::command]
+pub fn set_onboarded(app: AppHandle, done: bool) -> Result<(), String> {
+    let mut s = read(&app);
+    s.onboarded = if done { chrono_date() } else { String::new() };
+    save_settings(app, s)
+}
+
+/// Today as YYYY-MM-DD without pulling in a date crate.
+fn chrono_date() -> String {
+    let secs = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .map(|d| d.as_secs() as i64)
+        .unwrap_or(0);
+    let days = secs / 86_400;
+    // civil-from-days (Howard Hinnant's algorithm)
+    let z = days + 719_468;
+    let era = if z >= 0 { z } else { z - 146_096 } / 146_097;
+    let doe = z - era * 146_097;
+    let yoe = (doe - doe / 1460 + doe / 36_524 - doe / 146_096) / 365;
+    let y = yoe + era * 400;
+    let doy = doe - (365 * yoe + yoe / 4 - yoe / 100);
+    let mp = (5 * doy + 2) / 153;
+    let d = doy - (153 * mp + 2) / 5 + 1;
+    let m = if mp < 10 { mp + 3 } else { mp - 9 };
+    let y = if m <= 2 { y + 1 } else { y };
+    format!("{y:04}-{m:02}-{d:02}")
 }

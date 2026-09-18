@@ -1,0 +1,17 @@
+{
+  "name": "za3tar-proxy",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Hosted mode for Za3tar: invite-code sign-in and metered pass-through to Anthropic, ElevenLabs and OpenAI live.",
+  "scripts": {
+    "start": "node server.mjs"
+  },
+  "dependencies": {
+    "express": "4.22.2",
+    "ws": "8.21.3"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

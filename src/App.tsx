@@ -1,117 +1,78 @@
-import { useEffect, useRef, useState } from "react";
-import { invoke } from "@tauri-apps/api/core";
-import { listen } from "@tauri-apps/api/event";
-import { MarkdownLite } from "./MarkdownLite";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { invoke, listen } from "./ipc";
+import { Sidebar } from "./views/Sidebar";
+import { MeetingsView } from "./views/MeetingsView";
+import { MeetingDetail } from "./views/MeetingDetail";
+import { PeopleView } from "./views/PeopleView";
+import { DecisionsView } from "./views/DecisionsView";
+import { FollowUpsView } from "./views/FollowUpsView";
+import { WorkspaceView } from "./views/WorkspaceView";
+import { HomeView, isMine } from "./views/HomeView";
+import { ThreadsView, ThreadDetail } from "./views/ThreadsView";
+import { TalkPanel, type TalkState } from "./views/TalkPanel";
+import { ChatPanel, type ChatLine } from "./views/ChatPanel";
+import { Composer, type Draft as ComposerDraft } from "./views/Composer";
+import { Onboarding, type Step as OnboardStep } from "./views/Onboarding";
+import { LiveSession, type LiveOp, type TalkLine } from "./live";
+import { RoutePanel } from "./views/RoutePanel";
+import {
+  answerPermission,
+  cancelRoute,
+  emptySession,
+  onRouteEvent,
+  promptRoute,
+  reduce,
+  startRoute,
+  stopRoute,
+  type Route,
+  type RouteSession,
+} from "./routes";
+import { SettingsView } from "./views/SettingsView";
+import { Button } from "./ui";
+import {
+  bridgeId,
+  meetingIdOf,
+  mmss,
+  parseEnvelope,
+  todayContext,
+} from "./format";
+import type {
+  ActionItem,
+  DecisionRef,
+  DecisionStatus,
+  Draft,
+  DraftKind,
+  Level,
+  Link,
+  MeetingActions,
+  OpenAction,
+  PersonRow,
+  Phase,
+  QuestionRef,
+  RuntimeAck,
+  RuntimeFollowupStatus,
+  RuntimeSchedule,
+  Segment,
+  Settings,
+  Summary,
+  Thread,
+  View,
+  Workspace,
+} from "./types";
 
-type Level = { peak: number; seconds: number };
-type Segment = { speaker: string; start: number; text: string };
-type Phase = "idle" | "recording" | "processing" | "done";
-type Summary = {
-  dir: string;
-  id: string;
-  created: number;
-  title: string;
-  person: string;
-  has_transcript: boolean;
-  has_notes: boolean;
-  duration_secs: number;
-};
-type PersonRow = {
-  name: string;
-  phone: string;
-  email: string;
-  meetings: number;
-  last_met: number;
-  open_actions: number;
-};
-type ActionItem = {
-  id: number;
-  title: string;
-  owner: string;
-  due_label?: string | null;
-  due_date?: string | null;
-  detail?: string | null;
-  done: boolean;
-};
-type MeetingActions = {
-  decisions: string[];
-  actions: ActionItem[];
-  questions: string[];
-};
-type DraftKind = "whatsapp" | "email";
-type Draft = { kind: DraftKind; subject: string; body: string; target: string };
-type OpenAction = {
-  dir: string;
-  meeting_title: string;
-  meeting_created: number;
-  person: string;
-  action: ActionItem;
-};
-type Settings = {
-  elevenlabs_api_key: string;
-  anthropic_api_key: string;
-  user_name: string;
-  agent_name: string;
-  agent_command: string;
-};
-// agent bridge envelopes — docs/AGENT-PROTOCOL.md
-type AgentAck = {
-  ok: boolean;
-  events_created: { action_id: string; title: string; when: string }[];
-  followups_tracked: string[];
-  person: string;
-  warnings: string[];
-};
-type AgentEvent = {
-  start: string;
-  end: string;
-  title: string;
-  attendees: string[];
-};
-type AgentSchedule = { date: string; events: AgentEvent[]; error?: string };
-type AgentFollowupStatus = {
-  id: string;
-  status: string;
-  note: string;
-  updated_at: string;
-};
-
-/** the far side is still an agent — find the header, then the outermost JSON */
-function parseEnvelope<T>(reply: string, header: string): T {
-  const at = reply.indexOf(header);
-  const start = reply.indexOf("{", at >= 0 ? at + header.length : 0);
-  const end = reply.lastIndexOf("}");
-  if (start < 0 || end <= start)
-    throw new Error(`no ${header} in the agent's reply`);
-  return JSON.parse(reply.slice(start, end + 1)) as T;
-}
-
-const meetingIdOf = (d: string) => d.replace(/\/+$/, "").split("/").pop() || d;
-/** local action ids are per-meeting SQLite ids; the bridge needs global ones */
-const bridgeId = (d: string, actionId: number) =>
-  `${meetingIdOf(d)}#a${actionId}`;
-
-/** "HH:MM" → minutes since local midnight (NaN if malformed) */
-function hhmmToMin(t: string): number {
-  const m = /^(\d{1,2}):(\d{2})/.exec(t);
-  return m ? Number(m[1]) * 60 + Number(m[2]) : NaN;
-}
-
-/** Meeting date passed to the extractor so it can resolve "بكرا" to a real date. */
-function todayContext(): string {
-  const d = new Date();
-  const weekday = d.toLocaleDateString("en-US", { weekday: "long" });
-  return `${d.toISOString().slice(0, 10)} (${weekday})`;
-}
+const WS_KEY = "za3tar.workspace";
 
 function App() {
+  // capture + processing
   const [phase, setPhase] = useState<Phase>("idle");
   const [dir, setDir] = useState<string | null>(null);
   const [levels, setLevels] = useState<{ mic?: Level; system?: Level }>({});
   const [permissionHint, setPermissionHint] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [elapsed, setElapsed] = useState(0);
+  const timer = useRef<number | null>(null);
 
+  // the meeting on screen
   const [title, setTitle] = useState("");
   const [person, setPerson] = useState("");
   const [roughNotes, setRoughNotes] = useState("");
@@ -123,38 +84,93 @@ function App() {
   const [copied, setCopied] = useState(false);
   const [showTranscript, setShowTranscript] = useState(false);
   const [flash, setFlash] = useState<string | null>(null);
-
-  const [library, setLibrary] = useState<Summary[]>([]);
-  const [showLibrary, setShowLibrary] = useState(false);
+  const [meetingOpen, setMeetingOpen] = useState(false);
+  const [meetingFrom, setMeetingFrom] = useState<{ view: View; thread: string | null } | null>(null);
   const [viewingPast, setViewingPast] = useState(false);
+  const [meetingWs, setMeetingWs] = useState("personal");
+  const [meetingThread, setMeetingThread] = useState("");
+  const [threads, setThreads] = useState<Thread[]>([]);
+  const [questions, setQuestions] = useState<QuestionRef[]>([]);
+  const [threadOpen, setThreadOpen] = useState<string | null>(null);
+
+  // talk
+  const live = useRef<LiveSession | null>(null);
+  const [talk, setTalk] = useState<TalkState>("idle");
+  const [talkLines, setTalkLines] = useState<TalkLine[]>([]);
+  const [talkMuted, setTalkMuted] = useState(false);
+
+  // typed chat with Za3tar (same brain as Talk)
+  const [chatMode, setChatMode] = useState<"chat" | "onboarding" | "sorting" | null>(null);
+  const [chatLines, setChatLines] = useState<ChatLine[]>([]);
+  const [chatBusy, setChatBusy] = useState(false);
+  const [composer, setComposer] = useState<ComposerDraft | null>(null);
+  const [onboardStep, setOnboardStep] = useState<OnboardStep>("welcome");
+  // null until the first load decides; latched so the flow does not end the
+  // moment setup itself creates the first thread
+  const [inSetup, setInSetup] = useState<boolean | null>(null);
+
+  // routes — other agents with hands
+  const [routes, setRoutes] = useState<Route[]>([]);
+  const [routeSessions, setRouteSessions] = useState<Record<string, RouteSession>>({});
+  const [routeOpen, setRouteOpen] = useState<string | null>(null);
+  const routesRef = useRef<Route[]>([]);
+  routesRef.current = routes;
+  // refs so the voice brain always sees current state without re-binding
+  const snap = useRef<() => string>(() => "");
+  const apply = useRef<(ops: LiveOp[]) => Promise<string[]>>(async () => []);
+
+  // the workspace and its views
+  const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
+  const [wsId, setWsId] = useState<string>(() => {
+    try {
+      return localStorage.getItem(WS_KEY) || "personal";
+    } catch {
+      return "personal";
+    }
+  });
+  const [view, setView] = useState<View>("home");
+  const [userName, setUserName] = useState("");
+  const [caps, setCaps] = useState<{
+    transcription: boolean;
+    notes: boolean;
+    talk: boolean;
+    language?: string;
+    hosted?: boolean;
+    onboarded?: boolean;
+  } | null>(null);
+  const [loaded, setLoaded] = useState(false);
+  const [briefRequested, setBriefRequested] = useState(false);
+  const [library, setLibrary] = useState<Summary[]>([]);
   const [openActions, setOpenActions] = useState<OpenAction[]>([]);
-  const [showFollowUps, setShowFollowUps] = useState(false);
+  const [decisions, setDecisions] = useState<DecisionRef[]>([]);
   const [people, setPeople] = useState<PersonRow[]>([]);
-  const [showPeople, setShowPeople] = useState(false);
-  const [personEdit, setPersonEdit] = useState<PersonRow | null>(null);
+
+  // settings + runtime (whatever does Za3tar's work outside the app)
   const [showSettings, setShowSettings] = useState(false);
   const [settingsForm, setSettingsForm] = useState<Settings | null>(null);
-  const [schedule, setSchedule] = useState<AgentSchedule | null>(null);
-  const [agentStatus, setAgentStatus] = useState<
-    Record<string, AgentFollowupStatus>
+  const [routesForm, setRoutesForm] = useState<Route[]>([]);
+  const [schedule, setSchedule] = useState<RuntimeSchedule | null>(null);
+  const [runtimeStatus, setRuntimeStatus] = useState<
+    Record<string, RuntimeFollowupStatus>
   >({});
-  // the bridge: your always-on agent, if you've connected one (⚙ settings)
-  const [agentAvailable, setAgentAvailable] = useState(false);
-  const [agentName, setAgentName] = useState("your agent");
-  const timer = useRef<number | null>(null);
+  const [runtimeReady, setRuntimeReady] = useState(false);
 
-  // whether anyone besides the user was heard (them / them2 / …)
   const heardThem = !!segments?.some((s) => s.speaker !== "me");
 
-  async function refreshLibrary() {
+  // ── data ──────────────────────────────────────────────────────────────
+  async function refreshAll() {
+    try {
+      setWorkspaces(await invoke<Workspace[]>("list_workspaces"));
+    } catch {
+      /* best-effort */
+    }
     try {
       setLibrary(await invoke<Summary[]>("list_recordings"));
     } catch {
-      /* library is best-effort */
+      /* best-effort */
     }
     try {
       const open = await invoke<OpenAction[]>("list_open_actions");
-      // overdue first, then newest meeting first
       const today = new Date().toISOString().slice(0, 10);
       open.sort((a, b) => {
         const ao = a.action.due_date && a.action.due_date < today ? 0 : 1;
@@ -164,34 +180,68 @@ function App() {
       });
       setOpenActions(open);
     } catch {
-      /* follow-ups are best-effort */
+      /* best-effort */
+    }
+    try {
+      setDecisions(await invoke<DecisionRef[]>("list_decisions"));
+    } catch {
+      /* best-effort */
     }
     try {
       setPeople(await invoke<PersonRow[]>("list_people"));
     } catch {
-      /* directory is best-effort */
+      /* best-effort */
+    }
+    try {
+      setThreads(await invoke<Thread[]>("list_threads"));
+    } catch {
+      /* best-effort */
+    }
+    try {
+      setQuestions(await invoke<QuestionRef[]>("list_questions"));
+    } catch {
+      /* best-effort */
+    }
+    try {
+      setRoutes(await invoke<Route[]>("list_routes"));
+    } catch {
+      /* best-effort */
+    }
+    setLoaded(true);
+  }
+
+  async function refreshName() {
+    try {
+      const c = await invoke<{
+        transcription: boolean;
+        notes: boolean;
+        talk: boolean;
+        user_name: string;
+        language: string;
+        hosted: boolean;
+        onboarded: boolean;
+      }>("capabilities");
+      setCaps(c);
+      setUserName(c.user_name || "");
+    } catch {
+      /* best-effort */
     }
   }
 
-  const contactOf = (name: string): PersonRow | undefined =>
-    people.find((p) => p.name === name);
-
-  /** wa.me wants bare international digits */
-  const waDigits = (phone: string) => phone.replace(/[^\d]/g, "");
-
-  async function refreshAgent() {
+  async function refreshRuntime(ws = wsId) {
     try {
-      setAgentAvailable(await invoke<boolean>("agent_available"));
-      const s = await invoke<Settings>("get_settings");
-      if (s.agent_name.trim()) setAgentName(s.agent_name.trim());
+      setRuntimeReady(
+        await invoke<boolean>("agent_available", { workspace: ws }),
+      );
     } catch {
-      /* bridge is best-effort */
+      /* best-effort */
     }
   }
 
   useEffect(() => {
-    refreshLibrary();
-    refreshAgent();
+    refreshAll();
+    refreshRuntime();
+    refreshName();
     const un = listen<any>("capture-event", (e) => {
       const p = e.payload;
       if (p?.event === "level")
@@ -204,10 +254,48 @@ function App() {
       else if (p?.event === "error")
         setError(`${p.track ? p.track + ": " : ""}${p.message}`);
     });
+    const unRoute = onRouteEvent((e) => {
+      if (!e?.route) return;
+      setRouteSessions((cur) => {
+        const base =
+          cur[e.route] ??
+          emptySession(
+            routesRef.current.find((r) => r.id === e.route) ?? {
+              id: e.route,
+              label: e.route,
+              description: "",
+              kind: "acp",
+              command: "",
+              cwd: "",
+              enabled: true,
+            },
+          );
+        const next = reduce(base, e);
+        // a new prompt's text starts fresh (status → working)
+        return { ...cur, [e.route]: next };
+      });
+    });
     return () => {
       un.then((f) => f());
+      unRoute.then((f) => f());
     };
   }, []);
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== "Escape") return;
+      const tag = (e.target as HTMLElement | null)?.tagName;
+      if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return;
+      if (showSettings) setShowSettings(false);
+      else if (composer) setComposer(null);
+      else if (chatMode) setChatMode(null);
+      else if (routeOpen) setRouteOpen(null);
+      else if (meetingOpen && phase !== "recording") closeMeeting();
+      else if (threadOpen) setThreadOpen(null);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  });
 
   useEffect(() => {
     if (phase === "recording") {
@@ -225,11 +313,207 @@ function App() {
     };
   }, [phase]);
 
-  function showFlash(msg: string, ms = 2000) {
+  // a fresh copy — nothing in it, and setup was never finished or skipped
+  useEffect(() => {
+    if (inSetup === null && loaded && caps)
+      setInSetup(!caps.onboarded && threads.length === 0 && library.length === 0);
+  }, [inSetup, loaded, caps, threads.length, library.length]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(WS_KEY, wsId);
+    } catch {
+      /* fine */
+    }
+    refreshRuntime(wsId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [wsId]);
+
+  // if the remembered workspace no longer exists, fall back
+  useEffect(() => {
+    if (workspaces.length && !workspaces.some((w) => w.id === wsId))
+      setWsId(workspaces[0].id);
+  }, [workspaces, wsId]);
+
+  const wsLibrary = useMemo(
+    () => library.filter((s) => s.workspace === wsId),
+    [library, wsId],
+  );
+  const wsOpen = useMemo(
+    () => openActions.filter((o) => o.workspace === wsId),
+    [openActions, wsId],
+  );
+  const wsDecisions = useMemo(
+    () => decisions.filter((d) => d.workspace === wsId),
+    [decisions, wsId],
+  );
+  const wsThreads = useMemo(
+    () => threads.filter((t) => t.workspace === wsId),
+    [threads, wsId],
+  );
+  const wsQuestions = useMemo(
+    () => questions.filter((q) => q.workspace === wsId),
+    [questions, wsId],
+  );
+  const wsPeople = useMemo(
+    () =>
+      people.filter(
+        (p) => p.workspaces.length === 0 || p.workspaces.includes(wsId),
+      ),
+    [people, wsId],
+  );
+  const current = library.find((s) => s.dir === dir);
+
+  const contactOf = (name: string): PersonRow | undefined =>
+    people.find((p) => p.name === name || p.aliases.includes(name));
+  const waDigits = (phone: string) => phone.replace(/[^\d]/g, "");
+
+  function showFlash(msg: string, ms = 2500) {
     setFlash(msg);
     window.setTimeout(() => setFlash(null), ms);
   }
 
+  // ── workspaces ────────────────────────────────────────────────────────
+  async function createWorkspace(name: string) {
+    try {
+      const ws = await invoke<Workspace>("create_workspace", { name });
+      await refreshAll();
+      setWsId(ws.id);
+      setMeetingOpen(false);
+    } catch (e) {
+      setError(String(e));
+    }
+  }
+
+  async function saveWorkspace(w: Workspace) {
+    try {
+      await invoke("update_workspace", {
+        id: w.id,
+        name: w.name,
+        description: w.description,
+        links: w.links,
+        runtimeCommand: w.runtime_command,
+      });
+      await refreshAll();
+      refreshRuntime();
+      showFlash("workspace saved");
+    } catch (e) {
+      setError(String(e));
+    }
+  }
+
+  async function openLink(l: Link) {
+    try {
+      if (/^https?:\/\//i.test(l.target))
+        await invoke("open_external", { url: l.target });
+      else await invoke("open_path", { path: l.target });
+    } catch (e) {
+      setError(String(e));
+    }
+  }
+
+  async function createBrief(b: {
+    title: string;
+    person: string;
+    notes: string;
+  }) {
+    try {
+      const d = await invoke<string>("create_brief", {
+        title: b.title,
+        person: b.person,
+        workspace: wsId,
+        notes: b.notes,
+        thread: threadOpen ?? null,
+      });
+      await refreshAll();
+      await openPast(d);
+      if (b.notes.trim()) {
+        setBusy("pulling out decisions & actions…");
+        try {
+          const a = await invoke<MeetingActions>("extract_actions", {
+            dir: d,
+            title: b.title.trim() || null,
+            today: todayContext(),
+          });
+          setActions(a);
+          refreshAll();
+        } catch (e) {
+          setError(String(e));
+        } finally {
+          setBusy(null);
+        }
+      }
+    } catch (e) {
+      setError(String(e));
+    }
+  }
+
+  async function createThread(title: string) {
+    try {
+      const t = await invoke<Thread>("create_thread", {
+        workspace: wsId,
+        title,
+        summary: null,
+        owner: null,
+      });
+      await refreshAll();
+      setThreadOpen(t.id);
+      setView("threads");
+    } catch (e) {
+      setError(String(e));
+    }
+  }
+
+  async function saveThread(t: Thread) {
+    try {
+      await invoke("update_thread", {
+        id: t.id,
+        title: t.title,
+        summary: t.summary,
+        status: t.status,
+        owner: t.owner,
+      });
+      await refreshAll();
+      showFlash("thread moved");
+    } catch (e) {
+      setError(String(e));
+    }
+  }
+
+  async function deleteThread(t: Thread) {
+    try {
+      await invoke("delete_thread", { id: t.id });
+      await refreshAll();
+      setThreadOpen(null);
+    } catch (e) {
+      setError(String(e));
+    }
+  }
+
+  async function moveMeetingThread(thread: string) {
+    if (!dir) return;
+    setMeetingThread(thread);
+    try {
+      await invoke("set_recording_thread", { dir, thread });
+      await refreshAll();
+    } catch (e) {
+      setError(String(e));
+    }
+  }
+
+  async function moveMeeting(ws: string) {
+    if (!dir) return;
+    setMeetingWs(ws);
+    try {
+      await invoke("set_recording_workspace", { dir, workspace: ws });
+      await refreshAll();
+      setWsId(ws);
+    } catch (e) {
+      setError(String(e));
+    }
+  }
+
+  // ── capture ───────────────────────────────────────────────────────────
   async function start() {
     setError(null);
     setPermissionHint(null);
@@ -240,51 +524,66 @@ function App() {
     setShowTranscript(false);
     setLevels({});
     setElapsed(0);
+    setDir(null);
+    setTitle("");
+    setPerson("");
+    setRoughNotes("");
     setViewingPast(false);
-    setShowLibrary(false);
+    setMeetingWs(wsId);
+    setMeetingThread(view === "threads" && threadOpen ? threadOpen : "");
+    setView("meetings");
+    setShowSettings(false);
+    setMeetingOpen(true);
     try {
       await invoke("start_recording");
       setPhase("recording");
     } catch (e) {
       setError(String(e));
+      setMeetingOpen(false);
     }
   }
 
   /** notes + actions for a given recording; each step fails soft so the
    *  matching button stays available instead of killing the whole flow. */
   async function synthesize(d: string) {
-    try {
-      setBusy("writing your notes…");
-      const md = await invoke<string>("generate_notes", {
-        dir: d,
-        roughNotes: roughNotes.trim() || null,
-        title: title.trim() || null,
-      });
-      setNotes(md);
-    } catch (e) {
-      setError(String(e));
-    }
-    try {
-      setBusy("pulling out decisions & actions…");
-      const a = await invoke<MeetingActions>("extract_actions", {
-        dir: d,
-        title: title.trim() || null,
-        today: todayContext(),
-      });
-      setActions(a);
-      setDraft(null);
-    } catch (e) {
-      setError(String(e));
-    } finally {
-      setBusy(null);
-      refreshLibrary();
-    }
+    // notes and outcomes run at the same time; each fails soft on its own
+    setBusy("writing notes and pulling out decisions…");
+    const notesP = invoke<string>("generate_notes", {
+      dir: d,
+      roughNotes: roughNotes.trim() || null,
+      title: title.trim() || null,
+    }).then(
+      (md) => setNotes(md),
+      (e) => setError(String(e)),
+    );
+    const actionsP = invoke<MeetingActions>("extract_actions", {
+      dir: d,
+      title: title.trim() || null,
+      today: todayContext(),
+    }).then(
+      (a) => {
+        setActions(a);
+        setDraft(null);
+      },
+      (e) => setError(String(e)),
+    );
+    await Promise.allSettled([notesP, actionsP]);
+    setBusy(null);
+    refreshAll();
   }
 
   async function stop() {
     try {
       const d = await invoke<string>("stop_recording");
       setDir(d);
+      // the meeting belongs to the workspace it was recorded in
+      invoke("set_recording_workspace", { dir: d, workspace: meetingWs }).catch(
+        () => {},
+      );
+      if (meetingThread)
+        invoke("set_recording_thread", { dir: d, thread: meetingThread }).catch(
+          () => {},
+        );
       if (title.trim())
         invoke("set_recording_title", { dir: d, title: title.trim() }).catch(
           () => {},
@@ -314,7 +613,7 @@ function App() {
     try {
       const segs = await invoke<Segment[]>("transcribe", { dir });
       setSegments(segs);
-      refreshLibrary();
+      refreshAll();
     } catch (e) {
       setError(String(e));
       setBusy(null);
@@ -334,7 +633,7 @@ function App() {
         title: title.trim() || null,
       });
       setNotes(md);
-      refreshLibrary();
+      refreshAll();
     } catch (e) {
       setError(String(e));
     } finally {
@@ -354,7 +653,7 @@ function App() {
       });
       setActions(a);
       setDraft(null);
-      refreshLibrary();
+      refreshAll();
     } catch (e) {
       setError(String(e));
     } finally {
@@ -362,24 +661,86 @@ function App() {
     }
   }
 
+  // ── outcomes ──────────────────────────────────────────────────────────
   async function toggleDone(a: ActionItem) {
     if (!dir || !actions) return;
-    const next = {
+    setActions({
       ...actions,
       actions: actions.actions.map((x) =>
         x.id === a.id ? { ...x, done: !x.done } : x,
       ),
-    };
-    setActions(next);
-    invoke("set_action_done", { dir, id: a.id, done: !a.done }).catch(() => {});
+    });
+    invoke("set_action_done", { dir, id: a.id, done: !a.done })
+      .then(refreshAll)
+      .catch(() => {});
   }
 
+  async function setDecisionStatus(d: DecisionRef, status: DecisionStatus) {
+    // optimistic in both the ledger and the open meeting
+    setDecisions((cur) =>
+      cur.map((x) =>
+        x.dir === d.dir && x.decision.id === d.decision.id
+          ? { ...x, decision: { ...x.decision, status } }
+          : x,
+      ),
+    );
+    if (dir === d.dir && actions)
+      setActions({
+        ...actions,
+        decisions: actions.decisions.map((x) =>
+          x.id === d.decision.id ? { ...x, status } : x,
+        ),
+      });
+    try {
+      await invoke("set_decision_status", {
+        dir: d.dir,
+        id: d.decision.id,
+        status,
+        note: null,
+      });
+      refreshAll();
+    } catch (e) {
+      setError(String(e));
+    }
+  }
+
+  async function parkAction(oa: OpenAction, parked: boolean) {
+    setOpenActions((cur) =>
+      cur.map((x) =>
+        x.dir === oa.dir && x.action.id === oa.action.id
+          ? { ...x, action: { ...x.action, parked } }
+          : x,
+      ),
+    );
+    invoke("set_action_parked", { dir: oa.dir, id: oa.action.id, parked })
+      .then(refreshAll)
+      .catch(() => {});
+  }
+
+  /** mark an open action done from the follow-ups view (optimistic) */
+  async function markOpenDone(oa: OpenAction) {
+    setOpenActions((cur) =>
+      cur.filter((x) => !(x.dir === oa.dir && x.action.id === oa.action.id)),
+    );
+    if (dir === oa.dir && actions)
+      setActions({
+        ...actions,
+        actions: actions.actions.map((x) =>
+          x.id === oa.action.id ? { ...x, done: true } : x,
+        ),
+      });
+    invoke("set_action_done", { dir: oa.dir, id: oa.action.id, done: true })
+      .then(refreshAll)
+      .catch(() => {});
+  }
+
+  // ── follow-through ────────────────────────────────────────────────────
   async function makeDraft(kind: DraftKind) {
     if (!dir) return;
     setError(null);
     setBusy(
       kind === "whatsapp"
-        ? "drafting the whatsapp follow-up…"
+        ? "drafting the WhatsApp follow-up…"
         : "drafting the recap email…",
     );
     try {
@@ -400,6 +761,29 @@ function App() {
     }
   }
 
+  /** chase one open action — drafts a WhatsApp nudge into the open meeting */
+  async function nudge(oa: OpenAction) {
+    setError(null);
+    setBusy("drafting the nudge…");
+    try {
+      const d = await invoke<{ subject?: string | null; body: string }>(
+        "draft_nudge",
+        { dir: oa.dir, id: oa.action.id, title: oa.meeting_title || null },
+      );
+      await openPast(oa.dir);
+      setDraft({
+        kind: "whatsapp",
+        subject: "",
+        body: d.body,
+        target: oa.person,
+      });
+    } catch (e) {
+      setError(String(e));
+    } finally {
+      setBusy(null);
+    }
+  }
+
   async function sendDraft() {
     if (!draft) return;
     const contact = draft.target ? contactOf(draft.target) : undefined;
@@ -407,7 +791,6 @@ function App() {
       if (draft.kind === "whatsapp") {
         const text = encodeURIComponent(draft.body);
         const digits = contact?.phone ? waDigits(contact.phone) : "";
-        // with a saved number the draft opens straight in that person's chat
         try {
           await invoke("open_external", {
             url: digits
@@ -431,143 +814,14 @@ function App() {
     }
   }
 
-  /** one round-trip over the bridge; null on transport failure */
-  async function agentExchange(
-    message: string,
-    busyMsg: string,
-  ): Promise<string | null> {
-    setBusy(busyMsg);
-    setError(null);
-    try {
-      return await invoke<string>("send_to_agent", { message });
-    } catch (e) {
-      setError(String(e));
-      return null;
-    } finally {
-      setBusy(null);
-    }
-  }
-
-  /** hand a message to the agent and surface its reply */
-  async function agentSend(message: string) {
-    const reply = await agentExchange(message, `sending to ${agentName}…`);
-    if (reply != null)
-      showFlash(
-        `🪼 ${reply.slice(0, 140)}${reply.length > 140 ? "…" : ""}`,
-        5000,
-      );
-  }
-
-  /** the whole meeting → the agent as a ZA3TAR_PACKET: calendar +
-      follow-up tracking, acknowledged structurally */
-  async function sendPacketToAgent() {
-    if (!actions || !dir) return;
-    const contact = person.trim() ? contactOf(person.trim()) : undefined;
-    const created = library.find((s) => s.dir === dir)?.created;
-    const open = actions.actions.filter((a) => !a.done);
-    const packet = {
-      meeting: {
-        id: meetingIdOf(dir),
-        title: title.trim() || "untitled",
-        started_at: created
-          ? new Date(created * 1000).toISOString()
-          : new Date().toISOString(),
-        person: { name: person.trim(), phone: contact?.phone ?? "" },
-      },
-      decisions: actions.decisions,
-      actions: open.map((a) => ({
-        id: bridgeId(dir, a.id),
-        text: a.title,
-        owner: a.owner,
-        due: a.due_date ?? "",
-      })),
-      questions: actions.questions,
-      notes_md: notes ?? "",
-    };
-    const reply = await agentExchange(
-      `ZA3TAR_PACKET v1\n${JSON.stringify(packet)}`,
-      `sending the meeting to ${agentName}…`,
-    );
-    if (reply == null) return;
-    try {
-      const ack = parseEnvelope<AgentAck>(reply, "ZA3TAR_ACK");
-      const bits = [
-        `📅 ${ack.events_created.length} on calendar`,
-        `📌 ${ack.followups_tracked.length} follow-ups tracked`,
-      ];
-      if (ack.warnings.length) bits.push(`⚠ ${ack.warnings[0]}`);
-      showFlash(`🪼 ${bits.join(" · ")}`, 6000);
-    } catch {
-      // free-form reply (agent without the envelope skill) — show what came back
-      showFlash(
-        `🪼 ${reply.slice(0, 140)}${reply.length > 140 ? "…" : ""}`,
-        5000,
-      );
-    }
-  }
-
-  /** ask the agent for today's calendar so meetings start pre-titled */
-  async function fetchToday() {
-    const reply = await agentExchange(
-      `ZA3TAR_QUERY v1\n{"type":"today"}`,
-      `asking ${agentName} about today…`,
-    );
-    if (reply == null) return;
-    try {
-      setSchedule(parseEnvelope<AgentSchedule>(reply, "ZA3TAR_SCHEDULE"));
-    } catch {
-      setError("the agent's schedule reply wasn't parseable");
-    }
-  }
-
-  /** pull real-world follow-up statuses (nudged/replied/done) back from the agent */
-  async function syncFollowups() {
-    const snapshot = [...openActions];
-    const ids = snapshot.map((oa) => bridgeId(oa.dir, oa.action.id));
-    if (!ids.length) return;
-    const reply = await agentExchange(
-      `ZA3TAR_QUERY v1\n${JSON.stringify({ type: "followups", ids })}`,
-      `syncing follow-ups with ${agentName}…`,
-    );
-    if (reply == null) return;
-    try {
-      const st = parseEnvelope<{ followups: AgentFollowupStatus[] }>(
-        reply,
-        "ZA3TAR_STATUS",
-      );
-      const map: Record<string, AgentFollowupStatus> = {};
-      for (const f of st.followups) map[f.id] = f;
-      setAgentStatus(map);
-      // the agent confirmed some complete → the app agrees
-      let done = 0;
-      for (const oa of snapshot) {
-        if (map[bridgeId(oa.dir, oa.action.id)]?.status === "done") {
-          markOpenDone(oa);
-          done++;
-        }
-      }
-      showFlash(
-        `🪼 synced ${st.followups.length} from ${agentName}${done ? ` · ${done} completed` : ""}`,
-        4000,
-      );
-    } catch {
-      setError("the agent's status reply wasn't parseable");
-    }
-  }
-
-  /** the agent delivers the draft to the person over WhatsApp */
-  async function sendDraftViaAgent() {
+  async function copyDraft() {
     if (!draft) return;
-    const contact = draft.target ? contactOf(draft.target) : undefined;
-    const who = draft.target || "the other participant";
-    const via = contact?.phone
-      ? ` (WhatsApp ${contact.phone})`
-      : contact?.email
-        ? ` (email ${contact.email})`
-        : " (find them in my contacts)";
-    await agentSend(
-      `[za3tar] please send this message to ${who}${via} and confirm once delivered:\n\n${draft.body}`,
+    await navigator.clipboard.writeText(
+      draft.kind === "email" && draft.subject
+        ? `${draft.subject}\n\n${draft.body}`
+        : draft.body,
     );
+    showFlash("draft copied");
   }
 
   async function exportCalendar() {
@@ -578,20 +832,10 @@ function App() {
         dir,
         title: title.trim() || null,
       });
-      showFlash("sent to Calendar 📅");
+      showFlash("sent to Calendar");
     } catch (e) {
       setError(String(e));
     }
-  }
-
-  async function copyDraft() {
-    if (!draft) return;
-    await navigator.clipboard.writeText(
-      draft.kind === "email" && draft.subject
-        ? `${draft.subject}\n\n${draft.body}`
-        : draft.body,
-    );
-    showFlash("draft copied ✓");
   }
 
   /** notes + open actions + questions as one markdown packet. */
@@ -599,6 +843,12 @@ function App() {
     let md = `# ${title.trim() || "meeting"} — ${new Date().toLocaleDateString()}\n\n`;
     if (notes) md += `${notes}\n\n`;
     if (actions) {
+      if (actions.decisions.length) {
+        md += `## decisions\n`;
+        for (const d of actions.decisions)
+          md += `- ${d.text}${d.status !== "proposed" ? ` _(${d.status})_` : ""}\n`;
+        md += "\n";
+      }
       if (actions.actions.length) {
         md += `## action items\n`;
         for (const a of actions.actions) {
@@ -621,15 +871,148 @@ function App() {
     window.setTimeout(() => setCopied(false), 1500);
   }
 
+  // ── the runtime: Za3tar doing work outside the app ────────────────────
+  /** one round-trip; null on transport failure */
+  async function runtimeExchange(
+    message: string,
+    busyMsg: string,
+  ): Promise<string | null> {
+    setBusy(busyMsg);
+    setError(null);
+    try {
+      return await invoke<string>("send_to_agent", {
+        message,
+        workspace: meetingOpen && dir ? meetingWs : wsId,
+      });
+    } catch (e) {
+      setError(String(e));
+      return null;
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  /** the whole meeting → the runtime as a ZA3TAR_PACKET: calendar +
+      follow-up tracking, acknowledged structurally */
+  async function trackAndSchedule() {
+    if (!actions || !dir) return;
+    const contact = person.trim() ? contactOf(person.trim()) : undefined;
+    const open = actions.actions.filter((a) => !a.done);
+    const packet = {
+      meeting: {
+        id: meetingIdOf(dir),
+        title: title.trim() || "untitled",
+        started_at: current
+          ? new Date(current.created * 1000).toISOString()
+          : new Date().toISOString(),
+        person: { name: person.trim(), phone: contact?.phone ?? "" },
+      },
+      decisions: actions.decisions.map((d) => d.text),
+      actions: open.map((a) => ({
+        id: bridgeId(dir, a.id),
+        text: a.title,
+        owner: a.owner,
+        due: a.due_date ?? "",
+      })),
+      questions: actions.questions,
+      notes_md: notes ?? "",
+    };
+    const reply = await runtimeExchange(
+      `ZA3TAR_PACKET v1\n${JSON.stringify(packet)}`,
+      "Za3tar is scheduling and tracking…",
+    );
+    if (reply == null) return;
+    try {
+      const ack = parseEnvelope<RuntimeAck>(reply, "ZA3TAR_ACK");
+      const bits = [
+        `${ack.events_created.length} on your calendar`,
+        `${ack.followups_tracked.length} follow-ups being tracked`,
+      ];
+      if (ack.warnings.length) bits.push(`note: ${ack.warnings[0]}`);
+      showFlash(bits.join(" · "), 6000);
+    } catch {
+      showFlash(`${reply.slice(0, 140)}${reply.length > 140 ? "…" : ""}`, 5000);
+    }
+  }
+
+  /** today's calendar so meetings start pre-titled */
+  async function fetchToday() {
+    const reply = await runtimeExchange(
+      `ZA3TAR_QUERY v1\n{"type":"today"}`,
+      "reading today's calendar…",
+    );
+    if (reply == null) return;
+    try {
+      setSchedule(parseEnvelope<RuntimeSchedule>(reply, "ZA3TAR_SCHEDULE"));
+    } catch {
+      setError("the schedule reply wasn't parseable");
+    }
+  }
+
+  /** pull real-world follow-up statuses (nudged/replied/done) back in */
+  async function syncFollowups() {
+    const snapshot = [...wsOpen];
+    const ids = snapshot.map((oa) => bridgeId(oa.dir, oa.action.id));
+    if (!ids.length) return;
+    const reply = await runtimeExchange(
+      `ZA3TAR_QUERY v1\n${JSON.stringify({ type: "followups", ids })}`,
+      "syncing follow-ups…",
+    );
+    if (reply == null) return;
+    try {
+      const st = parseEnvelope<{ followups: RuntimeFollowupStatus[] }>(
+        reply,
+        "ZA3TAR_STATUS",
+      );
+      const map: Record<string, RuntimeFollowupStatus> = {};
+      for (const f of st.followups) map[f.id] = f;
+      setRuntimeStatus(map);
+      let done = 0;
+      for (const oa of snapshot) {
+        if (map[bridgeId(oa.dir, oa.action.id)]?.status === "done") {
+          markOpenDone(oa);
+          done++;
+        }
+      }
+      showFlash(
+        `synced ${st.followups.length}${done ? ` · ${done} completed` : ""}`,
+        4000,
+      );
+    } catch {
+      setError("the status reply wasn't parseable");
+    }
+  }
+
+  /** Za3tar delivers the draft to the person over WhatsApp */
+  async function sendDraftViaRuntime() {
+    if (!draft) return;
+    const contact = draft.target ? contactOf(draft.target) : undefined;
+    const who = draft.target || "the other participant";
+    const via = contact?.phone
+      ? ` (WhatsApp ${contact.phone})`
+      : contact?.email
+        ? ` (email ${contact.email})`
+        : " (find them in my contacts)";
+    const reply = await runtimeExchange(
+      `[za3tar] please send this message to ${who}${via} and confirm once delivered:\n\n${draft.body}`,
+      "Za3tar is sending it…",
+    );
+    if (reply != null)
+      showFlash(`${reply.slice(0, 140)}${reply.length > 140 ? "…" : ""}`, 5000);
+  }
+
+  // ── navigation ────────────────────────────────────────────────────────
   async function openPast(recDir: string) {
     setError(null);
     setPermissionHint(null);
-    setBusy(null);
     setShowTranscript(false);
+    setShowSettings(false);
     try {
       const detail = await invoke<{
         title: string;
         person: string;
+        workspace: string;
+        thread: string;
         segments: Segment[];
         notes: string | null;
       }>("load_recording", { dir: recDir });
@@ -639,66 +1022,45 @@ function App() {
       setDir(recDir);
       setTitle(detail.title);
       setPerson(detail.person);
+      setMeetingWs(detail.workspace);
+      setMeetingThread(detail.thread);
       setSegments(detail.segments.length ? detail.segments : null);
       setNotes(detail.notes);
       setActions(past);
       setDraft(null);
       setRoughNotes("");
       setViewingPast(true);
-      setShowLibrary(false);
-      setShowFollowUps(false);
-      setPhase("done");
+      if (!meetingOpen) setMeetingFrom({ view, thread: threadOpen });
+      setMeetingOpen(true);
+      if (view !== "home" && view !== "threads") setView("meetings");
+      if (phase !== "recording") setPhase("done");
     } catch (e) {
       setError(String(e));
     }
   }
 
-  /** mark an open action done from the follow-ups view (optimistic) */
-  async function markOpenDone(oa: OpenAction) {
-    setOpenActions((cur) =>
-      cur.filter((x) => !(x.dir === oa.dir && x.action.id === oa.action.id)),
-    );
-    // keep the per-meeting view in sync if it's the one on screen
-    if (dir === oa.dir && actions) {
-      setActions({
-        ...actions,
-        actions: actions.actions.map((x) =>
-          x.id === oa.action.id ? { ...x, done: true } : x,
-        ),
-      });
+  /** leave the meeting page and land where it was opened from */
+  function closeMeeting() {
+    setMeetingOpen(false);
+    if (meetingFrom) {
+      setView(meetingFrom.view);
+      setThreadOpen(meetingFrom.view === "threads" ? meetingFrom.thread : null);
     }
-    invoke("set_action_done", {
-      dir: oa.dir,
-      id: oa.action.id,
-      done: true,
-    }).catch(() => {});
+    setMeetingFrom(null);
   }
 
-  /** chase one open action — drafts a WhatsApp nudge into the draft panel */
-  async function nudge(oa: OpenAction) {
-    setError(null);
-    setBusy("drafting the nudge…");
-    try {
-      const d = await invoke<{ subject?: string | null; body: string }>(
-        "draft_nudge",
-        { dir: oa.dir, id: oa.action.id, title: oa.meeting_title || null },
-      );
-      setDraft({
-        kind: "whatsapp",
-        subject: "",
-        body: d.body,
-        target: oa.person,
-      });
-    } catch (e) {
-      setError(String(e));
-    } finally {
-      setBusy(null);
-    }
+  function saveMeta() {
+    if (!dir) return;
+    invoke("set_recording_title", { dir, title: title.trim() }).catch(() => {});
+    invoke("set_recording_person", { dir, person: person.trim() })
+      .then(refreshAll)
+      .catch(() => {});
   }
 
   async function openSettings() {
     try {
       setSettingsForm(await invoke<Settings>("get_settings"));
+      setRoutesForm(routes.map((r) => ({ ...r })));
       setShowSettings(true);
     } catch (e) {
       setError(String(e));
@@ -709,11 +1071,55 @@ function App() {
     if (!settingsForm) return;
     try {
       await invoke("save_settings", { settings: settingsForm });
+      await invoke("save_routes", { routes: routesForm });
+      setRoutes(routesForm);
       setShowSettings(false);
-      showFlash("settings saved ✓");
-      refreshAgent();
+      showFlash("settings saved");
+      refreshRuntime();
+      refreshName();
     } catch (e) {
       setError(String(e));
+    }
+  }
+
+  async function hostedSignIn(code: string, name: string) {
+    try {
+      const acc = await invoke<{ id: string; name: string }>("hosted_sign_in", {
+        code,
+        name,
+        base: null,
+      });
+      await refreshName();
+      showFlash(`signed in as ${acc.name || "you"}`);
+    } catch (e) {
+      setError(String(e));
+    }
+  }
+
+  async function hostedSignOut() {
+    try {
+      await invoke("hosted_sign_out");
+      await refreshName();
+      showFlash("signed out");
+    } catch (e) {
+      setError(String(e));
+    }
+  }
+
+  async function savePerson(e: {
+    name: string;
+    phone: string;
+    email: string;
+    org: string;
+    role: string;
+    aliases: string[];
+  }) {
+    try {
+      await invoke("save_person", e);
+      await refreshAll();
+      showFlash("contact saved");
+    } catch (err) {
+      setError(String(err));
     }
   }
 
@@ -721,1003 +1127,958 @@ function App() {
     invoke("open_system_audio_settings").catch(() => {});
   }
 
-  function ownerChipClass(owner: string): string {
-    if (owner === "me") return "bg-olive/15 text-olive-deep";
-    if (owner.startsWith("them")) return "bg-sumac/15 text-sumac";
-    return "bg-sesame text-ink-soft";
+  // ── talk ──────────────────────────────────────────────────────────────
+  const refOf = (o: OpenAction) => `${meetingIdOf(o.dir)}#${o.action.id}`;
+  const dRefOf = (d: DecisionRef) => `d:${meetingIdOf(d.dir)}#${d.decision.id}`;
+
+  snap.current = () => {
+    const today = new Date().toISOString().slice(0, 10);
+    const lines: string[] = [];
+    const home = view === "home";
+    const T = home ? threads : wsThreads;
+    const O = home ? openActions.filter(isMine) : wsOpen;
+    const D = home ? decisions : wsDecisions;
+    const wsOf = (id: string) => workspaces.find((x) => x.id === id)?.name ?? id;
+    lines.push(
+      home
+        ? `HOME view: everything across all workspaces (open items below are only the user's own) · today ${today}`
+        : `workspace: ${wsName} (${wsId}) · today ${today}`,
+    );
+    const w = workspaces.find((x) => x.id === wsId);
+    if (w?.description) lines.push(`about: ${w.description}`);
+    lines.push(
+      `workspaces: ${workspaces.map((x) => `[${x.id}] ${x.name}`).join(" · ")}`,
+    );
+    lines.push("\nthreads:");
+    for (const t of T.filter((t) => !home || t.status === "active"))
+      lines.push(
+        `- [${t.id}]${home ? ` {${wsOf(t.workspace)}}` : ""} ${t.title} (${t.status}${t.owner ? `, ${t.owner}` : ""}) — ${t.summary || "no state line"}`,
+      );
+    const liveOpen = O.filter((o) => !o.action.parked);
+    lines.push(`\nopen items (${liveOpen.length}):`);
+    for (const o of liveOpen.slice(0, 40)) {
+      const t = threads.find((x) => x.id === o.thread)?.title;
+      const due = o.action.due_date
+        ? ` due ${o.action.due_date}${o.action.due_date < today ? " OVERDUE" : ""}`
+        : o.action.due_label
+          ? ` (${o.action.due_label})`
+          : "";
+      lines.push(
+        `- ${refOf(o)} [${o.action.owner}]${home ? ` {${wsOf(o.workspace)}}` : ""}${t ? ` {${t}}` : ""} ${o.action.title}${due}`,
+      );
+    }
+    const parked = O.filter((o) => o.action.parked);
+    if (parked.length)
+      lines.push(`\nparked: ${parked.map((o) => `${refOf(o)} ${o.action.title}`).join(" · ")}`);
+    const prop = D.filter((d) => d.decision.status === "proposed");
+    if (prop.length) {
+      lines.push(`\ndecisions waiting for a yes:`);
+      for (const d of prop) lines.push(`- ${dRefOf(d)} ${d.decision.text}`);
+    }
+    const recent = wsLibrary.slice(0, 15);
+    if (recent.length) {
+      lines.push(`\nmeetings & briefs (newest first):`);
+      for (const m of recent)
+        lines.push(
+          `- [${m.id}] ${m.title || "untitled"}${m.person ? ` with ${m.person}` : ""} · ${new Date(m.created * 1000).toISOString().slice(0, 10)}${m.has_audio ? "" : " (brief)"}`,
+        );
+    }
+    if (wsPeople.length)
+      lines.push(
+        `\npeople: ${wsPeople
+          .map((p) => `${p.name}${p.role || p.org ? ` (${[p.role, p.org].filter(Boolean).join(", ")})` : ""}`)
+          .join(" · ")}`,
+      );
+    const enabledRoutes = routes.filter((r) => r.enabled);
+    if (enabledRoutes.length)
+      lines.push(
+        `\nroutes (other agents you can hand work to): ${enabledRoutes
+          .map((r) => `[${r.id}] ${r.label} — ${r.description}`)
+          .join(" · ")}`,
+      );
+    lines.push(
+      `\nstate: ${phase === "recording" ? "RECORDING now" : "not recording"}; view ${view}${
+        threadOpen ? `; thread open ${threadOpen}` : ""
+      }${meetingOpen && dir ? `; meeting open [${meetingIdOf(dir)}]${actions ? " with outcomes" : ""}` : ""}`,
+    );
+    return lines.join("\n");
+  };
+
+  apply.current = async (ops) => {
+    const out: string[] = [];
+    for (const op of ops) {
+      try {
+        if (op.op === "park" || op.op === "unpark" || op.op === "done") {
+          const oa = openActions.find((o) => refOf(o) === op.ref);
+          if (!oa) {
+            out.push(`couldn't find ${op.ref}`);
+            continue;
+          }
+          if (op.op === "done") await markOpenDone(oa);
+          else await parkAction(oa, op.op === "park");
+          out.push(`${op.op}: ${oa.action.title}`);
+        } else if (op.op === "confirm" || op.op === "supersede") {
+          const d = decisions.find((x) => dRefOf(x) === op.ref);
+          if (!d) {
+            out.push(`couldn't find ${op.ref}`);
+            continue;
+          }
+          await setDecisionStatus(d, op.op === "confirm" ? "confirmed" : "superseded");
+          out.push(`${op.op === "confirm" ? "confirmed" : "superseded"}: ${d.decision.text}`);
+        } else if (op.op === "move_thread") {
+          const t = threads.find((x) => x.id === op.id);
+          if (!t) {
+            out.push(`no thread ${op.id}`);
+            continue;
+          }
+          await saveThread({
+            ...t,
+            summary: op.summary ?? t.summary,
+            status: (op.status as Thread["status"]) ?? t.status,
+          });
+          out.push(`moved thread: ${t.title}`);
+        } else if (op.op === "open_thread") {
+          setThreadOpen(op.id);
+          setView("threads");
+          setMeetingOpen(false);
+          out.push(`opened ${threads.find((x) => x.id === op.id)?.title ?? op.id}`);
+        } else if (op.op === "go") {
+          setView(op.view as View);
+          setMeetingOpen(false);
+          out.push(`showing ${op.view}`);
+        } else if (op.op === "brief") {
+          await createBrief({ title: op.title, person: "", notes: op.notes });
+          out.push(`filed a brief: ${op.title}`);
+        } else if (op.op === "record") {
+          if (phase !== "recording") await start();
+          out.push("recording");
+        } else if (op.op === "stop_recording") {
+          if (phase === "recording") await stop();
+          out.push("stopped recording");
+        } else if (op.op === "workspace") {
+          const w = workspaces.find((x) => x.id === op.id);
+          if (!w) {
+            out.push(`no workspace ${op.id}`);
+            continue;
+          }
+          setWsId(w.id);
+          setView("overview");
+          setThreadOpen(null);
+          if (phase !== "recording") setMeetingOpen(false);
+          out.push(`switched to ${w.name}`);
+        } else if (op.op === "open_meeting") {
+          const m = library.find((x) => x.id === op.id);
+          if (!m) {
+            out.push(`no meeting ${op.id}`);
+            continue;
+          }
+          await openPast(m.dir);
+          out.push(`opened ${m.title || "untitled meeting"}`);
+        } else if (op.op === "draft") {
+          if (!dir || !actions) {
+            out.push("open a meeting with outcomes first");
+            continue;
+          }
+          await makeDraft(op.kind);
+          out.push(`drafted the ${op.kind === "email" ? "recap email" : "WhatsApp follow-up"}`);
+        } else if (op.op === "nudge") {
+          const oa = openActions.find((o) => refOf(o) === op.ref);
+          if (!oa) {
+            out.push(`couldn't find ${op.ref}`);
+            continue;
+          }
+          await nudge(oa);
+          out.push(`drafted a nudge: ${oa.action.title}`);
+        } else if (op.op === "create_workspace") {
+          const w = await invoke<Workspace>("create_workspace", { name: op.name });
+          if (op.description)
+            await invoke("update_workspace", {
+              id: w.id,
+              name: w.name,
+              description: op.description,
+              links: [],
+              runtimeCommand: "",
+            });
+          await refreshAll();
+          out.push(`new workspace: ${w.name}`);
+        } else if (op.op === "create_thread") {
+          const wsid =
+            workspaces.find((x) => x.id === op.workspace || x.name.toLowerCase() === op.workspace.toLowerCase())?.id ??
+            op.workspace;
+          const t = await invoke<Thread>("create_thread", {
+            workspace: wsid,
+            title: op.title,
+            summary: op.summary ?? null,
+            owner: op.owner ?? null,
+          });
+          await refreshAll();
+          out.push(`new thread: ${t.title}`);
+        } else if (op.op === "file_meeting") {
+          const m = library.find((x) => x.id === op.id);
+          if (!m) {
+            out.push(`no meeting ${op.id}`);
+            continue;
+          }
+          await invoke("set_recording_thread", { dir: m.dir, thread: op.thread });
+          await refreshAll();
+          out.push(`filed ${m.title || "untitled"} under ${threads.find((t) => t.id === op.thread)?.title ?? op.thread}`);
+        } else if (op.op === "write") {
+          openComposer(op.title, op.instruction);
+          out.push(`writing: ${op.title}`);
+        } else if (op.op === "person") {
+          const cur = people.find((p) => p.name === op.name || p.aliases.includes(op.name));
+          await savePerson({
+            name: cur?.name ?? op.name,
+            phone: op.phone ?? cur?.phone ?? "",
+            email: op.email ?? cur?.email ?? "",
+            org: op.org ?? cur?.org ?? "",
+            role: op.role ?? cur?.role ?? "",
+            aliases: cur?.aliases ?? [],
+          });
+          out.push(`saved ${cur?.name ?? op.name}`);
+        }
+      } catch (e) {
+        out.push(`failed: ${String(e)}`);
+      }
+    }
+    return out;
+  };
+
+  // ── routes ────────────────────────────────────────────────────────────
+  async function ensureRoute(routeId: string): Promise<Route> {
+    const r = routes.find((x) => x.id === routeId && x.enabled);
+    if (!r) throw new Error(`no route ${routeId}`);
+    const cur = routeSessions[routeId];
+    if (r.kind === "acp" && (!cur || cur.status === "closed")) {
+      setRouteSessions((c) => ({ ...c, [routeId]: emptySession(r) }));
+      setRouteOpen(routeId);
+      await startRoute(r, r.cwd || undefined);
+    }
+    return r;
   }
 
-  const mmss = `${String(Math.floor(elapsed / 60)).padStart(2, "0")}:${String(
-    elapsed % 60,
-  ).padStart(2, "0")}`;
+  /** send text to a route and wait for its answer; the panel shows the work */
+  async function askRoute(routeId: string, text: string): Promise<string | null> {
+    try {
+      const r = await ensureRoute(routeId);
+      setRouteOpen(routeId);
+      if (r.kind !== "acp") return runtimeExchange(text, `asking ${r.label}…`);
+      setRouteSessions((c) => ({
+        ...c,
+        [routeId]: { ...(c[routeId] ?? emptySession(r)), text: "", tools: {}, lastPrompt: text, error: null },
+      }));
+      const res = await promptRoute(routeId, text);
+      return res.text || null;
+    } catch (e) {
+      setRouteSessions((c) =>
+        c[routeId] ? { ...c, [routeId]: { ...c[routeId], error: String(e), status: "closed" } } : c,
+      );
+      setError(String(e));
+      return null;
+    }
+  }
 
-  const openCount = actions?.actions.filter((a) => !a.done).length ?? 0;
+  async function closeRoute(routeId: string) {
+    await stopRoute(routeId).catch(() => {});
+    setRouteSessions((c) => {
+      const n = { ...c };
+      delete n[routeId];
+      return n;
+    });
+    setRouteOpen(null);
+  }
+
+  // ── making things ─────────────────────────────────────────────────────
+  async function openComposer(title: string, instruction: string, previous?: string) {
+    setComposer((cur) => ({
+      title,
+      instruction,
+      text: previous ?? cur?.text ?? "",
+      thread: cur?.thread ?? threadOpen ?? "",
+      busy: true,
+    }));
+    try {
+      const text = await invoke<string>("compose", {
+        instruction,
+        context: snap.current(),
+        previous: previous ?? null,
+      });
+      setComposer((cur) => (cur ? { ...cur, text, busy: false } : cur));
+    } catch (e) {
+      setError(String(e));
+      setComposer((cur) => (cur ? { ...cur, busy: false } : cur));
+    }
+  }
+
+  async function keepDraft() {
+    if (!composer?.text.trim()) return;
+    try {
+      const d = await invoke<string>("create_brief", {
+        title: composer.title || "note",
+        person: "",
+        workspace: wsId,
+        notes: composer.text,
+        thread: composer.thread || null,
+      });
+      await refreshAll();
+      setComposer(null);
+      await openPast(d);
+      showFlash("kept as a note");
+    } catch (e) {
+      setError(String(e));
+    }
+  }
+
+  async function sendDraftOnWhatsApp() {
+    if (!composer?.text.trim()) return;
+    const text = encodeURIComponent(composer.text);
+    try {
+      await invoke("open_external", { url: `whatsapp://send?text=${text}` });
+    } catch {
+      await invoke("open_external", { url: `https://wa.me/?text=${text}` }).catch((e) =>
+        setError(String(e)),
+      );
+    }
+  }
+
+  // ── chat ──────────────────────────────────────────────────────────────
+  function openChat(mode: "chat" | "onboarding" | "sorting") {
+    setChatMode(mode);
+    const opener =
+      mode === "onboarding"
+        ? "Hi, I'm Za3tar. Let's set this up in a minute. What are you working on these days? Name the two or three things, in any language."
+        : mode === "sorting"
+          ? `There ${wsLibrary.filter((x) => !x.thread).length === 1 ? "is one entry" : `are ${wsLibrary.filter((x) => !x.thread).length} entries`} here not filed under a thread. Want me to sort them? Say go, or tell me how.`
+          : "What do you want to look at?";
+    setChatLines([{ role: "za3tar", text: opener }]);
+  }
+
+  /** ask Za3tar straight from Home: no opener, just the question */
+  function askZa3tar(text: string) {
+    setChatMode("chat");
+    setChatLines([]);
+    void runChat(text, [], "chat");
+  }
+
+  async function sendChat(text: string) {
+    if (!chatMode) return;
+    return runChat(text, chatLines, chatMode);
+  }
+
+  async function runChat(
+    text: string,
+    base: ChatLine[],
+    mode: "chat" | "onboarding" | "sorting",
+  ) {
+    const next: ChatLine[] = [...base, { role: "you", text }];
+    setChatLines(next);
+    setChatBusy(true);
+    try {
+      const transcript = next
+        .filter((l) => l.role === "you" || l.role === "za3tar")
+        .slice(-16)
+        .map((l) => `${l.role === "you" ? "User" : "Za3tar"}: ${l.text}`)
+        .join("\n");
+      const modeLine =
+        mode === "onboarding"
+          ? "MODE: onboarding — new user, empty app; build workspaces, threads, people from what they say.\n"
+          : mode === "sorting"
+            ? `MODE: sorting — unfiled entries: ${wsLibrary
+                .filter((x) => !x.thread)
+                .map((x) => `[${x.id}] ${x.title || "untitled"}${x.person ? ` with ${x.person}` : ""}`)
+                .join("; ")}\n`
+            : "";
+      const turn = await invoke<{ say: string; ops: LiveOp[] }>("live_turn", {
+        snapshot: modeLine + snap.current(),
+        transcript,
+        typed: true,
+      });
+      const ops = Array.isArray(turn.ops) ? turn.ops : [];
+      const local = ops.filter((o) => o.op !== "route");
+      const routed = ops.filter((o) => o.op === "route") as Extract<LiveOp, { op: "route" }>[];
+      const activity = local.length ? await apply.current(local) : [];
+      let say = turn.say?.trim() || "";
+      for (const r of routed) {
+        activity.push(`handing to ${r.route}: ${r.message}`);
+        const reply = await askRoute(r.route, r.message);
+        if (reply) say = `${say}\n${reply}`.trim();
+      }
+      setChatLines((cur) => [
+        ...cur,
+        ...activity.map((a) => ({ role: "activity" as const, text: a })),
+        { role: "za3tar", text: say || "done." },
+      ]);
+    } catch (e) {
+      setChatLines((cur) => [...cur, { role: "error", text: String(e) }]);
+    } finally {
+      setChatBusy(false);
+    }
+  }
+
+  async function startTalk() {
+    if (live.current) return;
+    setTalkLines([]);
+    const s = new LiveSession({
+      onLine: (l) =>
+        setTalkLines((cur) => {
+          // captions replace their own last line; activity appends
+          if ((l.role === "you" || l.role === "za3tar") && cur[cur.length - 1]?.role === l.role)
+            return [...cur.slice(0, -1), l];
+          return [...cur, l].slice(-40);
+        }),
+      onState: setTalk,
+      snapshot: () => snap.current(),
+      applyOps: (ops) => apply.current(ops),
+      runtime: (route, m) => askRoute(route, m),
+      onMuted: setTalkMuted,
+    });
+    setTalkMuted(false);
+    live.current = s;
+    try {
+      await s.start(
+        `You are Za3tar's voice. Keep it short and warm. ${
+          caps?.language === "match"
+            ? "Mirror the user's language (Arabic, English, or mixed)."
+            : caps?.language === "arabic"
+              ? "Speak Arabic; keep names and technical terms as they are."
+              : "Speak English; you understand Arabic and mixed speech fully."
+        } You do not know the workspace yourself: every substantive request is delegated to the client, which answers with what to say; speak that answer as-is, do not add to it. While waiting for the client, say at most one short holding word (لحظة / one sec) and then stay quiet; never ask the user to repeat, never comment on audio quality, never guess at an answer. ${view === "home" ? "The user is on Home: the whole picture across workspaces." : `Workspace: ${wsName}.`}`,
+      );
+      s.prompt(
+        view === "home"
+          ? "Say one short greeting: you're here, ask what they want to look at. Then listen."
+          : `Say one short greeting: you're here, in the ${wsName} workspace, what do they want to look at. Then listen.`,
+      );
+    } catch (e) {
+      setError(String(e));
+      live.current = null;
+      setTalk("idle");
+    }
+  }
+
+  async function endTalk() {
+    await live.current?.stop();
+    live.current = null;
+  }
+
+  // ── setup ─────────────────────────────────────────────────────────────
+  const needsSetup = inSetup === true;
+
+  async function finishSetup() {
+    try {
+      await invoke("set_onboarded", { done: true });
+    } catch {
+      /* the flag is a convenience; never block on it */
+    }
+    setInSetup(false);
+    setChatMode(null);
+    setChatLines([]);
+    await refreshAll();
+    refreshName();
+    setView("home");
+  }
+
+  /** paste something real during setup: file it, then read it */
+  async function setupPaste(
+    workspace: string,
+    title: string,
+    text: string,
+  ): Promise<MeetingActions | null> {
+    try {
+      const d = await invoke<string>("create_brief", {
+        title,
+        person: "",
+        workspace,
+        notes: text,
+        thread: null,
+      });
+      const a = await invoke<MeetingActions>("extract_actions", {
+        dir: d,
+        title: title || null,
+        today: todayContext(),
+      });
+      await refreshAll();
+      return a;
+    } catch (e) {
+      setError(String(e));
+      return null;
+    }
+  }
+
+  // ── render ────────────────────────────────────────────────────────────
+  const wsName = workspaces.find((w) => w.id === wsId)?.name ?? "Personal";
+  const headline = showSettings
+    ? "Settings"
+    : view === "home"
+      ? "Home"
+      : view === "overview"
+      ? wsName
+      : view === "threads"
+      ? threadOpen
+        ? (threads.find((t) => t.id === threadOpen)?.title ?? "Thread")
+        : "Threads"
+      : view === "meetings"
+      ? meetingOpen
+        ? phase === "recording"
+          ? "Recording"
+          : title.trim() || "Meeting"
+        : "Meetings"
+      : view === "people"
+        ? "People"
+        : view === "decisions"
+          ? "Decisions"
+          : "Follow-ups";
+
+  const recordButton =
+    phase === "recording" ? (
+      <Button tone="accent" size="lg" onClick={stop}>
+        <span className="pulse inline-block h-2.5 w-2.5 rounded-full bg-ink" />
+        Stop · {mmss(elapsed)}
+      </Button>
+    ) : phase === "processing" ? (
+      <Button tone="primary" size="lg" disabled>
+        <span className="pulse inline-block h-2.5 w-2.5 rounded-full bg-limestone" />
+        Working…
+      </Button>
+    ) : (
+      <Button tone="primary" size="lg" onClick={start}>
+        <span className="inline-block h-2.5 w-2.5 rounded-full bg-thyme" />
+        Record
+      </Button>
+    );
+
+  if (needsSetup)
+    return (
+      <Onboarding
+        step={onboardStep}
+        setStep={(st) => {
+          setOnboardStep(st);
+          if (st === "tell" && chatLines.length === 0) setChatMode("onboarding");
+        }}
+        caps={caps}
+        userName={userName}
+        onSignIn={async (code, name) => {
+          await hostedSignIn(code, name);
+        }}
+        onOpenSettings={() => {
+          setInSetup(false);
+          openSettings();
+        }}
+        chat={{
+          lines: chatLines,
+          busy: chatBusy,
+          send: (t) => void runChat(t, chatLines, "onboarding"),
+        }}
+        workspaces={workspaces}
+        threads={threads}
+        onRenameThread={async (t, title, summary) => {
+          await saveThread({ ...t, title, summary });
+        }}
+        onDeleteThread={deleteThread}
+        onPaste={setupPaste}
+        onRecord={() => {
+          void finishSetup().then(() => start());
+        }}
+        onFinish={finishSetup}
+        onSkip={finishSetup}
+      />
+    );
 
   return (
-    <main className="mx-auto flex min-h-full max-w-xl flex-col gap-5 p-6">
-      <header className="flex items-center gap-2">
-        <span className="text-2xl">🌿</span>
-        <h1 className="text-2xl font-bold text-olive-deep">za3tar</h1>
-        <span className="hidden text-xs text-ink-soft sm:inline">
-          from meeting to done, بالعربيزي
-        </span>
-        <div className="ml-auto flex items-center gap-1">
-          <button
-            onClick={() => {
-              refreshLibrary();
-              setShowPeople((v) => !v);
-              setShowLibrary(false);
-              setShowFollowUps(false);
-            }}
-            className="rounded-lg px-2.5 py-1 text-xs text-ink-soft transition hover:bg-sesame hover:text-olive-deep"
-          >
-            people{people.length ? ` · ${people.length}` : ""}
-          </button>
-          <button
-            onClick={() => {
-              refreshLibrary();
-              setShowFollowUps((v) => !v);
-              setShowLibrary(false);
-              setShowPeople(false);
-            }}
-            className={`rounded-lg px-2.5 py-1 text-xs transition hover:bg-sesame hover:text-olive-deep ${
-              openActions.length ? "font-medium text-sumac" : "text-ink-soft"
-            }`}
-          >
-            follow-ups{openActions.length ? ` · ${openActions.length}` : ""}
-          </button>
-          <button
-            onClick={() => {
-              refreshLibrary();
-              setShowLibrary((v) => !v);
-              setShowFollowUps(false);
-            }}
-            className="rounded-lg px-2.5 py-1 text-xs text-ink-soft transition hover:bg-sesame hover:text-olive-deep"
-          >
-            {showLibrary
-              ? "close"
-              : `past meetings${library.length ? ` · ${library.length}` : ""}`}
-          </button>
-          <button
-            onClick={openSettings}
-            aria-label="settings"
-            className="rounded-lg px-2 py-1 text-xs text-ink-soft transition hover:bg-sesame hover:text-olive-deep"
-          >
-            ⚙
-          </button>
-        </div>
-      </header>
-
-      {showLibrary && (
-        <section className="flex flex-col gap-1.5 rounded-2xl bg-white p-2">
-          {library.length === 0 && (
-            <p className="px-2 py-3 text-sm text-ink-soft">
-              no meetings yet — hit record 🌿
-            </p>
-          )}
-          {library.map((s) => (
-            <button
-              key={s.id}
-              onClick={() => openPast(s.dir)}
-              className={`flex items-center gap-3 rounded-xl px-3 py-2 text-left transition hover:bg-cream ${
-                dir === s.dir ? "bg-cream" : ""
-              }`}
-            >
-              <div className="flex min-w-0 flex-1 flex-col">
-                <span className="truncate text-sm font-medium text-ink">
-                  {s.title || "untitled meeting"}
-                </span>
-                <span className="text-[11px] text-ink-soft">
-                  {relDate(s.created)} · {fmtDur(s.duration_secs)}
-                </span>
-              </div>
-              <div className="flex shrink-0 gap-1 text-[10px]">
-                {s.has_notes ? (
-                  <span className="rounded bg-olive/15 px-1.5 py-0.5 text-olive-deep">
-                    notes
-                  </span>
-                ) : s.has_transcript ? (
-                  <span className="rounded bg-sesame px-1.5 py-0.5 text-ink-soft">
-                    transcript
-                  </span>
-                ) : (
-                  <span className="rounded bg-sesame px-1.5 py-0.5 text-ink-soft">
-                    audio
-                  </span>
-                )}
-              </div>
-            </button>
-          ))}
-        </section>
-      )}
-
-      {showPeople && (
-        <section className="flex flex-col gap-1.5 rounded-2xl bg-white p-3">
-          <h2 className="px-1 text-xs font-semibold uppercase tracking-wide text-olive-deep">
-            people · who you've been meeting
-          </h2>
-          {people.length === 0 && (
-            <p className="px-1 py-2 text-sm text-ink-soft">
-              tag a meeting with a person ("with whom?") and they show up here
-            </p>
-          )}
-          {people.map((p) =>
-            personEdit && personEdit.name === p.name ? (
-              <div
-                key={p.name}
-                className="flex flex-col gap-2 rounded-lg border border-olive/30 bg-cream/60 p-2"
-              >
-                <span className="text-sm font-medium text-ink">{p.name}</span>
-                <div className="flex flex-wrap gap-2">
-                  <input
-                    value={personEdit.phone}
-                    onChange={(e) =>
-                      setPersonEdit({ ...personEdit, phone: e.target.value })
-                    }
-                    placeholder="phone (+9627…)"
-                    className="min-w-0 flex-1 rounded-lg border border-sesame bg-white px-2.5 py-1.5 text-sm outline-none focus:border-olive"
-                  />
-                  <input
-                    value={personEdit.email}
-                    onChange={(e) =>
-                      setPersonEdit({ ...personEdit, email: e.target.value })
-                    }
-                    placeholder="email"
-                    className="min-w-0 flex-1 rounded-lg border border-sesame bg-white px-2.5 py-1.5 text-sm outline-none focus:border-olive"
-                  />
-                </div>
-                <div className="flex gap-2">
-                  <button
-                    onClick={async () => {
-                      try {
-                        await invoke("save_person", {
-                          name: personEdit.name,
-                          phone: personEdit.phone,
-                          email: personEdit.email,
-                        });
-                        setPersonEdit(null);
-                        refreshLibrary();
-                        showFlash("contact saved ✓");
-                      } catch (e) {
-                        setError(String(e));
-                      }
-                    }}
-                    className="rounded-lg bg-olive px-3 py-1.5 text-xs font-semibold text-white hover:bg-olive-deep"
-                  >
-                    save
-                  </button>
-                  <button
-                    onClick={() => setPersonEdit(null)}
-                    className="rounded-lg px-2 py-1.5 text-xs text-ink-soft hover:text-olive-deep"
-                  >
-                    cancel
-                  </button>
-                </div>
-              </div>
-            ) : (
-              <div
-                key={p.name}
-                className="flex items-center gap-3 rounded-lg px-1 py-1.5 hover:bg-cream"
-              >
-                <div className="flex min-w-0 flex-1 flex-col">
-                  <span className="text-sm font-medium text-ink">{p.name}</span>
-                  <span className="text-[11px] text-ink-soft">
-                    {p.meetings} meeting{p.meetings === 1 ? "" : "s"}
-                    {p.last_met ? ` · last ${relDate(p.last_met)}` : ""}
-                    {p.phone ? ` · 📱 ${p.phone}` : ""}
-                    {p.email ? ` · ✉️ ${p.email}` : ""}
-                  </span>
-                </div>
-                {p.open_actions > 0 && (
-                  <span className="rounded-full bg-sumac/15 px-2 py-0.5 text-[10px] font-medium text-sumac">
-                    {p.open_actions} open
-                  </span>
-                )}
-                <button
-                  onClick={() => setPersonEdit(p)}
-                  className="rounded-lg bg-sesame px-2 py-1 text-[11px] font-medium text-ink hover:bg-olive/20"
-                >
-                  {p.phone || p.email ? "edit" : "add contact"}
-                </button>
-              </div>
-            ),
-          )}
-        </section>
-      )}
-
-      {showFollowUps && (
-        <section className="flex flex-col gap-1.5 rounded-2xl bg-white p-3">
-          <div className="flex items-center gap-2 px-1">
-            <h2 className="text-xs font-semibold uppercase tracking-wide text-olive-deep">
-              open follow-ups · across all meetings
-            </h2>
-            {agentAvailable && openActions.length > 0 && (
-              <button
-                onClick={syncFollowups}
-                disabled={!!busy}
-                title={`pull nudged/replied/done statuses back from ${agentName}`}
-                className="ml-auto rounded-lg bg-sesame px-2 py-1 text-[11px] font-medium text-ink hover:bg-olive/20 disabled:opacity-60"
-              >
-                🪼 sync
-              </button>
-            )}
-          </div>
-          {openActions.length === 0 && (
-            <p className="px-1 py-2 text-sm text-ink-soft">
-              كله سالك — nothing open 🌿
-            </p>
-          )}
-          {openActions.map((oa) => {
-            const overdue =
-              !!oa.action.due_date &&
-              oa.action.due_date < new Date().toISOString().slice(0, 10);
-            return (
-              <div
-                key={`${oa.dir}-${oa.action.id}`}
-                className="flex items-start gap-2.5 rounded-lg px-1 py-1.5 hover:bg-cream"
-              >
-                <button
-                  onClick={() => markOpenDone(oa)}
-                  aria-label="mark done"
-                  className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-md border border-sesame bg-white text-transparent transition hover:border-olive hover:text-olive"
-                >
-                  ✓
-                </button>
-                <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-                  <span
-                    dir="auto"
-                    className="arabic text-start text-sm text-ink"
-                  >
-                    {oa.action.title}
-                  </span>
-                  <button
-                    onClick={() => openPast(oa.dir)}
-                    className="self-start text-[11px] text-ink-soft hover:text-olive-deep"
-                  >
-                    {oa.person ? `${oa.person} · ` : ""}
-                    {oa.meeting_title || "untitled meeting"} ·{" "}
-                    {relDate(oa.meeting_created)} ↗
-                  </button>
-                </div>
-                <div className="flex shrink-0 items-center gap-1.5">
-                  {(() => {
-                    const js = agentStatus[bridgeId(oa.dir, oa.action.id)];
-                    return js && js.status !== "open" ? (
-                      <span
-                        title={js.note || js.status}
-                        className="rounded bg-olive/15 px-1.5 py-0.5 text-[10px] font-medium text-olive-deep"
-                      >
-                        🪼 {js.status}
-                      </span>
-                    ) : null;
-                  })()}
-                  {(oa.action.due_label || oa.action.due_date) && (
-                    <span
-                      className={`rounded px-1.5 py-0.5 text-[10px] ${
-                        overdue
-                          ? "bg-sumac/15 font-medium text-sumac"
-                          : "bg-cream text-ink-soft"
-                      }`}
-                    >
-                      {overdue ? "⏰ " : ""}
-                      {oa.action.due_label || oa.action.due_date}
-                    </span>
-                  )}
-                  <span
-                    className={`rounded px-1.5 py-0.5 text-[10px] font-medium ${ownerChipClass(oa.action.owner)}`}
-                  >
-                    {oa.action.owner}
-                  </span>
-                  <button
-                    onClick={() => nudge(oa)}
-                    disabled={!!busy}
-                    title="draft a WhatsApp nudge"
-                    className="rounded-lg bg-sesame px-2 py-1 text-[11px] font-medium text-ink hover:bg-olive/20 disabled:opacity-60"
-                  >
-                    💬 nudge
-                  </button>
-                </div>
-              </div>
-            );
-          })}
-        </section>
-      )}
-
-      {phase === "idle" && !viewingPast && (
-        <section className="flex flex-col gap-1.5">
-          {agentAvailable && !schedule && (
-            <button
-              onClick={fetchToday}
-              disabled={!!busy}
-              title={`${agentName} reads your calendar so meetings start pre-titled`}
-              className="self-start rounded-lg bg-sesame px-2.5 py-1 text-xs text-ink-soft transition hover:bg-olive/20 hover:text-olive-deep disabled:opacity-60"
-            >
-              🪼 today's meetings
-            </button>
-          )}
-          {schedule && (
-            <div className="flex flex-col gap-1 rounded-2xl bg-white p-3">
-              <div className="flex items-center gap-2">
-                <h2 className="text-xs font-semibold uppercase tracking-wide text-olive-deep">
-                  today · from {agentName}
-                </h2>
-                <button
-                  onClick={fetchToday}
-                  disabled={!!busy}
-                  className="ml-auto rounded-lg px-2 py-1 text-xs text-ink-soft hover:text-olive-deep disabled:opacity-60"
-                >
-                  refresh
-                </button>
-              </div>
-              {schedule.error && (
-                <p className="px-1 py-1 text-xs text-ink-soft">
-                  🫧 calendar unreachable: {schedule.error}
-                </p>
-              )}
-              {!schedule.error && schedule.events.length === 0 && (
-                <p className="px-1 py-1 text-sm text-ink-soft">
-                  رزنامتك فاضية اليوم 🌿
-                </p>
-              )}
-              {schedule.events.map((ev, i) => {
-                const nowMin =
-                  new Date().getHours() * 60 + new Date().getMinutes();
-                const s = hhmmToMin(ev.start);
-                const e = hhmmToMin(ev.end);
-                const live =
-                  !isNaN(s) && nowMin >= s - 10 && (isNaN(e) || nowMin <= e);
-                return (
-                  <button
-                    key={i}
-                    onClick={() => {
-                      setTitle(ev.title);
-                      setPerson(ev.attendees[0] ?? "");
-                    }}
-                    title="pre-fill this meeting"
-                    className={`flex items-center gap-2.5 rounded-lg px-2 py-1.5 text-left transition hover:bg-cream ${
-                      live ? "bg-olive/10" : ""
-                    }`}
-                  >
-                    <span className="shrink-0 text-[11px] tabular-nums text-ink-soft">
-                      {ev.start}
-                    </span>
-                    <span
-                      dir="auto"
-                      className="arabic min-w-0 flex-1 truncate text-start text-sm text-ink"
-                    >
-                      {ev.title}
-                    </span>
-                    {ev.attendees.length > 0 && (
-                      <span className="shrink-0 rounded bg-sesame px-1.5 py-0.5 text-[10px] text-ink-soft">
-                        {ev.attendees[0]}
-                      </span>
-                    )}
-                    {live && (
-                      <span className="shrink-0 rounded-full bg-olive/15 px-2 py-0.5 text-[10px] font-medium text-olive-deep">
-                        now — record?
-                      </span>
-                    )}
-                  </button>
-                );
-              })}
-            </div>
-          )}
-        </section>
-      )}
-
-      {(phase === "idle" || viewingPast) && (
-        <div className="flex gap-2">
-          <input
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            onBlur={() => {
-              if (viewingPast && dir)
-                invoke("set_recording_title", {
-                  dir,
-                  title: title.trim(),
-                }).catch(() => {});
-            }}
-            placeholder="what's this meeting? (optional)"
-            className="min-w-0 flex-[2] rounded-xl border border-sesame bg-white px-4 py-3 text-sm outline-none focus:border-olive"
-          />
-          <input
-            value={person}
-            onChange={(e) => setPerson(e.target.value)}
-            onBlur={() => {
-              if (viewingPast && dir) {
-                invoke("set_recording_person", {
-                  dir,
-                  person: person.trim(),
-                }).catch(() => {});
-                refreshLibrary();
-              }
-            }}
-            placeholder="with whom?"
-            className="min-w-0 flex-1 rounded-xl border border-sesame bg-white px-4 py-3 text-sm outline-none focus:border-olive"
-          />
-        </div>
-      )}
-
-      {!viewingPast && (
-        <button
-          onClick={phase === "recording" ? stop : start}
-          disabled={phase === "processing"}
-          className={`flex items-center justify-center gap-3 rounded-2xl px-6 py-5 text-lg font-semibold text-white transition disabled:opacity-60 ${
-            phase === "recording" ? "bg-sumac" : "bg-olive hover:bg-olive-deep"
-          }`}
-        >
-          <span
-            className={`inline-block h-3 w-3 rounded-full bg-white ${
-              phase === "recording" ? "animate-pulse" : ""
-            }`}
-          />
-          {phase === "recording"
-            ? `stop · ${mmss}`
-            : phase === "processing"
-              ? "…"
-              : segments
-                ? "record another"
-                : "start recording"}
-        </button>
-      )}
-
-      {viewingPast && (
-        <button
-          onClick={start}
-          className="flex items-center justify-center gap-3 rounded-2xl bg-olive px-6 py-4 text-base font-semibold text-white transition hover:bg-olive-deep"
-        >
-          <span className="inline-block h-3 w-3 rounded-full bg-white" />
-          new recording
-        </button>
-      )}
-
-      {viewingPast && !segments && !busy && (
-        <button
-          onClick={transcribePast}
-          className="self-start rounded-xl bg-olive px-4 py-2 text-sm font-semibold text-white hover:bg-olive-deep"
-        >
-          transcribe this recording
-        </button>
-      )}
-
-      {phase === "recording" && (
-        <>
-          <div className="flex flex-col gap-3">
-            <LevelBar
-              label="me (mic)"
-              level={levels.mic}
-              color="var(--color-olive)"
-            />
-            <LevelBar
-              label="them (system)"
-              level={levels.system}
-              color="var(--color-sumac)"
-            />
-          </div>
-          <textarea
-            value={roughNotes}
-            onChange={(e) => setRoughNotes(e.target.value)}
-            placeholder="jot rough notes while you talk — za3tar folds them into the summary…"
-            className="min-h-24 rounded-xl border border-sesame bg-white p-3 text-sm outline-none focus:border-olive"
-          />
-        </>
-      )}
-
-      {permissionHint && (
-        <div className="flex flex-col gap-2 rounded-xl border border-sumac/40 bg-sumac/10 p-4 text-sm text-ink">
-          <span>🫧 {permissionHint}</span>
-          <button
-            onClick={grantSystemAudio}
-            className="self-start rounded-lg bg-sumac px-3 py-1.5 text-xs font-semibold text-white hover:opacity-90"
-          >
-            open System Settings
-          </button>
-        </div>
-      )}
-
-      {/* after processing: if only the user was heard, the system-audio grant is
-          missing (in-person voices would have been split by diarization) */}
-      {phase === "done" &&
-        !viewingPast &&
-        segments &&
-        !heardThem &&
-        !permissionHint && (
-          <div className="flex flex-col gap-2 rounded-xl border border-sesame bg-white p-4 text-sm text-ink">
-            <span>
-              🫧 sme3na بس صوتك — the other side's track was silent. grant{" "}
-              <b>System Audio Recording</b> so za3tar captures them too.
-            </span>
-            <button
-              onClick={grantSystemAudio}
-              className="self-start rounded-lg bg-olive px-3 py-1.5 text-xs font-semibold text-white hover:bg-olive-deep"
-            >
-              open System Settings
-            </button>
-          </div>
+    <div className="flex h-full">
+      <Sidebar
+        workspaces={workspaces}
+        wsId={wsId}
+        onSelectWorkspace={(id) => {
+          setWsId(id);
+          setShowSettings(false);
+          setView("overview");
+          setThreadOpen(null);
+          if (phase !== "recording") setMeetingOpen(false);
+        }}
+        onCreateWorkspace={createWorkspace}
+        view={view}
+        onView={(v) => {
+          setView(v);
+          setShowSettings(false);
+          if (v === "threads") setThreadOpen(null);
+          if (v === "meetings" && phase !== "recording") setMeetingOpen(false);
+        }}
+        counts={{
+          home: openActions.filter(
+            (o) =>
+              !o.action.parked &&
+              isMine(o) &&
+              !!o.action.due_date &&
+              o.action.due_date < new Date().toISOString().slice(0, 10),
+          ).length,
+          overview: 0,
+          threads: wsThreads.filter((t) => t.status === "active").length,
+          meetings: wsLibrary.length,
+          people: wsPeople.length,
+          decisions: wsDecisions.filter((d) => d.decision.status === "proposed")
+            .length,
+          followups: wsOpen.filter((o) => !o.action.parked).length,
+        }}
+        runtimeReady={runtimeReady}
+        onSettings={openSettings}
+        routes={routes.filter((r) => r.enabled)}
+        routeStatus={Object.fromEntries(
+          Object.values(routeSessions).map((x) => [x.route, x.status]),
         )}
+        onRoute={(id) => {
+          setRouteOpen(id);
+          ensureRoute(id).catch((e) => setError(String(e)));
+        }}
+      />
 
-      {busy && (
-        <div className="flex items-center gap-2 text-sm text-ink-soft">
-          <span className="inline-block h-2 w-2 animate-pulse rounded-full bg-olive" />
-          {busy}
-        </div>
-      )}
-
-      {flash && (
-        <div className="rounded-xl bg-olive/10 px-4 py-2 text-sm text-olive-deep">
-          {flash}
-        </div>
-      )}
-
-      {/* the pipeline steps, kept above the results they produce */}
-      {segments && !busy && (!notes || !actions) && (
-        <div className="flex flex-wrap gap-2">
-          {!notes && (
-            <button
-              onClick={makeNotes}
-              className="rounded-xl bg-olive px-4 py-2 text-sm font-semibold text-white hover:bg-olive-deep"
-            >
-              ✍️ make notes
-            </button>
-          )}
-          {!actions && (
-            <button
-              onClick={extractActions}
-              className="rounded-xl bg-olive px-4 py-2 text-sm font-semibold text-white hover:bg-olive-deep"
-            >
-              🎯 pull out decisions & actions
-            </button>
-          )}
-        </div>
-      )}
-
-      {actions && (
-        <section className="flex flex-col gap-3">
-          <div className="flex items-center gap-2">
-            <h2 className="text-sm font-semibold text-ink-soft">
-              what came out of it
-            </h2>
-            {openCount > 0 && (
-              <span className="rounded-full bg-sumac/15 px-2 py-0.5 text-[11px] font-medium text-sumac">
-                {openCount} open
-              </span>
-            )}
-            <button
-              onClick={extractActions}
-              disabled={!!busy}
-              className="ml-auto rounded-lg px-2 py-1 text-xs text-ink-soft hover:text-olive-deep disabled:opacity-60"
-            >
-              re-extract
-            </button>
-          </div>
-
-          {actions.decisions.length > 0 && (
-            <div className="flex flex-col gap-1.5 rounded-xl bg-white p-4">
-              <h3 className="text-xs font-semibold uppercase tracking-wide text-olive-deep">
-                decisions
-              </h3>
-              {actions.decisions.map((d, i) => (
-                <p
-                  key={i}
-                  dir="auto"
-                  className="arabic text-start text-sm text-ink"
-                >
-                  ✅ {d}
-                </p>
-              ))}
-            </div>
-          )}
-
-          {actions.actions.length > 0 && (
-            <div className="flex flex-col gap-1 rounded-xl bg-white p-3">
-              <h3 className="px-1 text-xs font-semibold uppercase tracking-wide text-olive-deep">
-                action items
-              </h3>
-              {actions.actions.map((a) => (
-                <div
-                  key={a.id}
-                  className="flex items-start gap-2.5 rounded-lg px-1 py-1.5 hover:bg-cream"
-                >
-                  <button
-                    onClick={() => toggleDone(a)}
-                    aria-label={a.done ? "mark not done" : "mark done"}
-                    className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-md border text-[11px] transition ${
-                      a.done
-                        ? "border-olive bg-olive text-white"
-                        : "border-sesame bg-white text-transparent hover:border-olive"
-                    }`}
-                  >
-                    ✓
-                  </button>
-                  <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-                    <span
-                      dir="auto"
-                      className={`arabic text-start text-sm ${
-                        a.done ? "text-ink-soft line-through" : "text-ink"
-                      }`}
-                    >
-                      {a.title}
-                    </span>
-                    {a.detail && (
-                      <span
-                        dir="auto"
-                        className="arabic text-start text-xs text-ink-soft"
-                      >
-                        {a.detail}
-                      </span>
-                    )}
-                  </div>
-                  <div className="flex shrink-0 items-center gap-1.5">
-                    {(a.due_label || a.due_date) && (
-                      <span className="rounded bg-cream px-1.5 py-0.5 text-[10px] text-ink-soft">
-                        {a.due_label || a.due_date}
-                      </span>
-                    )}
-                    <span
-                      className={`rounded px-1.5 py-0.5 text-[10px] font-medium ${ownerChipClass(a.owner)}`}
-                    >
-                      {a.owner}
-                    </span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {actions.questions.length > 0 && (
-            <div className="flex flex-col gap-1.5 rounded-xl bg-white p-4">
-              <h3 className="text-xs font-semibold uppercase tracking-wide text-olive-deep">
-                open questions
-              </h3>
-              {actions.questions.map((q, i) => (
-                <p
-                  key={i}
-                  dir="auto"
-                  className="arabic text-start text-sm text-ink"
-                >
-                  ❓ {q}
-                </p>
-              ))}
-            </div>
-          )}
-
-          {actions.decisions.length === 0 &&
-            actions.actions.length === 0 &&
-            actions.questions.length === 0 && (
-              <p className="rounded-xl bg-white p-4 text-sm text-ink-soft">
-                ما في قرارات أو مهام واضحة بهاللقاء — حكي حلو بس 🌿
-              </p>
-            )}
-
-          <div className="flex flex-wrap gap-2">
-            <button
-              onClick={() => makeDraft("whatsapp")}
-              disabled={!!busy}
-              className="rounded-xl bg-olive px-3.5 py-2 text-sm font-semibold text-white hover:bg-olive-deep disabled:opacity-60"
-            >
-              💬 whatsapp follow-up
-            </button>
-            <button
-              onClick={() => makeDraft("email")}
-              disabled={!!busy}
-              className="rounded-xl bg-olive px-3.5 py-2 text-sm font-semibold text-white hover:bg-olive-deep disabled:opacity-60"
-            >
-              ✉️ recap email
-            </button>
-            <button
-              onClick={exportCalendar}
-              disabled={!!busy}
-              className="rounded-xl bg-sesame px-3.5 py-2 text-sm font-semibold text-ink hover:bg-olive/20 disabled:opacity-60"
-            >
-              📅 add to Calendar
-            </button>
-            {agentAvailable && (
-              <button
-                onClick={sendPacketToAgent}
-                disabled={!!busy}
-                title={`${agentName} puts dated items on your calendar and tracks the follow-ups`}
-                className="rounded-xl bg-olive px-3.5 py-2 text-sm font-semibold text-white hover:bg-olive-deep disabled:opacity-60"
-              >
-                🪼 send to {agentName}
-              </button>
-            )}
-            <button
-              onClick={copyPacket}
-              className="rounded-xl bg-sesame px-3.5 py-2 text-sm font-semibold text-ink hover:bg-olive/20"
-            >
-              {copied ? "copied ✓" : "📋 copy packet"}
-            </button>
-          </div>
-        </section>
-      )}
-
-      {draft && (
-        <section className="flex flex-col gap-2 rounded-2xl border border-olive/30 bg-white p-4">
-          <div className="flex items-center gap-2">
-            <h2 className="text-sm font-semibold text-olive-deep">
-              {draft.kind === "whatsapp"
-                ? "💬 whatsapp draft"
-                : "✉️ email draft"}
-            </h2>
-            {draft.target && (
-              <span className="rounded bg-olive/15 px-1.5 py-0.5 text-[10px] font-medium text-olive-deep">
-                → {draft.target}
-              </span>
-            )}
-            <span className="text-[11px] text-ink-soft">
-              edit it, then send — nothing leaves without you
-            </span>
-            <button
-              onClick={() => setDraft(null)}
-              className="ml-auto rounded-lg px-2 py-1 text-xs text-ink-soft hover:text-olive-deep"
-            >
-              close
-            </button>
-          </div>
-          {draft.kind === "email" && (
-            <input
+      <div className="flex min-w-0 flex-1 flex-col">
+        <header className="flex items-center gap-4 border-b border-line px-8 py-4">
+          <div className="flex min-w-0 flex-col">
+            <span className="eyebrow text-olive">{view === "home" ? "everything" : wsName}</span>
+            <h1
               dir="auto"
-              value={draft.subject}
-              onChange={(e) => setDraft({ ...draft, subject: e.target.value })}
-              placeholder="subject"
-              className="arabic rounded-lg border border-sesame px-3 py-2 text-start text-sm outline-none focus:border-olive"
-            />
-          )}
-          <textarea
-            dir="auto"
-            value={draft.body}
-            onChange={(e) => setDraft({ ...draft, body: e.target.value })}
-            className="arabic min-h-40 rounded-lg border border-sesame p-3 text-start text-sm leading-relaxed outline-none focus:border-olive"
-          />
-          <div className="flex gap-2">
-            <button
-              onClick={sendDraft}
-              className="rounded-xl bg-olive px-3.5 py-2 text-sm font-semibold text-white hover:bg-olive-deep"
+              className="display arabic truncate text-start text-[22px] leading-tight"
             >
-              {draft.kind === "whatsapp" ? "open in WhatsApp" : "open in Mail"}
-            </button>
-            <button
-              onClick={copyDraft}
-              className="rounded-xl bg-sesame px-3.5 py-2 text-sm font-semibold text-ink hover:bg-olive/20"
-            >
-              copy
-            </button>
-            {agentAvailable && (
-              <button
-                onClick={sendDraftViaAgent}
-                disabled={!!busy}
-                title={`${agentName} sends it to them on WhatsApp and confirms`}
-                className="rounded-xl bg-sesame px-3.5 py-2 text-sm font-semibold text-ink hover:bg-olive/20 disabled:opacity-60"
+              {headline}
+            </h1>
+          </div>
+          <div className="ml-auto flex items-center gap-3">
+            {!chatMode && view !== "home" && (
+              <Button
+                tone="quiet"
+                size="lg"
+                onClick={() => openChat("chat")}
+                title="type to Za3tar"
               >
-                🪼 have {agentName} send it
-              </button>
+                Chat
+              </Button>
+            )}
+            {talk === "idle" ? (
+              <Button tone="quiet" size="lg" onClick={startTalk} title="talk to Za3tar">
+                Talk
+              </Button>
+            ) : (
+              <Button
+                tone={talkMuted ? "quiet" : "accent"}
+                size="lg"
+                onClick={() => live.current?.setMuted(!talkMuted)}
+                title={talkMuted ? "unmute" : "mute"}
+              >
+                <span
+                  className={`inline-block h-2.5 w-2.5 rounded-full ${talkMuted ? "bg-olive" : "pulse bg-ink"}`}
+                />
+                {talk === "connecting" ? "Connecting…" : talkMuted ? "Muted" : "Listening"}
+              </Button>
+            )}
+            {busy && (
+              <span className="flex items-center gap-2 text-[12px] text-olive">
+                <span className="pulse inline-block h-1.5 w-1.5 rounded-full bg-ink" />
+                {busy}
+              </span>
+            )}
+            {recordButton}
+          </div>
+        </header>
+
+        <main className="flex-1 overflow-y-auto px-8 py-6">
+          <div className="mx-auto flex max-w-3xl flex-col gap-4">
+            {!loaded && <p className="px-1 text-[13px] text-olive">loading…</p>}
+            {routeOpen && routeSessions[routeOpen] && (
+              <RoutePanel
+                s={routeSessions[routeOpen]}
+                onSend={(t) => {
+                  askRoute(routeOpen, t);
+                }}
+                onPermission={(rpcId, optionId) => {
+                  answerPermission(routeOpen, rpcId, optionId).catch((e) => setError(String(e)));
+                  setRouteSessions((c) => ({ ...c, [routeOpen]: { ...c[routeOpen], permission: null } }));
+                }}
+                onCancel={() => cancelRoute(routeOpen).catch(() => {})}
+                onClose={() => closeRoute(routeOpen)}
+              />
+            )}
+            {composer && (
+              <Composer
+                draft={composer}
+                threads={wsThreads}
+                onChange={setComposer}
+                onRevise={(instruction) =>
+                  openComposer(composer.title, instruction, composer.text)
+                }
+                onCopy={() => {
+                  navigator.clipboard.writeText(composer.text);
+                  showFlash("copied");
+                }}
+                onSend={sendDraftOnWhatsApp}
+                onKeep={keepDraft}
+                onClose={() => setComposer(null)}
+              />
+            )}
+            {chatMode && (
+              <ChatPanel
+                title={
+                  chatMode === "onboarding"
+                    ? "Setting up with Za3tar"
+                    : chatMode === "sorting"
+                      ? "Sorting with Za3tar"
+                      : "Za3tar"
+                }
+                lines={chatLines}
+                busy={chatBusy}
+                onSend={sendChat}
+                onClose={() => setChatMode(null)}
+              />
+            )}
+            {talk !== "idle" && (
+              <TalkPanel
+                state={talk}
+                lines={talkLines}
+                muted={talkMuted}
+                onMute={(m) => live.current?.setMuted(m)}
+                onEnd={endTalk}
+              />
+            )}
+            {flash && (
+              <div className="rounded-lg border border-thyme bg-thyme/20 px-4 py-2 text-[13px]">
+                <span className="font-semibold">Za3tar</span> · {flash}
+              </div>
+            )}
+            {error && (
+              <div className="flex items-start gap-3 rounded-lg border border-alert/40 bg-alert/8 px-4 py-2 text-[13px] text-alert">
+                <span className="selectable flex-1">{error}</span>
+                <button
+                  onClick={() => setError(null)}
+                  className="text-[12px] text-alert/70 hover:text-alert"
+                >
+                  dismiss
+                </button>
+              </div>
+            )}
+
+            {!loaded ? null : showSettings && settingsForm ? (
+              <SettingsView
+                form={settingsForm}
+                onChange={setSettingsForm}
+                onSave={saveSettings}
+                onClose={() => setShowSettings(false)}
+                routes={routesForm}
+                onRoutes={setRoutesForm}
+                hosted={!!caps?.hosted}
+                onSignIn={hostedSignIn}
+                onSignOut={hostedSignOut}
+                onRerunSetup={() => {
+                  setShowSettings(false);
+                  setChatLines([]);
+                  setChatMode("onboarding");
+                  setOnboardStep("welcome");
+                  setInSetup(true);
+                }}
+              />
+            ) : view === "home" && !meetingOpen ? (
+              <HomeView
+                userName={userName}
+                caps={caps}
+                onSettings={openSettings}
+                workspaces={workspaces}
+                threads={threads}
+                open={openActions}
+                decisions={decisions}
+                library={library}
+                schedule={schedule}
+                runtimeReady={runtimeReady}
+                busy={!!busy}
+                onFetchToday={fetchToday}
+                onOpenMeeting={(d, ws) => {
+                  setWsId(ws);
+                  openPast(d);
+                }}
+                onOpenThread={(t) => {
+                  setWsId(t.workspace);
+                  setThreadOpen(t.id);
+                  setView("threads");
+                }}
+                onGoWorkspace={(id) => {
+                  setWsId(id);
+                  setView("overview");
+                }}
+                onDone={markOpenDone}
+                onPark={parkAction}
+                onDecisionStatus={setDecisionStatus}
+                fresh={threads.length === 0 && library.length === 0}
+                onStartConversation={() => openChat("onboarding")}
+                onSignIn={hostedSignIn}
+                onAsk={askZa3tar}
+                onTalk={startTalk}
+                onRecord={start}
+              />
+            ) : view === "overview" && !(meetingOpen && phase === "recording") ? (
+              <WorkspaceView
+                ws={
+                  workspaces.find((w) => w.id === wsId) ?? {
+                    id: wsId,
+                    name: wsName,
+                    created: 0,
+                    description: "",
+                    links: [],
+                    runtime_command: "",
+                  }
+                }
+                library={wsLibrary}
+                people={wsPeople.filter((p) => p.workspaces.includes(wsId))}
+                open={wsOpen}
+                decisions={wsDecisions}
+                threads={wsThreads}
+                onOpenThread={(id) => {
+                  setThreadOpen(id);
+                  setView("threads");
+                }}
+                runtimeReady={runtimeReady}
+                onSave={saveWorkspace}
+                onOpenLink={openLink}
+                onGo={setView}
+                onOpenMeeting={openPast}
+              />
+            ) : view === "threads" && !meetingOpen ? (
+              threadOpen && threads.find((t) => t.id === threadOpen) ? (
+                <ThreadDetail
+                  t={threads.find((t) => t.id === threadOpen)!}
+                  library={wsLibrary}
+                  open={wsOpen}
+                  decisions={wsDecisions}
+                  questions={wsQuestions}
+                  busy={!!busy}
+                  onBack={() => setThreadOpen(null)}
+                  onSave={saveThread}
+                  onDelete={deleteThread}
+                  onOpenMeeting={openPast}
+                  onDone={markOpenDone}
+                  onNudge={nudge}
+                  onDecisionStatus={setDecisionStatus}
+                  onAddBrief={() => {
+                    setBriefRequested(true);
+                    setView("meetings");
+                  }}
+                />
+              ) : (
+                <ThreadsView
+                  threads={wsThreads}
+                  library={wsLibrary}
+                  open={wsOpen}
+                  decisions={wsDecisions}
+                  onOpen={setThreadOpen}
+                  onCreate={createThread}
+                  onSort={() => openChat("sorting")}
+                />
+              )
+            ) : meetingOpen ? (
+              <MeetingDetail
+                phase={phase}
+                viewingPast={viewingPast}
+                dir={dir}
+                created={current?.created}
+                duration={current?.has_audio ? current.duration_secs : undefined}
+                hasAudio={current?.has_audio ?? !viewingPast}
+                title={title}
+                setTitle={setTitle}
+                person={person}
+                setPerson={setPerson}
+                onMetaBlur={saveMeta}
+                people={people}
+                workspaces={workspaces}
+                meetingWs={meetingWs}
+                onMoveWorkspace={moveMeeting}
+                threads={threads}
+                meetingThread={meetingThread}
+                onMoveThread={moveMeetingThread}
+                levels={levels}
+                roughNotes={roughNotes}
+                setRoughNotes={setRoughNotes}
+                permissionHint={permissionHint}
+                heardThem={heardThem}
+                onGrantSystemAudio={grantSystemAudio}
+                segments={segments}
+                notes={notes}
+                actions={actions}
+                draft={draft}
+                setDraft={setDraft}
+                busy={busy}
+                copied={copied}
+                showTranscript={showTranscript}
+                setShowTranscript={setShowTranscript}
+                runtimeReady={runtimeReady}
+                onBack={closeMeeting}
+                backLabel={
+                  meetingFrom?.view === "home"
+                    ? "home"
+                    : meetingFrom?.view === "threads" && meetingFrom.thread
+                      ? (threads.find((t) => t.id === meetingFrom.thread)?.title ?? "thread")
+                      : meetingFrom?.view === "overview"
+                        ? "overview"
+                        : "all meetings"
+                }
+                onTranscribePast={transcribePast}
+                onMakeNotes={makeNotes}
+                onExtract={extractActions}
+                onToggleDone={toggleDone}
+                onDecisionStatus={setDecisionStatus}
+                onDraft={makeDraft}
+                onSendDraft={sendDraft}
+                onCopyDraft={copyDraft}
+                onDraftViaRuntime={sendDraftViaRuntime}
+                onExportCalendar={exportCalendar}
+                onTrack={trackAndSchedule}
+                onCopyPacket={copyPacket}
+              />
+            ) : view === "meetings" || view === "overview" || view === "threads" ? (
+              <MeetingsView
+                library={wsLibrary}
+                currentDir={dir}
+                onOpen={openPast}
+                runtimeReady={runtimeReady}
+                schedule={schedule}
+                onFetchToday={fetchToday}
+                onPrefill={(t, who) => {
+                  setTitle(t);
+                  setPerson(who);
+                  showFlash("next recording pre-filled");
+                }}
+                onCreateBrief={createBrief}
+                briefRequested={briefRequested}
+                onBriefShown={() => setBriefRequested(false)}
+                busy={!!busy}
+              />
+            ) : view === "people" ? (
+              <PeopleView
+                people={wsPeople}
+                workspaces={workspaces}
+                onSave={savePerson}
+              />
+            ) : view === "decisions" ? (
+              <DecisionsView
+                decisions={wsDecisions}
+                onStatus={setDecisionStatus}
+                onOpenMeeting={openPast}
+                busy={!!busy}
+              />
+            ) : (
+              <FollowUpsView
+                openActions={wsOpen}
+                runtimeStatus={runtimeStatus}
+                runtimeReady={runtimeReady}
+                onSync={syncFollowups}
+                onDone={markOpenDone}
+                onPark={parkAction}
+                onNudge={nudge}
+                onOpenMeeting={openPast}
+                busy={!!busy}
+              />
             )}
           </div>
-        </section>
-      )}
-
-      {notes && (
-        <section className="flex flex-col gap-2">
-          <div className="flex items-center gap-2">
-            <h2 className="text-sm font-semibold text-ink-soft">notes</h2>
-            <button
-              onClick={makeNotes}
-              disabled={!!busy}
-              className="ml-auto rounded-lg px-2 py-1 text-xs text-ink-soft hover:text-olive-deep disabled:opacity-60"
-            >
-              regenerate
-            </button>
-            <button
-              onClick={copyPacket}
-              className="rounded-lg bg-sesame px-3 py-1 text-xs text-ink-soft hover:text-olive-deep"
-            >
-              {copied ? "copied ✓" : "copy markdown"}
-            </button>
-          </div>
-          <div
-            dir="rtl"
-            className="arabic rounded-xl bg-white p-4 text-right text-sm leading-relaxed text-ink"
-          >
-            <MarkdownLite md={notes} />
-          </div>
-        </section>
-      )}
-
-      {/* raw material last, and folded away: the actions above are the point */}
-      {segments && (
-        <section className="flex flex-col gap-2">
-          <button
-            onClick={() => setShowTranscript((v) => !v)}
-            className="flex items-center gap-2 rounded-xl border border-sesame px-4 py-3 text-left transition hover:bg-white"
-          >
-            <span className="text-xs text-ink-soft">
-              {showTranscript ? "▾" : "▸"}
-            </span>
-            <span className="text-sm font-medium text-ink">
-              {showTranscript ? "hide transcript" : "show transcript"}
-            </span>
-            <span className="text-xs text-ink-soft">
-              {segments.length} turn{segments.length === 1 ? "" : "s"}
-            </span>
-          </button>
-          {showTranscript && (
-            <div className="flex max-h-64 flex-col gap-2 overflow-y-auto rounded-xl bg-white p-3">
-              {segments.map((s, i) => (
-                <div key={i} className="flex flex-col gap-0.5">
-                  <span
-                    className="text-[11px] font-medium"
-                    style={{
-                      color:
-                        s.speaker === "me"
-                          ? "var(--color-olive)"
-                          : "var(--color-sumac)",
-                    }}
-                  >
-                    {s.speaker}
-                  </span>
-                  <p dir="rtl" className="arabic text-right text-sm text-ink">
-                    {s.text}
-                  </p>
-                </div>
-              ))}
-            </div>
-
-          )}
-        </section>
-      )}
-
-      {showSettings && settingsForm && (
-        <section className="flex flex-col gap-3 rounded-2xl border border-olive/30 bg-white p-4">
-          <div className="flex items-center gap-2">
-            <h2 className="text-sm font-semibold text-olive-deep">
-              ⚙ settings
-            </h2>
-            <span className="text-[11px] text-ink-soft">
-              stored locally, applied immediately
-            </span>
-            <button
-              onClick={() => setShowSettings(false)}
-              className="ml-auto rounded-lg px-2 py-1 text-xs text-ink-soft hover:text-olive-deep"
-            >
-              close
-            </button>
-          </div>
-          <label className="flex flex-col gap-1 text-xs text-ink-soft">
-            your name (how the notes refer to you)
-            <input
-              value={settingsForm.user_name}
-              onChange={(e) =>
-                setSettingsForm({ ...settingsForm, user_name: e.target.value })
-              }
-              placeholder="e.g. Ala Haddad"
-              className="rounded-lg border border-sesame px-3 py-2 text-sm text-ink outline-none focus:border-olive"
-            />
-          </label>
-          <label className="flex flex-col gap-1 text-xs text-ink-soft">
-            ElevenLabs API key (transcription)
-            <input
-              type="password"
-              value={settingsForm.elevenlabs_api_key}
-              onChange={(e) =>
-                setSettingsForm({
-                  ...settingsForm,
-                  elevenlabs_api_key: e.target.value,
-                })
-              }
-              className="rounded-lg border border-sesame px-3 py-2 text-sm text-ink outline-none focus:border-olive"
-            />
-          </label>
-          <label className="flex flex-col gap-1 text-xs text-ink-soft">
-            Anthropic API key (notes & actions)
-            <input
-              type="password"
-              value={settingsForm.anthropic_api_key}
-              onChange={(e) =>
-                setSettingsForm({
-                  ...settingsForm,
-                  anthropic_api_key: e.target.value,
-                })
-              }
-              className="rounded-lg border border-sesame px-3 py-2 text-sm text-ink outline-none focus:border-olive"
-            />
-          </label>
-          <div className="mt-1 flex flex-col gap-3 border-t border-sesame pt-3">
-            <p className="text-[11px] text-ink-soft">
-              🪼 agent bridge (optional) — connect your always-on agent and
-              za3tar can put items on your calendar, deliver follow-ups, and
-              sync their status. See docs/AGENT-PROTOCOL.md.
-            </p>
-            <label className="flex flex-col gap-1 text-xs text-ink-soft">
-              agent name (what to call it in the app)
-              <input
-                value={settingsForm.agent_name}
-                onChange={(e) =>
-                  setSettingsForm({
-                    ...settingsForm,
-                    agent_name: e.target.value,
-                  })
-                }
-                placeholder="e.g. Jello"
-                className="rounded-lg border border-sesame px-3 py-2 text-sm text-ink outline-none focus:border-olive"
-              />
-            </label>
-            <label className="flex flex-col gap-1 text-xs text-ink-soft">
-              agent command — gets the message as its final argument, prints
-              the reply
-              <input
-                value={settingsForm.agent_command}
-                onChange={(e) =>
-                  setSettingsForm({
-                    ...settingsForm,
-                    agent_command: e.target.value,
-                  })
-                }
-                placeholder="e.g. ~/bin/hx -p jello -z"
-                className="rounded-lg border border-sesame px-3 py-2 font-mono text-sm text-ink outline-none focus:border-olive"
-              />
-            </label>
-          </div>
-          <button
-            onClick={saveSettings}
-            className="self-start rounded-xl bg-olive px-4 py-2 text-sm font-semibold text-white hover:bg-olive-deep"
-          >
-            save
-          </button>
-        </section>
-      )}
-
-      {error && (
-        <div className="rounded-xl border border-sumac/40 bg-sumac/10 p-4 text-sm text-sumac">
-          🫧 {error}
-        </div>
-      )}
-    </main>
-  );
-}
-
-function LevelBar({
-  label,
-  level,
-  color,
-}: {
-  label: string;
-  level?: Level;
-  color: string;
-}) {
-  const pct = Math.min(100, (level?.peak ?? 0) * 300);
-  return (
-    <div className="flex items-center gap-3">
-      <span className="w-28 shrink-0 text-sm text-ink-soft">{label}</span>
-      <div className="h-2.5 flex-1 overflow-hidden rounded-full bg-sesame">
-        <div
-          className="h-full rounded-full transition-[width] duration-150"
-          style={{ width: `${pct}%`, background: color }}
-        />
+        </main>
       </div>
     </div>
   );
-}
-
-function fmtDur(sec: number): string {
-  const s = Math.round(sec);
-  if (s < 60) return `${s}s`;
-  return `${Math.floor(s / 60)}m ${String(s % 60).padStart(2, "0")}s`;
-}
-
-function relDate(unix: number): string {
-  if (!unix) return "";
-  const d = new Date(unix * 1000);
-  const now = new Date();
-  const sameDay = d.toDateString() === now.toDateString();
-  const time = d.toLocaleTimeString(undefined, {
-    hour: "numeric",
-    minute: "2-digit",
-  });
-  if (sameDay) return `today ${time}`;
-  const yst = new Date(now);
-  yst.setDate(now.getDate() - 1);
-  if (d.toDateString() === yst.toDateString()) return `yesterday ${time}`;
-  return d.toLocaleDateString(undefined, { month: "short", day: "numeric" });
 }
 
 export default App;

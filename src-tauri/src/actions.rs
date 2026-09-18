@@ -28,12 +28,64 @@ pub struct ActionItem {
     pub detail: Option<String>,
     #[serde(default)]
     pub done: bool,
+    /// not now: still open, but deliberately out of the way
+    #[serde(default)]
+    pub parked: bool,
+}
+
+/// A decision is a record, not a sentence: it has an id, a status that moves
+/// from proposed (the extractor's suggestion) to confirmed (a human agreed)
+/// or superseded (a later meeting changed it), and an optional note saying
+/// why. actions.json files written before this shape held plain strings —
+/// `de_decisions` reads both, so nothing needs migrating.
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct Decision {
+    #[serde(default)]
+    pub id: u32,
+    pub text: String,
+    #[serde(default = "proposed")]
+    pub status: String, // "proposed" | "confirmed" | "superseded"
+    #[serde(default)]
+    pub note: String,
+}
+
+fn proposed() -> String {
+    "proposed".into()
+}
+
+#[derive(Deserialize)]
+#[serde(untagged)]
+enum DecisionIn {
+    Text(String),
+    Record(Decision),
+}
+
+fn de_decisions<'de, D: serde::Deserializer<'de>>(d: D) -> Result<Vec<Decision>, D::Error> {
+    let raw: Vec<DecisionIn> = Vec::deserialize(d)?;
+    Ok(raw
+        .into_iter()
+        .enumerate()
+        .map(|(i, x)| match x {
+            DecisionIn::Text(text) => Decision {
+                id: i as u32 + 1,
+                text,
+                status: proposed(),
+                note: String::new(),
+            },
+            DecisionIn::Record(mut r) => {
+                if r.id == 0 {
+                    r.id = i as u32 + 1;
+                }
+                r
+            }
+        })
+        .collect())
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, Default)]
 pub struct MeetingActions {
-    #[serde(default)]
-    pub decisions: Vec<String>,
+    #[serde(default, deserialize_with = "de_decisions")]
+    pub decisions: Vec<Decision>,
     #[serde(default)]
     pub actions: Vec<ActionItem>,
     #[serde(default)]
@@ -129,9 +181,15 @@ fn save(dir: &Path, actions: &MeetingActions) -> Result<(), String> {
 }
 
 fn build_context(dir: &Path, title: Option<&str>, today: Option<&str>) -> Result<String, String> {
-    let segments = crate::asr::load_transcript(dir)?;
-    let transcript = crate::asr::render(&segments);
     let notes = std::fs::read_to_string(dir.join("notes.md")).ok();
+    // an imported brief has no transcript: its notes are the material
+    let transcript = match crate::asr::load_transcript(dir) {
+        Ok(segments) => crate::asr::render(&segments),
+        Err(e) => match &notes {
+            Some(n) if !n.trim().is_empty() => format!("[brief] {}", n.trim()),
+            _ => return Err(e),
+        },
+    };
 
     let mut p = String::from("# Context\n");
     p.push_str(&format!(
@@ -164,7 +222,8 @@ pub async fn extract_actions(
     let path = PathBuf::from(&dir);
     let user = build_context(&path, title.as_deref(), today.as_deref())?;
 
-    let (raw, _) = anthropic::complete(EXTRACT_SYSTEM, &user, 4096).await?;
+    let (raw, _) =
+        anthropic::complete(&anthropic::with_language(EXTRACT_SYSTEM), &user, 4096).await?;
     let mut parsed: MeetingActions =
         serde_json::from_str(extract_json(&raw)).map_err(|e| format!("parse actions: {e}"))?;
 
@@ -172,6 +231,11 @@ pub async fn extract_actions(
     for (i, a) in parsed.actions.iter_mut().enumerate() {
         a.id = i as u32 + 1;
         a.done = false;
+    }
+    for (i, d) in parsed.decisions.iter_mut().enumerate() {
+        d.id = i as u32 + 1;
+        d.status = proposed();
+        d.note.clear();
     }
     save(&path, &parsed)?;
     Ok(parsed)
@@ -194,6 +258,111 @@ pub fn set_action_done(dir: String, id: u32, done: bool) -> Result<(), String> {
     save(&path, &actions)
 }
 
+/// Park or unpark an action: it stays open but leaves the daily list.
+#[tauri::command]
+pub fn set_action_parked(dir: String, id: u32, parked: bool) -> Result<(), String> {
+    let path = PathBuf::from(&dir);
+    let mut actions = load(&path).ok_or("no actions extracted yet")?;
+    for a in actions.actions.iter_mut() {
+        if a.id == id {
+            a.parked = parked;
+        }
+    }
+    save(&path, &actions)
+}
+
+/// A human moved a decision: proposed → confirmed, or → superseded (with why).
+#[tauri::command]
+pub fn set_decision_status(
+    dir: String,
+    id: u32,
+    status: String,
+    note: Option<String>,
+) -> Result<(), String> {
+    if !["proposed", "confirmed", "superseded"].contains(&status.as_str()) {
+        return Err(format!("unknown decision status: {status}"));
+    }
+    let path = PathBuf::from(&dir);
+    let mut actions = load(&path).ok_or("no actions extracted yet")?;
+    let Some(d) = actions.decisions.iter_mut().find(|d| d.id == id) else {
+        return Err("decision not found".into());
+    };
+    d.status = status;
+    if let Some(n) = note {
+        d.note = n.trim().to_string();
+    }
+    save(&path, &actions)
+}
+
+/// One decision somewhere in the library, with its meeting for context.
+#[derive(Serialize, Clone)]
+pub struct DecisionRef {
+    pub dir: String,
+    pub meeting_title: String,
+    pub meeting_created: u64,
+    pub person: String,
+    pub workspace: String,
+    pub thread: String,
+    pub decision: Decision,
+}
+
+/// One open question somewhere in the library.
+#[derive(Serialize, Clone)]
+pub struct QuestionRef {
+    pub dir: String,
+    pub meeting_title: String,
+    pub meeting_created: u64,
+    pub workspace: String,
+    pub thread: String,
+    pub text: String,
+}
+
+/// Every open question across all recordings, newest meeting first.
+#[tauri::command]
+pub fn list_questions(app: tauri::AppHandle) -> Result<Vec<QuestionRef>, String> {
+    let mut out = Vec::new();
+    for rec in crate::library::list_recordings(app)? {
+        let Some(acts) = load(Path::new(&rec.dir)) else {
+            continue;
+        };
+        for q in acts.questions {
+            out.push(QuestionRef {
+                dir: rec.dir.clone(),
+                meeting_title: rec.title.clone(),
+                meeting_created: rec.created,
+                workspace: rec.workspace.clone(),
+                thread: rec.thread.clone(),
+                text: q,
+            });
+        }
+    }
+    Ok(out)
+}
+
+/// Every decision across all recordings, newest meeting first — the ledger
+/// of what's been settled, and what's still only proposed.
+#[tauri::command]
+pub fn list_decisions(app: tauri::AppHandle) -> Result<Vec<DecisionRef>, String> {
+    let mut out = Vec::new();
+    for rec in crate::library::list_recordings(app)? {
+        let Some(acts) = load(Path::new(&rec.dir)) else {
+            continue;
+        };
+        for d in acts.decisions {
+            out.push(DecisionRef {
+                dir: rec.dir.clone(),
+                meeting_title: rec.title.clone(),
+                meeting_created: rec.created,
+                person: rec.person.clone(),
+                workspace: rec.workspace.clone(),
+                thread: rec.thread.clone(),
+                decision: d,
+            });
+        }
+    }
+    Ok(out)
+}
+
 /// Rung 3: draft the follow-up in the meeting's own language mix.
 /// kind: "whatsapp" | "email"
 #[tauri::command]
@@ -214,7 +383,7 @@ pub async fn draft_followup(
         "email" => EMAIL_SYSTEM,
         other => return Err(format!("unknown draft kind: {other}")),
     };
-    let (raw, _) = anthropic::complete(system, &user, 2048).await?;
+    let (raw, _) = anthropic::complete(&anthropic::with_language(system), &user, 2048).await?;
     let draft: Draft =
         serde_json::from_str(extract_json(&raw)).map_err(|e| format!("parse draft: {e}"))?;
     if draft.body.trim().is_empty() {
@@ -308,6 +477,8 @@ pub struct OpenAction {
     pub meeting_title: String,
     pub meeting_created: u64,
     pub person: String,
+    pub workspace: String,
+    pub thread: String,
     pub action: ActionItem,
 }
 
@@ -327,6 +498,8 @@ pub fn list_open_actions(app: tauri::AppHandle) -> Result<Vec<OpenAction>, Strin
                 meeting_title: rec.title.clone(),
                 meeting_created: rec.created,
                 person: rec.person.clone(),
+                workspace: rec.workspace.clone(),
+                thread: rec.thread.clone(),
                 action: a,
             });
         }
@@ -362,7 +535,8 @@ pub async fn draft_nudge(dir: String, id: u32, title: Option<String>) -> Result<
     user.push_str("\n# The action item to nudge about (JSON)\n");
     user.push_str(&serde_json::to_string(item).unwrap_or_default());
 
-    let (raw, _) = anthropic::complete(NUDGE_SYSTEM, &user, 1024).await?;
+    let (raw, _) =
+        anthropic::complete(&anthropic::with_language(NUDGE_SYSTEM), &user, 1024).await?;
     let draft: Draft =
         serde_json::from_str(extract_json(&raw)).map_err(|e| format!("parse nudge: {e}"))?;
     if draft.body.trim().is_empty() {
@@ -407,6 +581,7 @@ mod tests {
             due_date: Some("2026-07-25".into()),
             detail: Some("line1\nline2".into()),
             done: false,
+            parked: false,
         };
         let ics = build_ics("kickoff", &[&a]);
         assert!(ics.contains("DTSTART;VALUE=DATE:20260725"));
@@ -414,6 +589,19 @@ mod tests {
         assert!(ics.contains("DESCRIPTION:from meeting: kickoff\\nline1\\nline2"));
         assert!(ics.starts_with("BEGIN:VCALENDAR"));
         assert!(ics.trim_end().ends_with("END:VCALENDAR"));
+    }
+
+    #[test]
+    fn decisions_read_old_strings_and_new_records() {
+        let old = r#"{"decisions":["نستخدم Vercel"],"actions":[],"questions":[]}"#;
+        let a: MeetingActions = serde_json::from_str(old).unwrap();
+        assert_eq!(a.decisions[0].id, 1);
+        assert_eq!(a.decisions[0].text, "نستخدم Vercel");
+        assert_eq!(a.decisions[0].status, "proposed");
+        let new = r#"{"decisions":[{"id":7,"text":"x","status":"confirmed"}]}"#;
+        let b: MeetingActions = serde_json::from_str(new).unwrap();
+        assert_eq!(b.decisions[0].id, 7);
+        assert_eq!(b.decisions[0].status, "confirmed");
     }
 
     #[test]

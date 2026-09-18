@@ -64,7 +64,8 @@ pub async fn generate(
 ) -> Result<String, String> {
     let user = build_user_prompt(transcript, rough_notes, title);
     // 8192-token headroom: 1500 truncated real notes mid-sentence.
-    let (mut md, truncated) = anthropic::complete(SYSTEM_PROMPT, &user, 8192).await?;
+    let (mut md, truncated) =
+        anthropic::complete(&anthropic::with_language(SYSTEM_PROMPT), &user, 8192).await?;
     // If the model still hit the ceiling on an unusually long meeting, mark it
     // instead of handing back notes that look complete but stop mid-thought.
     if truncated {
