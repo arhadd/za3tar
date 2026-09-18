@@ -12,6 +12,7 @@ import { ThreadsView, ThreadDetail } from "./views/ThreadsView";
 import { TalkPanel, type TalkState } from "./views/TalkPanel";
 import { ChatPanel, type ChatLine } from "./views/ChatPanel";
 import { Composer, type Draft as ComposerDraft } from "./views/Composer";
+import { Onboarding, type Step as OnboardStep } from "./views/Onboarding";
 import { LiveSession, type LiveOp, type TalkLine } from "./live";
 import { RoutePanel } from "./views/RoutePanel";
 import {
@@ -103,6 +104,10 @@ function App() {
   const [chatLines, setChatLines] = useState<ChatLine[]>([]);
   const [chatBusy, setChatBusy] = useState(false);
   const [composer, setComposer] = useState<ComposerDraft | null>(null);
+  const [onboardStep, setOnboardStep] = useState<OnboardStep>("welcome");
+  // null until the first load decides; latched so the flow does not end the
+  // moment setup itself creates the first thread
+  const [inSetup, setInSetup] = useState<boolean | null>(null);
 
   // routes — other agents with hands
   const [routes, setRoutes] = useState<Route[]>([]);
@@ -131,6 +136,7 @@ function App() {
     talk: boolean;
     language?: string;
     hosted?: boolean;
+    onboarded?: boolean;
   } | null>(null);
   const [loaded, setLoaded] = useState(false);
   const [briefRequested, setBriefRequested] = useState(false);
@@ -213,6 +219,7 @@ function App() {
         user_name: string;
         language: string;
         hosted: boolean;
+        onboarded: boolean;
       }>("capabilities");
       setCaps(c);
       setUserName(c.user_name || "");
@@ -305,6 +312,12 @@ function App() {
       if (timer.current) window.clearInterval(timer.current);
     };
   }, [phase]);
+
+  // a fresh copy — nothing in it, and setup was never finished or skipped
+  useEffect(() => {
+    if (inSetup === null && loaded && caps)
+      setInSetup(!caps.onboarded && threads.length === 0 && library.length === 0);
+  }, [inSetup, loaded, caps, threads.length, library.length]);
 
   useEffect(() => {
     try {
@@ -1548,6 +1561,50 @@ function App() {
     live.current = null;
   }
 
+  // ── setup ─────────────────────────────────────────────────────────────
+  const needsSetup = inSetup === true;
+
+  async function finishSetup() {
+    try {
+      await invoke("set_onboarded", { done: true });
+    } catch {
+      /* the flag is a convenience; never block on it */
+    }
+    setInSetup(false);
+    setChatMode(null);
+    setChatLines([]);
+    await refreshAll();
+    refreshName();
+    setView("home");
+  }
+
+  /** paste something real during setup: file it, then read it */
+  async function setupPaste(
+    workspace: string,
+    title: string,
+    text: string,
+  ): Promise<MeetingActions | null> {
+    try {
+      const d = await invoke<string>("create_brief", {
+        title,
+        person: "",
+        workspace,
+        notes: text,
+        thread: null,
+      });
+      const a = await invoke<MeetingActions>("extract_actions", {
+        dir: d,
+        title: title || null,
+        today: todayContext(),
+      });
+      await refreshAll();
+      return a;
+    } catch (e) {
+      setError(String(e));
+      return null;
+    }
+  }
+
   // ── render ────────────────────────────────────────────────────────────
   const wsName = workspaces.find((w) => w.id === wsId)?.name ?? "Personal";
   const headline = showSettings
@@ -1588,6 +1645,43 @@ function App() {
         <span className="inline-block h-2.5 w-2.5 rounded-full bg-thyme" />
         Record
       </Button>
+    );
+
+  if (needsSetup)
+    return (
+      <Onboarding
+        step={onboardStep}
+        setStep={(st) => {
+          setOnboardStep(st);
+          if (st === "tell" && chatLines.length === 0) setChatMode("onboarding");
+        }}
+        caps={caps}
+        userName={userName}
+        onSignIn={async (code, name) => {
+          await hostedSignIn(code, name);
+        }}
+        onOpenSettings={() => {
+          setInSetup(false);
+          openSettings();
+        }}
+        chat={{
+          lines: chatLines,
+          busy: chatBusy,
+          send: (t) => void runChat(t, chatLines, "onboarding"),
+        }}
+        workspaces={workspaces}
+        threads={threads}
+        onRenameThread={async (t, title, summary) => {
+          await saveThread({ ...t, title, summary });
+        }}
+        onDeleteThread={deleteThread}
+        onPaste={setupPaste}
+        onRecord={() => {
+          void finishSetup().then(() => start());
+        }}
+        onFinish={finishSetup}
+        onSkip={finishSetup}
+      />
     );
 
   return (
@@ -1773,6 +1867,13 @@ function App() {
                 hosted={!!caps?.hosted}
                 onSignIn={hostedSignIn}
                 onSignOut={hostedSignOut}
+                onRerunSetup={() => {
+                  setShowSettings(false);
+                  setChatLines([]);
+                  setChatMode("onboarding");
+                  setOnboardStep("welcome");
+                  setInSetup(true);
+                }}
               />
             ) : view === "home" && !meetingOpen ? (
               <HomeView

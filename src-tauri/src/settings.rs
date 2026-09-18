@@ -35,6 +35,9 @@ pub struct Settings {
     /// hosted mode: proxy base URL (empty = the default host)
     #[serde(default)]
     pub za3tar_base: String,
+    /// when setup was finished (ISO date). Empty = never onboarded.
+    #[serde(default)]
+    pub onboarded: String,
 }
 
 /// env var name, reader, writer — one binding per settings field.
@@ -150,6 +153,8 @@ pub struct Capabilities {
     pub language: String,
     /// signed in with Za3tar (providers through the proxy)
     pub hosted: bool,
+    /// setup has been done at least once
+    pub onboarded: bool,
 }
 
 fn has(var: &str) -> bool {
@@ -159,14 +164,45 @@ fn has(var: &str) -> bool {
 }
 
 #[tauri::command]
-pub fn capabilities() -> Capabilities {
+pub fn capabilities(app: AppHandle) -> Capabilities {
     let hosted = crate::hosted::hosted().is_some();
+    let onboarded = !read(&app).onboarded.trim().is_empty();
     Capabilities {
         transcription: hosted || has("ELEVENLABS_API_KEY"),
         notes: hosted || has("ANTHROPIC_API_KEY"),
         talk: hosted || has("OPENAI_API_KEY"),
         hosted,
+        onboarded,
         user_name: std::env::var("ZA3TAR_USER").unwrap_or_default(),
         language: crate::anthropic::language(),
     }
+}
+
+/// Mark setup as done (or, with false, ask for it again next launch).
+#[tauri::command]
+pub fn set_onboarded(app: AppHandle, done: bool) -> Result<(), String> {
+    let mut s = read(&app);
+    s.onboarded = if done { chrono_date() } else { String::new() };
+    save_settings(app, s)
+}
+
+/// Today as YYYY-MM-DD without pulling in a date crate.
+fn chrono_date() -> String {
+    let secs = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .map(|d| d.as_secs() as i64)
+        .unwrap_or(0);
+    let days = secs / 86_400;
+    // civil-from-days (Howard Hinnant's algorithm)
+    let z = days + 719_468;
+    let era = if z >= 0 { z } else { z - 146_096 } / 146_097;
+    let doe = z - era * 146_097;
+    let yoe = (doe - doe / 1460 + doe / 36_524 - doe / 146_096) / 365;
+    let y = yoe + era * 400;
+    let doy = doe - (365 * yoe + yoe / 4 - yoe / 100);
+    let mp = (5 * doy + 2) / 153;
+    let d = doy - (153 * mp + 2) / 5 + 1;
+    let m = if mp < 10 { mp + 3 } else { mp - 9 };
+    let y = if m <= 2 { y + 1 } else { y };
+    format!("{y:04}-{m:02}-{d:02}")
 }

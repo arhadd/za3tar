@@ -280,8 +280,10 @@ let settings: Settings = {
   agent_command: "~/bin/za3tar-runtime",
   za3tar_token: "",
   za3tar_base: "",
+  onboarded: "",
 };
 
+let mockSignedIn = false;
 let recording = false;
 const listeners: Record<string, EventCallback<any>[]> = {};
 let levelTimer: number | null = null;
@@ -538,12 +540,31 @@ export async function mockInvoke<T>(
     case "capabilities":
       return out(
         FRESH
-          ? { transcription: false, notes: false, talk: false, user_name: "", language: "english", hosted: false }
-          : { transcription: true, notes: true, talk: false, user_name: "Ala", language: "english", hosted: false },
+          ? {
+              transcription: mockSignedIn,
+              notes: mockSignedIn,
+              talk: mockSignedIn,
+              user_name: "",
+              language: "english",
+              hosted: mockSignedIn,
+              onboarded: false,
+            }
+          : {
+              transcription: true,
+              notes: true,
+              talk: false,
+              user_name: "Ala",
+              language: "english",
+              hosted: false,
+              onboarded: true,
+            },
       );
     case "hosted_sign_in":
+      mockSignedIn = true;
       return out({ id: "acc_mock", name: args.name || "you" });
     case "hosted_sign_out":
+      return out(null);
+    case "set_onboarded":
       return out(null);
     case "compose":
       return out(
@@ -608,6 +629,17 @@ export async function mockInvoke<T>(
     }
     case "extract_actions": {
       const r = byDir(args.dir)!;
+      if (FRESH) {
+        r.actions = {
+          decisions: [dec(1, "Demo moves to Thursday", "proposed")],
+          actions: [
+            act(1, "Wire up Stripe", "me", "this week", iso(now + 3 * day)),
+            act(2, "Send the final copy", "Lina", "tomorrow", iso(now + day)),
+          ],
+          questions: ["Who covers the fees in phase one?"],
+        };
+        return out(r.actions);
+      }
       r.actions = {
         decisions: [dec(1, "نستخدم Za3tar لكل الاجتماعات")],
         actions: [act(1, "إرسال ملخص الاجتماع", "me", "اليوم", iso(now))],
@@ -661,6 +693,27 @@ export async function mockInvoke<T>(
               op: "write",
               title: "Update",
               instruction: String(args.transcript || "").slice(-300),
+            },
+          ],
+        });
+      if (/mode: onboarding/i.test(String(args.snapshot || "")))
+        return out({
+          say: "Got it — set those up. Anything else, or shall we look at what I made?",
+          ops: [
+            { op: "create_workspace", name: "Madar", description: "client work" },
+            {
+              op: "create_thread",
+              workspace: "madar",
+              title: "Onboarding launch",
+              summary: "Design done, Stripe not wired, demo Thursday.",
+              owner: "Ala",
+            },
+            {
+              op: "create_thread",
+              workspace: "personal",
+              title: "Interview prep",
+              summary: "One timed attempt owed.",
+              owner: "Ala",
             },
           ],
         });

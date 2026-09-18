@@ -102,6 +102,7 @@ pub fn run() {
             settings::get_settings,
             settings::save_settings,
             settings::capabilities,
+            settings::set_onboarded,
             hosted::hosted_sign_in,
             hosted::hosted_sign_out,
             hosted::hosted_me,

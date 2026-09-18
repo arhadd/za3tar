@@ -13,7 +13,9 @@ export function SettingsView({
   hosted,
   onSignIn,
   onSignOut,
+  onRerunSetup,
 }: {
+  onRerunSetup: () => void;
   hosted: boolean;
   onSignIn: (code: string, name: string) => Promise<void>;
   onSignOut: () => Promise<void>;
@@ -234,9 +236,12 @@ export function SettingsView({
         </Button>
       </Card>
 
-      <div>
+      <div className="flex items-center gap-3">
         <Button tone="primary" onClick={onSave}>
           save
+        </Button>
+        <Button tone="ghost" size="sm" onClick={onRerunSetup}>
+          run setup again
         </Button>
       </div>
     </div>

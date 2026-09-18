@@ -126,6 +126,7 @@ export type Settings = {
   agent_command: string;
   za3tar_token: string;
   za3tar_base: string;
+  onboarded: string;
 };
 
 // runtime envelopes — docs/AGENT-PROTOCOL.md. The runtime is whatever does
