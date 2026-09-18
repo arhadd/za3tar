@@ -42,6 +42,7 @@ export type LiveOp =
       owner?: string;
     }
   | { op: "file_meeting"; id: string; thread: string }
+  | { op: "write"; title: string; instruction: string }
   | { op: "route"; route: string; message: string };
 
 export type LiveTurn = { say: string; ops: LiveOp[] };

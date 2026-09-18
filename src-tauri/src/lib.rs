@@ -4,6 +4,7 @@ pub mod agent;
 pub mod anthropic;
 pub mod asr;
 mod capture;
+pub mod compose;
 pub mod hosted;
 pub mod library;
 pub mod live;
@@ -97,6 +98,7 @@ pub fn run() {
             actions::set_decision_status,
             actions::list_decisions,
             actions::list_questions,
+            compose::compose,
             settings::get_settings,
             settings::save_settings,
             settings::capabilities,

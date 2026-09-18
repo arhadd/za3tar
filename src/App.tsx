@@ -11,6 +11,7 @@ import { HomeView, isMine } from "./views/HomeView";
 import { ThreadsView, ThreadDetail } from "./views/ThreadsView";
 import { TalkPanel, type TalkState } from "./views/TalkPanel";
 import { ChatPanel, type ChatLine } from "./views/ChatPanel";
+import { Composer, type Draft as ComposerDraft } from "./views/Composer";
 import { LiveSession, type LiveOp, type TalkLine } from "./live";
 import { RoutePanel } from "./views/RoutePanel";
 import {
@@ -101,6 +102,7 @@ function App() {
   const [chatMode, setChatMode] = useState<"chat" | "onboarding" | "sorting" | null>(null);
   const [chatLines, setChatLines] = useState<ChatLine[]>([]);
   const [chatBusy, setChatBusy] = useState(false);
+  const [composer, setComposer] = useState<ComposerDraft | null>(null);
 
   // routes — other agents with hands
   const [routes, setRoutes] = useState<Route[]>([]);
@@ -278,6 +280,7 @@ function App() {
       const tag = (e.target as HTMLElement | null)?.tagName;
       if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return;
       if (showSettings) setShowSettings(false);
+      else if (composer) setComposer(null);
       else if (chatMode) setChatMode(null);
       else if (routeOpen) setRouteOpen(null);
       else if (meetingOpen && phase !== "recording") closeMeeting();
@@ -1306,6 +1309,9 @@ function App() {
           await invoke("set_recording_thread", { dir: m.dir, thread: op.thread });
           await refreshAll();
           out.push(`filed ${m.title || "untitled"} under ${threads.find((t) => t.id === op.thread)?.title ?? op.thread}`);
+        } else if (op.op === "write") {
+          openComposer(op.title, op.instruction);
+          out.push(`writing: ${op.title}`);
         } else if (op.op === "person") {
           const cur = people.find((p) => p.name === op.name || p.aliases.includes(op.name));
           await savePerson({
@@ -1369,6 +1375,59 @@ function App() {
     setRouteOpen(null);
   }
 
+  // ── making things ─────────────────────────────────────────────────────
+  async function openComposer(title: string, instruction: string, previous?: string) {
+    setComposer((cur) => ({
+      title,
+      instruction,
+      text: previous ?? cur?.text ?? "",
+      thread: cur?.thread ?? threadOpen ?? "",
+      busy: true,
+    }));
+    try {
+      const text = await invoke<string>("compose", {
+        instruction,
+        context: snap.current(),
+        previous: previous ?? null,
+      });
+      setComposer((cur) => (cur ? { ...cur, text, busy: false } : cur));
+    } catch (e) {
+      setError(String(e));
+      setComposer((cur) => (cur ? { ...cur, busy: false } : cur));
+    }
+  }
+
+  async function keepDraft() {
+    if (!composer?.text.trim()) return;
+    try {
+      const d = await invoke<string>("create_brief", {
+        title: composer.title || "note",
+        person: "",
+        workspace: wsId,
+        notes: composer.text,
+        thread: composer.thread || null,
+      });
+      await refreshAll();
+      setComposer(null);
+      await openPast(d);
+      showFlash("kept as a note");
+    } catch (e) {
+      setError(String(e));
+    }
+  }
+
+  async function sendDraftOnWhatsApp() {
+    if (!composer?.text.trim()) return;
+    const text = encodeURIComponent(composer.text);
+    try {
+      await invoke("open_external", { url: `whatsapp://send?text=${text}` });
+    } catch {
+      await invoke("open_external", { url: `https://wa.me/?text=${text}` }).catch((e) =>
+        setError(String(e)),
+      );
+    }
+  }
+
   // ── chat ──────────────────────────────────────────────────────────────
   function openChat(mode: "chat" | "onboarding" | "sorting") {
     setChatMode(mode);
@@ -1381,9 +1440,24 @@ function App() {
     setChatLines([{ role: "za3tar", text: opener }]);
   }
 
+  /** ask Za3tar straight from Home: no opener, just the question */
+  function askZa3tar(text: string) {
+    setChatMode("chat");
+    setChatLines([]);
+    void runChat(text, [], "chat");
+  }
+
   async function sendChat(text: string) {
     if (!chatMode) return;
-    const next: ChatLine[] = [...chatLines, { role: "you", text }];
+    return runChat(text, chatLines, chatMode);
+  }
+
+  async function runChat(
+    text: string,
+    base: ChatLine[],
+    mode: "chat" | "onboarding" | "sorting",
+  ) {
+    const next: ChatLine[] = [...base, { role: "you", text }];
     setChatLines(next);
     setChatBusy(true);
     try {
@@ -1393,9 +1467,9 @@ function App() {
         .map((l) => `${l.role === "you" ? "User" : "Za3tar"}: ${l.text}`)
         .join("\n");
       const modeLine =
-        chatMode === "onboarding"
+        mode === "onboarding"
           ? "MODE: onboarding — new user, empty app; build workspaces, threads, people from what they say.\n"
-          : chatMode === "sorting"
+          : mode === "sorting"
             ? `MODE: sorting — unfiled entries: ${wsLibrary
                 .filter((x) => !x.thread)
                 .map((x) => `[${x.id}] ${x.title || "untitled"}${x.person ? ` with ${x.person}` : ""}`)
@@ -1576,8 +1650,13 @@ function App() {
             </h1>
           </div>
           <div className="ml-auto flex items-center gap-3">
-            {!chatMode && (
-              <Button tone="quiet" size="lg" onClick={() => openChat("chat")} title="type to Za3tar">
+            {!chatMode && view !== "home" && (
+              <Button
+                tone="quiet"
+                size="lg"
+                onClick={() => openChat("chat")}
+                title="type to Za3tar"
+              >
                 Chat
               </Button>
             )}
@@ -1623,6 +1702,23 @@ function App() {
                 }}
                 onCancel={() => cancelRoute(routeOpen).catch(() => {})}
                 onClose={() => closeRoute(routeOpen)}
+              />
+            )}
+            {composer && (
+              <Composer
+                draft={composer}
+                threads={wsThreads}
+                onChange={setComposer}
+                onRevise={(instruction) =>
+                  openComposer(composer.title, instruction, composer.text)
+                }
+                onCopy={() => {
+                  navigator.clipboard.writeText(composer.text);
+                  showFlash("copied");
+                }}
+                onSend={sendDraftOnWhatsApp}
+                onKeep={keepDraft}
+                onClose={() => setComposer(null)}
               />
             )}
             {chatMode && (
@@ -1711,6 +1807,9 @@ function App() {
                 fresh={threads.length === 0 && library.length === 0}
                 onStartConversation={() => openChat("onboarding")}
                 onSignIn={hostedSignIn}
+                onAsk={askZa3tar}
+                onTalk={startTalk}
+                onRecord={start}
               />
             ) : view === "overview" && !(meetingOpen && phase === "recording") ? (
               <WorkspaceView

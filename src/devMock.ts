@@ -545,6 +545,10 @@ export async function mockInvoke<T>(
       return out({ id: "acc_mock", name: args.name || "you" });
     case "hosted_sign_out":
       return out(null);
+    case "compose":
+      return out(
+        `Mock draft for: ${args.instruction}\n\nHey — quick update. Everything on track, demo Thursday. Shout if you need anything before then.`,
+      );
     case "get_settings":
       return out(settings);
     case "save_settings":
@@ -647,8 +651,26 @@ export async function mockInvoke<T>(
     }
     case "live_session_create":
       throw new Error("Talk needs the real app (WebRTC + your key)");
-    case "live_turn":
+    case "live_turn": {
+      const t = String(args.transcript || "").toLowerCase();
+      if (/\b(write|draft|prepare|put together)\b/.test(t))
+        return out({
+          say: "Writing that now — it will open in a draft you can edit.",
+          ops: [
+            {
+              op: "write",
+              title: "Update",
+              instruction: String(args.transcript || "").slice(-300),
+            },
+          ],
+        });
+      if (/\bwhere are we\b|\bcatch me up\b/.test(t))
+        return out({
+          say: "Design is done, Stripe is not wired yet, and the demo is Thursday. Bilingual from day one is decided.",
+          ops: [],
+        });
       return out({ say: "mock brain: heard you.", ops: [] });
+    }
     case "live_attach":
     case "live_send":
     case "live_detach":
