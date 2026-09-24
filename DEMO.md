@@ -12,7 +12,7 @@ za3tar runs as a native Mac app. Add your API keys and name in **Settings**. On 
 
 Use a synthetic demo conversation or get everyone’s permission before recording. Never demo with a real private meeting.
 
-For the full connected demo, add an agent name and command in Settings. The standalone meeting, notes, drafts, Calendar export, people, and follow-up features work without an agent.
+For the full connected demo, add a runtime command under Settings → Za3tar runtime. The standalone meeting, notes, drafts, Calendar export, people, decisions, and follow-up features work without one.
 
 ## Demo flow
 

@@ -17,6 +17,10 @@ Most meeting tools stop at a transcript or summary. za3tar keeps going: draft th
 - **Agent-ready, not agent-locked.** Connect any assistant that can speak za3tar's open, versioned protocol—or use the app fully standalone.
 - **Local-first storage, explicit data flow.** za3tar has no account, first-party cloud, or telemetry. App data stays on your Mac; processing sends audio and transcript context to the AI providers you configure, and only an explicit bridge action sends a packet to your agent.
 
+## Two ways to run it
+
+**Sign in with Za3tar** using an invite code and it works out of the box through Za3tar's own provider keys, metered monthly. Or **use your own keys** in Settings and nothing leaves your Mac except to the providers you chose. Same app either way; the proxy that powers hosted mode lives in [`proxy/`](proxy/README.md) and anyone can run it.
+
 ## What it does
 
 ### 1. Capture the conversation
