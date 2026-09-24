@@ -49,6 +49,8 @@ PY
   fail "licence files are incomplete"
 grep -q 'SPDX-License-Identifier: Apache-2.0' docs/AGENT-PROTOCOL.md ||
   fail "protocol specification is missing its Apache-2.0 marker"
+grep -q 'Not licensed for reuse' site/README.md ||
+  fail "site/ is missing its not-licensed-for-reuse notice"
 pass "split licence boundary is explicit"
 
 npm run build

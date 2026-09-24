@@ -1,0 +1,260 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>za3tar — try it on your business</title>
+<meta name="description" content="Describe your business. Watch its page appear, and see what za3tar would change first.">
+<meta name="robots" content="noindex">
+<link rel="canonical" href="https://za3tar.ai/try/">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<meta name="theme-color" content="#F2EEE2">
+<script defer src="/_vercel/insights/script.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,100..900&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#0B1710;--paper:#F2EEE2;--ink-66:rgba(11,23,16,.66);--ink-40:rgba(11,23,16,.4);--ink-18:rgba(11,23,16,.18);--ink-08:rgba(11,23,16,.08);--olive:#6F7F5A;
+  --sans:"Archivo",ui-sans-serif,system-ui,-apple-system,"Helvetica Neue",Arial,sans-serif;--mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace}
+*{box-sizing:border-box;margin:0}
+[hidden]{display:none!important}
+html,body{height:100%}
+body{background:var(--paper);color:var(--ink);font-family:var(--sans);line-height:1.5;-webkit-font-smoothing:antialiased;display:flex;flex-direction:column}
+a{color:inherit;text-decoration:none}
+.wrap{max-width:1200px;margin:0 auto;padding:0 max(24px,env(safe-area-inset-right)) 0 max(24px,env(safe-area-inset-left));width:100%}
+nav{display:flex;align-items:center;justify-content:space-between;height:64px;flex:none}
+.logo{display:flex;align-items:center;gap:10px;font-stretch:78%;font-weight:700;font-size:22px;letter-spacing:-.01em}
+.logo img{width:22px;height:22px;display:block}
+.mono{font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-66)}
+.btn{display:inline-flex;align-items:center;gap:10px;border:1.5px solid var(--ink);background:var(--ink);color:var(--paper);font-size:15px;font-weight:600;padding:11px 18px;border-radius:6px;cursor:pointer;font-family:inherit;transition:background .15s,color .15s}
+.btn:hover{background:var(--paper);color:var(--ink)}
+.btn.ghost{background:transparent;color:var(--ink)}
+.btn.ghost:hover{background:var(--ink);color:var(--paper)}
+.btn[disabled]{opacity:.45;cursor:default;pointer-events:none}
+.btn .ar{font-family:var(--mono);font-size:14px}
+
+/* layout: conversation left, page right */
+.stage{flex:1;display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:40px;padding-top:8px;padding-bottom:32px;min-height:0}
+.talk{display:flex;flex-direction:column;min-height:0;min-width:0}
+.talk h1{font-size:clamp(28px,3vw,40px);font-weight:800;font-stretch:88%;letter-spacing:-.03em;line-height:1;margin:14px 0 6px}
+.talk .sub{color:var(--ink-66);font-size:15px;margin-bottom:18px;max-width:44ch}
+.thread{flex:1;overflow:auto;display:flex;flex-direction:column;gap:12px;padding:4px 2px 12px;min-height:220px;max-height:min(58vh,620px)}
+.msg{max-width:92%;font-size:16px;line-height:1.5;text-wrap:pretty;white-space:pre-wrap}
+.msg.z{align-self:flex-start;padding-left:14px;border-left:2px solid var(--ink)}
+.msg.u{align-self:flex-end;background:var(--ink);color:var(--paper);padding:10px 14px;border-radius:12px 12px 2px 12px}
+.msg.think{color:var(--ink-40);font-family:var(--mono);font-size:12px;letter-spacing:.06em;text-transform:uppercase;border:0;padding-left:16px}
+.msg.think:after{content:"";display:inline-block;width:6px;height:6px;margin-left:8px;background:var(--olive);border-radius:50%;animation:pulse 1s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:.25}50%{opacity:1}}
+.compose{margin-top:12px;border-top:1px solid var(--ink-18);padding-top:12px}
+.compose textarea{width:100%;min-height:74px;resize:vertical;font:inherit;font-size:16px;line-height:1.45;color:var(--ink);background:transparent;border:1.5px solid var(--ink-18);border-radius:8px;padding:12px;outline:none}
+.compose textarea:focus{border-color:var(--ink)}
+.row{display:flex;gap:10px;align-items:center;margin-top:10px;flex-wrap:wrap}
+.row .count{margin-left:auto}
+.consent{font-size:12.5px;color:var(--ink-66);margin-top:12px;max-width:52ch;text-wrap:pretty}
+
+/* the page */
+.page{min-height:0;min-width:0;overflow:auto;padding:14px 0 0}
+.pagehead{display:flex;align-items:baseline;justify-content:space-between;gap:12px;border-bottom:1.5px solid var(--ink);padding-bottom:10px;margin-bottom:16px}
+.pagehead h2{font-size:clamp(22px,2.4vw,30px);font-weight:800;font-stretch:88%;letter-spacing:-.025em;line-height:1.05;min-width:0;flex:1;overflow-wrap:anywhere}
+.pagehead h2 .dim{color:var(--ink-40);font-weight:600}
+.cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;min-width:0}
+.card{border:1.5px solid var(--ink);border-radius:10px;padding:14px 16px;min-height:96px;min-width:0;overflow-wrap:anywhere;transition:border-color .3s,background .3s;background:transparent}
+.card.empty{border:1.5px dashed var(--ink-40);color:var(--ink-40)}
+.card.empty .body{font-size:14px}
+.card.wide{grid-column:1/-1}
+.card .k{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-66);margin-bottom:8px;display:flex;justify-content:space-between}
+.card.empty .k{color:var(--ink-40)}
+.card ul{list-style:none;padding:0;display:flex;flex-direction:column;gap:7px}
+.card li{font-size:14.5px;line-height:1.4;text-wrap:pretty}
+.card li.new{animation:arrive .5s cubic-bezier(.2,.8,.2,1)}
+@keyframes arrive{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.chip{display:inline-block;font-family:var(--mono);font-size:11px;padding:2px 7px;border:1px solid var(--ink-18);border-radius:999px;margin:2px 6px 0 0;color:var(--ink-66)}
+.wf b{font-weight:700}
+.wf .meta{display:block;color:var(--ink-66);font-size:13.5px;margin-top:2px}
+.tag{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-40);margin-left:6px}
+.prov{font-family:var(--mono);font-size:11px;color:var(--ink-40);margin-top:14px;letter-spacing:.04em}
+
+/* suggestions */
+.sugg{margin-top:18px;border-top:1.5px solid var(--ink);padding-top:16px}
+.sugg h3{font-size:clamp(22px,2.4vw,30px);font-weight:800;font-stretch:88%;letter-spacing:-.025em;line-height:1.05;margin-bottom:4px}
+.sugg .summary{color:var(--ink-66);font-size:15px;margin-bottom:14px;text-wrap:pretty}
+.s{display:grid;grid-template-columns:44px minmax(0,1fr);gap:12px;padding:14px 0;border-top:1px solid var(--ink-18);animation:arrive .5s ease}
+.s svg{width:36px;height:36px;display:block}
+.s .kind{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--olive)}
+.s b{display:block;font-size:19px;font-weight:700;font-stretch:90%;letter-spacing:-.015em;margin:2px 0 4px}
+.s p{font-size:14.5px;color:var(--ink-66);text-wrap:pretty}
+.s p+p{margin-top:4px;color:var(--ink)}
+.cta{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:16px}
+.meter{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:0 0 14px}
+.meter div{border-top:4px solid var(--ink-18);padding-top:8px;font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-40)}
+.meter div.on{border-top-color:var(--ink);color:var(--ink)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:10px}
+.two b{display:block;font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-66);margin-bottom:6px}
+.two ul{list-style:none;padding:0;display:flex;flex-direction:column;gap:5px}
+.two li{font-size:14.5px;padding-left:14px;position:relative;text-wrap:pretty}
+.two li:before{content:"";position:absolute;left:0;top:.6em;width:6px;height:6px;background:var(--ink)}
+.k2{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-66);margin-top:10px}
+@media(max-width:900px){.two{grid-template-columns:1fr}}
+
+.err{color:#8a2d1f;font-size:14px;margin-top:8px}
+.jump{display:none}
+
+@media(max-width:900px){
+  html,body{height:auto}
+  body{display:block}
+  .stage{display:flex;flex-direction:column;gap:28px;flex:none;min-height:0}
+  .talk,.page{overflow:visible;min-height:0}
+  .thread{max-height:44vh;min-height:140px}
+  .cards{grid-template-columns:1fr}
+  .jump{display:inline-flex;position:fixed;left:50%;bottom:18px;transform:translateX(-50%);z-index:9;box-shadow:0 6px 20px rgba(11,23,16,.18)}
+}
+@media(prefers-reduced-motion:reduce){.card li.new,.s{animation:none}.msg.think:after{animation:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<nav>
+  <a class="logo" href="/"><img src="/brand/mark-mono.svg" alt="" width="22" height="22">za3tar</a>
+  <a class="btn ghost" href="/">Home <span class="ar">←</span></a>
+</nav>
+</div>
+
+<div class="wrap stage">
+  <section class="talk">
+    <h1>Describe your business.<br>Watch its page appear.</h1>
+    <p class="sub">A few questions, the kind we ask in the first session. The page fills in from your answers, and at the end you get an honest read on where you are with AI.</p>
+    <div class="thread" id="thread"></div>
+    <div class="compose">
+      <textarea id="input" placeholder="Type here. Arabic or English." rows="3"></textarea>
+      <div class="row">
+        <button class="btn" id="send">Send <span class="ar">→</span></button>
+        <button class="btn ghost" id="finish" hidden>Finish and get the assessment <span class="ar">→</span></button>
+        <span class="mono count" id="count"></span>
+      </div>
+      <p class="err" id="err" hidden></p>
+      <p class="consent">What you type is sent to our AI provider to build the page. Nothing is stored on our side, and nothing here connects to your systems. If you book a session, a person follows up.</p>
+    </div>
+  </section>
+
+  <section class="page" id="page">
+    <div class="pagehead"><h2 id="title"><span class="dim">Your company</span></h2><span class="mono" id="stamp">spoken · not connected</span></div>
+    <div class="cards" id="cards"></div>
+    <p class="prov">Every line here is something you said. Nothing was read from a system.</p>
+    <div class="sugg" id="sugg" hidden></div>
+  </section>
+</div>
+
+<a class="btn jump" id="jump" href="#page" hidden>Your page <span class="ar">↓</span></a>
+
+<script>
+(function(){
+  var WA='https://wa.me/962798885558?text=';
+  var thread=document.getElementById('thread'), input=document.getElementById('input'), send=document.getElementById('send'),
+      finish=document.getElementById('finish'), count=document.getElementById('count'), err=document.getElementById('err'),
+      cards=document.getElementById('cards'), title=document.getElementById('title'), sugg=document.getElementById('sugg'), jump=document.getElementById('jump');
+  var MAX=7, messages=[], page=null, busy=false, done=false, seen={};
+
+  var OPEN="What does your business do, and roughly who is involved in running it?";
+  add('z',OPEN); messages.push({role:'assistant',content:OPEN});
+  render(null); updateCount();
+
+  function add(kind,text){ var d=document.createElement('div'); d.className='msg '+kind; d.textContent=text; thread.appendChild(d); thread.scrollTop=thread.scrollHeight; return d; }
+  function updateCount(){ var n=messages.filter(function(m){return m.role==='user'}).length; count.textContent=n+' / '+MAX; }
+  function fail(t){ err.textContent=t; err.hidden=false; }
+
+  async function call(mode){
+    var r=await fetch('/api/try',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({messages:messages,mode:mode})});
+    var j=await r.json().catch(function(){return {error:'Bad reply.'}});
+    if(!r.ok||j.error) throw new Error(j.error||('HTTP '+r.status));
+    return j;
+  }
+
+  send.addEventListener('click', go);
+  input.addEventListener('keydown',function(e){ if(e.key==='Enter'&&(e.metaKey||e.ctrlKey)) go(); });
+  async function go(){
+    var t=input.value.trim(); if(!t||busy||done) return;
+    err.hidden=true; busy=true; send.disabled=true; finish.disabled=true;
+    add('u',t); messages.push({role:'user',content:t}); input.value=''; updateCount();
+    var th=add('think','building your page');
+    try{
+      var j=await call('turn');
+      th.remove();
+      page=j.page; render(page);
+      add('z',j.reply); messages.push({role:'assistant',content:j.reply});
+      var n=messages.filter(function(m){return m.role==='user'}).length;
+      if(j.enough||n>=4){ finish.hidden=false; }
+      if(n>=MAX){ input.disabled=true; input.placeholder='That is plenty. See what we would change first.'; }
+    }catch(e){ th.remove(); fail(e.message); messages.pop(); updateCount(); }
+    busy=false; send.disabled=false; finish.disabled=false; input.focus();
+  }
+
+  finish.addEventListener('click', async function(){
+    if(busy||done) return; err.hidden=true; busy=true; send.disabled=true; finish.disabled=true;
+    var th=add('think','deciding where to start');
+    try{
+      var j=await call('assess'); th.remove(); done=true;
+      page=j.page; render(page);
+      add('z',"Your assessment is on the page.");
+      showAssessment(j);
+      input.disabled=true; input.placeholder='Book a session to keep going.'; finish.hidden=true; send.hidden=true;
+      if(innerWidth<=900) document.getElementById('sugg').scrollIntoView({behavior:'smooth',block:'start'});
+    }catch(e){ th.remove(); fail(e.message); busy=false; send.disabled=false; finish.disabled=false; }
+  });
+
+  /* ---- the page ---- */
+  function li(text,key){ var l=document.createElement('li'); l.innerHTML=text; if(!seen[key]){ l.className='new'; seen[key]=1; } return l; }
+  function esc(s){ return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]}); }
+  function card(k,items,emptyText,wide){
+    var d=document.createElement('div'); d.className='card'+(items.length?'':' empty')+(wide?' wide':'');
+    var head=document.createElement('div'); head.className='k'; head.innerHTML='<span>'+k+'</span><span>'+(items.length||'')+'</span>'; d.appendChild(head);
+    if(!items.length){ var b=document.createElement('div'); b.className='body'; b.textContent=emptyText; d.appendChild(b); }
+    else { var ul=document.createElement('ul'); items.forEach(function(it){ ul.appendChild(it); }); d.appendChild(ul); }
+    return d;
+  }
+  function render(p){
+    p=p||{company:{name:null,what:null,locations:[]},people:[],systems:[],workflows:[],sources_of_truth:[],never_automatic:[],open_questions:[],ai_use:{tools:[],used_for:[],who:null,tried_and_stalled:[]}};
+    title.innerHTML=p.company.name?esc(p.company.name)+(p.company.what?' <span class="dim">· '+esc(p.company.what)+'</span>':''):'<span class="dim">Your company</span>'+(p.company.what?' · '+esc(p.company.what):'');
+    cards.innerHTML='';
+    cards.appendChild(card('People', p.people.map(function(x){return li('<b>'+esc(x.name)+'</b><span class="tag">'+esc(x.role)+'</span>','p:'+x.name)}), 'Who is involved, and what each person owns.'));
+    cards.appendChild(card('Systems', p.systems.map(function(x){return li('<span class="chip">'+esc(x)+'</span>','s:'+x)}).concat(p.company.locations.map(function(x){return li('<span class="chip">'+esc(x)+'</span><span class="tag">location</span>','l:'+x)})), 'The sheets, apps and inboxes the work lives in.'));
+    cards.appendChild(card('Workflows · where it breaks', p.workflows.map(function(w){
+      var m=[]; if(w.owner) m.push('owner: '+esc(w.owner)); if(w.approval) m.push('approval: '+esc(w.approval)); if(w.systems&&w.systems.length) m.push(w.systems.map(esc).join(' → '));
+      return li('<div class="wf"><b>'+esc(w.name)+'</b>'+(w.breaks_at?'<span class="meta">breaks at: '+esc(w.breaks_at)+'</span>':'')+(m.length?'<span class="meta">'+m.join(' · ')+'</span>':'')+'</div>','w:'+w.name);
+    }), 'How the main thing you deliver moves, step by step, and where it gets stuck.', true));
+    var ai=p.ai_use||{tools:[],used_for:[],who:null,tried_and_stalled:[]}; var aiItems=[];
+    ai.tools.forEach(function(t){aiItems.push(li('<span class="chip">'+esc(t)+'</span>','at:'+t))});
+    ai.used_for.forEach(function(t){aiItems.push(li(esc(t)+(ai.who?'<span class="tag">'+esc(ai.who)+'</span>':''),'au:'+t))});
+    ai.tried_and_stalled.forEach(function(t){aiItems.push(li(esc(t)+'<span class="tag">stalled</span>','as:'+t))});
+    cards.appendChild(card('AI today', aiItems, 'What the team uses already, and what fizzled.'));
+    cards.appendChild(card('When systems disagree, this one is right', p.sources_of_truth.map(function(x){return li(esc(x.question)+' <span class="tag">→</span> <b>'+esc(x.system)+'</b>','t:'+x.question)}), 'Which sheet or system wins when two do not match.'));
+    cards.appendChild(card('Never automatic', p.never_automatic.map(function(x){return li(esc(x),'n:'+x)}), 'What should always go through a person.'));
+    cards.appendChild(card('Still open', p.open_questions.map(function(x){return li(esc(x),'q:'+x)}), 'Questions the conversation has not answered yet.', true));
+    var has=p.people.length||p.systems.length||p.workflows.length||p.company.name;
+    jump.hidden=!has||done;
+  }
+
+  var GLYPH={
+    learn:'<svg viewBox="113 23 26 26"><circle cx="126" cy="36" r="13" fill="#0B1710"/><circle cx="126" cy="36" r="11" fill="#F2EEE2"/><circle cx="126" cy="36" r="5" fill="#0B1710"/></svg>',
+    connect:'<svg viewBox="56 14 135 134"><path d="M190 14C195.4 96 150 140 56 148C102 128 147.2 88 190 14Z" fill="#0B1710"/></svg>',
+    build:'<svg viewBox="56 104 134 44"><defs><clipPath id="gb"><path d="M56 148C150 140 195.4 96 190 14H200V200H56Z"/></clipPath></defs><rect x="56" y="104" width="134" height="44" fill="#0B1710" clip-path="url(#gb)"/></svg>',
+    teach:'<svg viewBox="56 14 134 44"><defs><clipPath id="gt"><path d="M0 0H190V14C147.2 88 102 128 56 148L0 200Z"/></clipPath></defs><rect x="56" y="14" width="134" height="44" fill="#0B1710" clip-path="url(#gt)"/></svg>'
+  };
+  var LEVELS=['not started','a few people','team workflows','agents at work'];
+  function showAssessment(j){
+    sugg.hidden=false;
+    var idx=LEVELS.indexOf(j.level);
+    var name=(j.page&&j.page.company&&j.page.company.name)||'your business';
+    var h='<h3>Where '+esc(name)+' is with AI</h3><p class="summary">'+esc(j.headline||'')+'</p>';
+    h+='<div class="meter">'+LEVELS.map(function(l,i){return '<div class="'+(i<=idx?'on':'')+'">'+l+'</div>'}).join('')+'</div>';
+    h+='<div class="two"><div><b>Already working</b><ul>'+((j.working||[]).map(function(x){return '<li>'+esc(x)+'</li>'}).join('')||'<li>—</li>')+'</ul></div><div><b>Gaps</b><ul>'+(j.gaps||[]).map(function(x){return '<li>'+esc(x)+'</li>'}).join('')+'</ul></div></div>';
+    h+='<div class="k2">What we would look at first</div>';
+    (j.recommendations||[]).slice(0,3).forEach(function(s){ h+='<div class="s">'+(GLYPH[s.kind]||'')+'<div><span class="kind">'+esc(s.kind)+'</span><b>'+esc(s.title)+'</b><p>'+esc(s.why)+'</p><p>'+esc(s.first_step)+'</p></div></div>'; });
+    var txt='Hi, I tried za3tar.ai on '+name+'. It read us as: '+j.level+'. First three things: '+(j.recommendations||[]).slice(0,3).map(function(s){return s.title}).join('; ')+'. I would like to book a session.';
+    h+='<div class="cta"><a class="btn" target="_blank" rel="noopener" href="'+WA+encodeURIComponent(txt)+'">Book a session <span class="ar">→</span></a><button class="btn ghost" id="again">Start over</button></div>';
+    sugg.innerHTML=h;
+    document.getElementById('again').addEventListener('click',function(){ location.reload(); });
+  }
+})();
+</script>
+</body>
+</html>
