@@ -48,12 +48,12 @@ nav{display:flex;align-items:center;justify-content:space-between;height:64px}
 .bubble:before{content:"";position:absolute;top:-9px;left:50%;width:16px;height:16px;background:var(--paper);border-left:1.5px solid var(--ink);border-top:1.5px solid var(--ink);transform:translateX(-50%) rotate(45deg)}
 .bubble:empty:after{content:"…";color:var(--ink-40)}
 .caret{display:inline-block;width:2px;height:1em;background:currentColor;margin-left:2px;vertical-align:-.12em;animation:vpulse .8s steps(1) infinite}
-.startrow{display:flex;align-items:center;justify-content:center;gap:18px;flex-wrap:wrap;margin-top:30px}
-.btn.big{font-size:18px;padding:16px 26px;border-radius:999px;gap:12px}
+.btn.big{font-size:17px;padding:14px 22px;border-radius:999px;gap:10px}
 .btn .mic{width:20px;height:20px;fill:currentColor}
-.skip{background:none;border:0;padding:6px 0;cursor:pointer;color:var(--ink-66);text-decoration:underline;text-underline-offset:3px}
-.ask form{display:flex;gap:10px;margin-top:30px;width:100%;max-width:560px}
-.ask input{flex:1;min-width:0;font:inherit;font-size:18px;color:var(--ink);background:transparent;border:1.5px solid var(--ink);border-radius:8px;padding:13px 14px;outline:none}
+.skip{background:none;border:0;padding:6px 0;margin-top:12px;cursor:pointer;color:var(--ink-66);text-decoration:underline;text-underline-offset:3px}
+.skip:hover{color:var(--ink)}
+.ask form{display:flex;gap:10px;margin-top:30px;width:100%;max-width:600px}
+.ask input{flex:1;min-width:0;font:inherit;font-size:18px;color:var(--ink);background:transparent;border:1.5px solid var(--ink);border-radius:999px;padding:13px 20px;outline:none}
 .ask input::placeholder{color:var(--ink-40)}
 .ask input:focus{box-shadow:0 0 0 3px var(--olive-30)}
 .note{margin-top:16px;font-size:13.5px;color:var(--ink-66);max-width:58ch;text-wrap:pretty}
@@ -171,8 +171,20 @@ body.stage-work .zcol{display:block}
 .tile.loading.active{border-style:solid;border-color:var(--ink)}
 .tile.loading.active .ic{color:var(--olive)}
 .tile.loading.active .num b{background:linear-gradient(90deg,var(--ink-18),var(--ink-40),var(--ink-18));background-size:200% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:shimmer 1.2s linear infinite}
-.tile.loading.done .num b,.tile.loading.done .ic{color:var(--ink-40)}
 @keyframes shimmer{from{background-position:200% 0}to{background-position:0 0}}
+.tile.fail{cursor:default;border-style:dashed;border-color:#8a2d1f;background:transparent}
+.tile.fail .ic,.tile.fail .num b{color:var(--ink-18)}
+.tile.fail p{color:#8a2d1f}
+.retry{margin-top:10px;align-self:flex-start;background:transparent;border:1.5px solid var(--ink);border-radius:999px;padding:5px 12px;font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;cursor:pointer}
+.retry:hover{background:var(--ink);color:var(--paper)}
+/* a part landing: the tile flips from skeleton to real */
+.tile.reveal{animation:tilein .6s cubic-bezier(.2,.8,.2,1)}
+.tile.reveal .num b{animation:numin .6s cubic-bezier(.2,.8,.2,1)}
+@keyframes tilein{0%{opacity:0;transform:translateY(10px) scale(.97);box-shadow:0 0 0 0 var(--olive-30)}60%{opacity:1;box-shadow:0 0 0 6px var(--olive-30)}100%{transform:none;box-shadow:0 0 0 0 transparent}}
+@keyframes numin{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+.cohead.landed h1,.cohead.landed .one,.cohead.landed .meta,.cohead.landed .srcs{animation:vin .45s cubic-bezier(.2,.8,.2,1) both}
+.cohead.landed .one{animation-delay:.06s}.cohead.landed .meta{animation-delay:.12s}.cohead.landed .srcs{animation-delay:.18s}
+.tabs button[aria-disabled=true]{opacity:.45}
 .legend{margin-top:16px;font-size:13px;color:var(--ink-66);display:flex;gap:8px 14px;flex-wrap:wrap;align-items:center}
 
 /* public / likely tags */
@@ -292,7 +304,7 @@ footer{border-top:1px solid var(--ink-18);padding:22px 0 40px}
   .ask{padding-top:4vh}
   .ask form{flex-direction:column}
   .ask .btn{justify-content:center}
-  .btn.big{width:100%;justify-content:center}
+  .btn.big{width:100%}
   .meta{flex-direction:column}
   .meta span:not(:last-child):after{content:none}
   .tile{min-height:168px;padding:14px 14px 16px}
@@ -306,7 +318,7 @@ footer{border-top:1px solid var(--ink-18);padding:22px 0 40px}
   .flow li,.tile,[data-spot],.cx,.srcbtn .car{transition:none}
   .spot{transform:none}
   #views.swap{animation:none}
-  .vstate .dot,.cta.pulse,.caret,.tile.loading.active .num b{animation:none}
+  .vstate .dot,.cta.pulse,.caret,.tile.loading.active .num b,.tile.reveal,.tile.reveal .num b,.cohead.landed *{animation:none}
   .tile.loading.active .num b{color:var(--ink-40)}
   .eye,.jaw{transition:none}
 }
@@ -339,14 +351,11 @@ footer{border-top:1px solid var(--ink-18);padding:22px 0 40px}
     <div class="amark" id="amark" aria-hidden="true"></div>
     <div class="bubble" id="abubble" aria-live="polite"></div>
   </div>
-  <div class="startrow" id="startrow">
-    <button class="btn big" type="button" id="start"><svg class="mic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z"/><path d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Start demo (sound on)</button>
-    <button class="skip mono" type="button" id="skip">or just type</button>
-  </div>
-  <form id="form" autocomplete="off" hidden>
-    <input id="q" name="company" maxlength="120" placeholder="Your company name or website" aria-label="Company name or website" required>
-    <button class="btn" type="submit" id="go">Go <span class="ar">→</span></button>
+  <form id="form" autocomplete="off">
+    <input id="q" name="company" maxlength="120" placeholder="Your company name or website" aria-label="Company name or website" enterkeyhint="go">
+    <button class="btn big" type="submit" id="go"><svg class="mic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z"/><path d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Build it (sound on)</button>
   </form>
+  <button class="skip mono" type="button" id="silent">or build it silently</button>
   <p class="note">Za3tar talks and listens, so it will ask for your mic. It reads what's public about your company; your voice goes to our AI providers to run the conversation. Nothing is stored on our side.</p>
   <p class="err" id="err" hidden></p>
 </section>
@@ -389,7 +398,7 @@ footer{border-top:1px solid var(--ink-18);padding:22px 0 40px}
   function show(id){
     ['ask','co'].forEach(function(x){ $(x).hidden=(x!==id); });
     document.body.classList.toggle('stage-work',id==='co');
-    document.querySelector('.cta').hidden=!(id==='co'&&data);
+    document.querySelector('.cta').hidden=!(id==='co'&&data&&data.core);
     scrollTo(0,0); dock();
   }
 
@@ -402,64 +411,122 @@ footer{border-top:1px solid var(--ink-18);padding:22px 0 40px}
   };
   function icon(k){ var s=el('span','ic'); s.setAttribute('aria-hidden','true'); s.innerHTML=PIECE[{team:'eye',tools:'top',projects:'leaf',customers:'bottom'}[k]]; return s; }
 
-  /* ---- ask → workspace ---- */
-  $('form').addEventListener('submit',function(e){ e.preventDefault(); unlockAudio(); var q=$('q').value.trim(); if(q.length<2) return fail('Type a company name or website.'); if(!vpc&&!voiceDone) begin(q); lookup(q, true); });
+  /* ---- ask → workspace: one tap starts the voice and the build together ---- */
+  function submit(voice){
+    unlockAudio(); // inside the tap: Safari only lets audio start from a gesture
+    var q=$('q').value.trim(); $('err').hidden=true;
+    if(q.length<2) return fail('Type a company name or website.');
+    if(voice&&!vpc&&!vlive) begin(q);
+    else if(vlive) note('The visitor typed "'+q+'" and its workspace is being built on screen now. Say so in one short line.',null,{key:'lookup'});
+    build(q);
+  }
+  $('form').addEventListener('submit',function(e){ e.preventDefault(); submit(true); });
+  $('silent').addEventListener('click',function(){ voiceDone=true; submit(false); });
 
-  /* the workspace appears straight away and fills in while the lookup runs */
-  var buildTimers=[];
-  var STAGES=[['team','Team','finding roles…'],['tools','Tools','checking tools…'],['projects','Projects','reading the news…'],['customers','Customers','looking at customers…']];
+  /* The page is five parts, fetched in parallel. core fills the header; each other
+     part flips its tile from skeleton to real as it lands. */
+  var PARTS=['core','team','tools','projects','customers'];
+  var gen=0, pstate={}, ctls=[], buildQ='', buildT0=0, summarized=false, sumTimer=null, SUMMARY_MS=25000;
+  var WAIT={team:'finding roles…',tools:'checking tools…',projects:'reading the news…',customers:'looking at customers…'};
+  function build(q,o){
+    cancelBuild(); gen++; buildQ=q; buildT0=Date.now(); missed=null; summarized=false; lastScreenKey=null;
+    PARTS.forEach(function(k){ pstate[k]='loading'; });
+    data={company:{name:q},sources:[],core:false};
+    skeleton(q); looking=true; idleState();
+    sumTimer=setTimeout(maybeSummary,SUMMARY_MS);
+    if(!(o&&o.noFetch)) PARTS.forEach(function(k){ fetchPart(gen,k); });
+  }
+  function cancelBuild(){ ctls.forEach(function(c){ try{ c.abort(); }catch(e){} }); ctls=[]; clearTimeout(sumTimer); looking=false; }
+  function fetchPart(g,k){
+    var ctl=window.AbortController?new AbortController():null; if(ctl) ctls.push(ctl);
+    fetch('/api/demo',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({company:buildQ,part:k}),signal:ctl?ctl.signal:undefined})
+      .then(function(r){ return r.json().catch(function(){ return {error:'Something broke on our side. Try again.'}; }).then(function(j){ return {ok:r.ok,j:j}; }); })
+      .catch(function(){ return {ok:false,j:{error:'Could not reach us. Check your connection and try again.'}}; })
+      .then(function(x){ land(g,k,x.ok&&!x.j.error,x.j); });
+  }
+  function retry(k){ if(pstate[k]!=='fail') return; pstate[k]='loading'; looking=true; idleState(); refreshTile(k); fetchPart(gen,k); }
+  function settled(){ return PARTS.every(function(k){ return pstate[k]!=='loading'; }); }
+  function landedCount(){ return PARTS.slice(1).filter(function(k){ return pstate[k]==='ok'; }).length; }
+  function isStale(g){ return g!==gen||!data; }
+
+  function land(g,k,ok,j){
+    if(isStale(g)) return;
+    j=j||{};
+    if(k==='core'){
+      if(!ok||!j.found){
+        var nf=ok&&!j.found, q=buildQ; missed=nf?'notfound':'error';
+        gen++; cancelBuild(); data=null; backToAsk();
+        fail(nf?'We could not find "'+q+'" with confidence. Try its website address, like company.com.':(j.error||'Something broke on our side. Try again.'));
+        if(nf) note('Nothing reliable came up for "'+q+'". Say so in one line and ask them to type the website address, like company.com, in the box on screen.',null,{key:'screen'});
+        else note('The lookup failed on our side. Apologise in one line and ask them to type the name again.',null,{key:'screen'});
+        return;
+      }
+      pstate.core='ok'; data.core=true; data.company=j.company||{}; data.sources=j.sources||[];
+      renderHead(true); document.querySelector('.cta').hidden=false;
+      note(null,headFacts());
+      PARTS.slice(1).forEach(function(p){ if(data[p]) note(null,partFacts(p)); }); // parts that beat the header
+    } else if(ok){
+      pstate[k]='ok'; data[k]=j; renderSources(); refreshTile(k,true);
+      if(data.core) note(null,partFacts(k));
+    } else {
+      pstate[k]='fail'; data[k]=null; refreshTile(k);
+    }
+    looking=!settled(); idleState(); refreshTabs();
+    if(step==='looking'&&data.core) stepTo('page'); else if(step==='page') stepTo('page',true);
+    maybeSummary();
+  }
+
+  /* the spoken overview waits for core + two parts (or everything, or 25 s) */
+  function summaryDue(){ return !!(data&&data.core)&&(landedCount()>=2||settled()||Date.now()-buildT0>=SUMMARY_MS); }
+  function maybeSummary(){
+    if(summarized||!vlive||!summaryDue()) return;
+    summarized=true; clearTimeout(sumTimer); dropNotes(['lookup']);
+    var s=screenNote(); if(currentView==='overview') lastScreenKey='overview';
+    note(s.ask+' If they told you their role or what takes their time while it loaded, tie one sentence to that.',s.facts,{key:'screen'});
+  }
+
+  /* the workspace appears straight away; tiles fill in as parts land */
   function skeleton(q){
-    stopBuild(); data=null; lastScreenKey=null;
+    currentView=null; spots=[]; unspot(); clearFlow();
+    $('cohead').classList.remove('landed');
     $('coName').textContent=q; $('coOne').textContent='Building your workspace…'; $('coOne').hidden=false;
-    $('coMeta').textContent=''; $('coSrcs').textContent=''; compact(false);
-    var v=$('views'); v.textContent=''; currentView=null; spots=[]; unspot();
-    var g=el('div','tiles');
-    STAGES.forEach(function(st){ var t=el('div','tile loading'); t.dataset.k=st[0]; t.appendChild(icon(st[0])); var k=el('span','k'); k.appendChild(el('span',null,st[1])); t.appendChild(k); var n=el('span','num'); n.appendChild(el('b',null,'··')); t.appendChild(n); t.appendChild(el('p',null,'waiting')); g.appendChild(t); });
-    v.appendChild(g); show('co'); stepTo('looking');
-    var tiles=[].slice.call(g.children);
-    [2500,9000,16000,23000].forEach(function(ms,i){ buildTimers.push(setTimeout(function(){ if(i) { tiles[i-1].classList.remove('active'); tiles[i-1].classList.add('done'); tiles[i-1].lastChild.textContent='almost there'; } tiles[i].classList.add('active'); tiles[i].lastChild.textContent=STAGES[i][2]; },ms)); });
+    $('coMeta').textContent=''; $('coSrcs').textContent='';
+    buildTabs(); show('co'); overview(); stepTo('looking');
   }
-  function stopBuild(){ buildTimers.forEach(clearTimeout); buildTimers=[]; }
-
-  async function run(q){
-    $('err').hidden=true;
-    if(q.length<2){ fail('Type a company name or website.'); return 'error'; }
-    skeleton(q);
-    var r,j;
-    try{
-      r=await fetch('/api/demo',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({company:q})});
-      j=await r.json().catch(function(){ return {error:'Something broke on our side. Try again.'}; });
-    }catch(e){ j={error:'Could not reach us. Check your connection and try again.'}; }
-    stopBuild();
-    if(!r||!r.ok||j.error){ backToAsk(); fail(j.error||'Something broke on our side. Try again.'); return 'error'; }
-    if(!j.found){ backToAsk(); fail('We could not find "'+q+'" with confidence. Try its website address, like company.com.'); return 'notfound'; }
-    data=j; render(); return 'ok';
-  }
-  function fail(t){ var e=$('err'); e.textContent=t; e.hidden=false; if(!$('form').hidden) $('q').focus(); }
-  function backToAsk(){ show('ask'); openForm(); stepTo('ask'); }
+  function fail(t){ var e=$('err'); e.textContent=t; e.hidden=false; try{ $('q').focus({preventScroll:true}); }catch(_){} }
+  function backToAsk(){ show('ask'); stepTo('ask'); }
 
   /* ---- company page ---- */
-  function render(){
-    var c=data.company||{};
-    $('coName').textContent=c.name||'';
+  function renderHead(reveal){
+    var c=data.company||{}, h=$('cohead');
+    $('coName').textContent=c.name||buildQ;
     $('coOne').textContent=c.oneliner||''; $('coOne').hidden=!c.oneliner;
     var meta=$('coMeta'); meta.textContent='';
     [c.sector,c.size,c.location].forEach(function(x){ if(x) meta.appendChild(el('span',null,x)); });
     var w=safeUrl(c.website); if(w) meta.appendChild(el('span',null,hostOf(w)));
-    var s=$('coSrcs'); s.textContent='';
-    var links=(data.sources||[]).map(function(x){ var u=safeUrl(x.url); return u&&{u:u,t:x.title||hostOf(u)}; }).filter(Boolean);
-    if(links.length){
-      var bt=el('button','srcbtn'); bt.type='button'; bt.setAttribute('aria-expanded','false');
-      bt.appendChild(document.createTextNode(links.length+' source'+(links.length>1?'s':''))); bt.appendChild(el('span','car','▾'));
-      var ul=el('ul','srclist'); ul.hidden=true; ul.id='srclist'; bt.setAttribute('aria-controls','srclist');
-      links.forEach(function(x){ var li=el('li'); li.appendChild(link(x.u,x.t)); li.appendChild(el('small',null,hostOf(x.u))); ul.appendChild(li); });
-      bt.onclick=function(){ var o=ul.hidden; ul.hidden=!o; bt.setAttribute('aria-expanded',String(o)); };
-      s.appendChild(bt); s.appendChild(ul);
-    }
+    renderSources();
+    if(reveal&&!reduce){ h.classList.remove('landed'); void h.offsetWidth; h.classList.add('landed'); }
+  }
+  /* header sources: core's, then each landed part's, de-duplicated */
+  function renderSources(){
+    if(!data||!data.core) return;
+    var all=(data.sources||[]).slice(); PARTS.slice(1).forEach(function(k){ if(data[k]) all=all.concat(data[k].sources||[]); });
+    var seen={}, links=all.map(function(x){ var u=safeUrl(x&&x.url); return u&&{u:u,t:x.title||hostOf(u)}; }).filter(function(x){ if(!x||seen[x.u]) return false; seen[x.u]=1; return true; }).slice(0,12);
+    var s=$('coSrcs'), wasOpen=$('srclist')&&!$('srclist').hidden; s.textContent='';
+    if(!links.length) return;
+    var bt=el('button','srcbtn'); bt.type='button'; bt.setAttribute('aria-expanded',String(!!wasOpen));
+    bt.appendChild(document.createTextNode(links.length+' source'+(links.length>1?'s':''))); bt.appendChild(el('span','car','▾'));
+    var ul=el('ul','srclist'); ul.hidden=!wasOpen; ul.id='srclist'; bt.setAttribute('aria-controls','srclist');
+    links.forEach(function(x){ var li=el('li'); li.appendChild(link(x.u,x.t)); li.appendChild(el('small',null,hostOf(x.u))); ul.appendChild(li); });
+    bt.onclick=function(){ var o=ul.hidden; ul.hidden=!o; bt.setAttribute('aria-expanded',String(o)); };
+    s.appendChild(bt); s.appendChild(ul);
+  }
+  function buildTabs(){
     var tb=$('tabs'); tb.textContent='';
     [['overview','Overview']].concat(TILES.map(function(t){ return [t.key,t.label]; })).forEach(function(x){ var b=el('button',null,x[1]); b.type='button'; b.dataset.k=x[0]; b.setAttribute('role','tab'); b.onclick=function(){ tap(x[1],{view:x[0]}); }; tb.appendChild(b); });
-    show('co'); overview();
+    refreshTabs();
   }
+  function refreshTabs(){ [].forEach.call($('tabs').children,function(b){ var k=b.dataset.k; b.setAttribute('aria-disabled',String(k!=='overview'&&pstate[k]!=='ok')); }); }
   function compact(on){ $('cohead').classList.toggle('compact',!!on); [].forEach.call($('tabs').children,function(b){ var cur=b.dataset.k===(currentView||'overview'); b.setAttribute('aria-current',String(cur)); b.setAttribute('aria-selected',String(cur)); }); }
   /* keep the header in view: never leave the visitor scrolled past the top of the page */
   function toTop(){ var top=$('co').getBoundingClientRect().top+scrollY-8; if(scrollY>top) scrollTo({top:top,behavior:smooth}); }
@@ -476,20 +543,41 @@ footer{border-top:1px solid var(--ink-18);padding:22px 0 40px}
     currentView='overview'; teamLayout='list';
     var v=$('views'); v.textContent=''; clearFlow(); unspot(); spots=[]; compact(false);
     var g=el('div','tiles');
-    TILES.forEach(function(t){
-      var b=el('button','tile'); b.type='button';
+    TILES.forEach(function(t){ g.appendChild(makeTile(t)); });
+    v.appendChild(g);
+    var lg=el('p','legend'); lg.appendChild(el('span','tag','public')); lg.appendChild(el('span',null,'seen in a source you can open')); lg.appendChild(el('span','tag likely','likely')); lg.appendChild(el('span',null,'our read of a company like this, not a fact'));
+    v.appendChild(lg);
+    spotIndex(); swapIn();
+  }
+  /* one tile per part: skeleton while loading, retry when it failed, real when landed */
+  function makeTile(t){
+    var st=pstate[t.key], b;
+    if(st==='ok'){
+      b=el('button','tile'); b.type='button';
       b.appendChild(icon(t.key));
       var k=el('span','k'); k.appendChild(el('span',null,t.label)); k.appendChild(el('span','ar','→')); b.appendChild(k);
       var bg=t.big(data), n=el('span','num'); n.appendChild(el('b',null,String(bg[0]))); n.appendChild(el('span',null,bg[1])); b.appendChild(n);
       b.appendChild(el('p',null,t.teaser(data)));
       b.onclick=function(){ tap(t.label,{view:t.key}); };
       spotAdd(b,{words:t.words,area:1});
-      g.appendChild(b);
-    });
-    v.appendChild(g);
-    var lg=el('p','legend'); lg.appendChild(el('span','tag','public')); lg.appendChild(el('span',null,'seen in a source you can open')); lg.appendChild(el('span','tag likely','likely')); lg.appendChild(el('span',null,'our read of a company like this, not a fact'));
-    v.appendChild(lg);
-    spotIndex(); swapIn(); stepTo('page');
+    } else {
+      b=el('div','tile '+(st==='fail'?'fail':'loading active'));
+      b.appendChild(icon(t.key));
+      var k2=el('span','k'); k2.appendChild(el('span',null,t.label)); b.appendChild(k2);
+      var n2=el('span','num'); n2.appendChild(el('b',null,'··')); b.appendChild(n2);
+      b.appendChild(el('p',null,st==='fail'?'Couldn’t load this part.':WAIT[t.key]));
+      if(st==='fail'){ var r=el('button','retry','↻ Retry'); r.type='button'; r.onclick=function(){ retry(t.key); }; b.appendChild(r); }
+    }
+    b.dataset.k=t.key; return b;
+  }
+  function refreshTile(k,reveal){
+    if(currentView!=='overview') return;
+    var old=document.querySelector('.tiles .tile[data-k="'+k+'"]'); if(!old) return;
+    var t=TILES.filter(function(x){ return x.key===k; })[0];
+    if(spotOn===old) unspot();
+    spots=spots.filter(function(x){ return x.el!==old; });
+    var nu=makeTile(t); if(reveal&&!reduce) nu.classList.add('reveal');
+    old.replaceWith(nu); spotIndex();
   }
 
   /* ---- views ---- */
@@ -642,19 +730,20 @@ footer{border-top:1px solid var(--ink-18);padding:22px 0 40px}
   /* captions: the live output transcript; when the voice is off Za3tar "types" the line instead */
   function caption(text){ if(vlive) return; typeOut($('vline'),text); }
 
-  var LINES={looking:'Looking them up now. It takes about half a minute; the tiles fill in as I go.',page:'Here is the page I would start from. Pick an area to open it.',team:'Roles, not people. The ideas below are where I would start.',view:'Here is what I found, and how I would set it up.',flow:'One workflow, step by step. A person always approves.',ask:'Type your company, and I will build your workspace.'};
+  var LINES={looking:'Building it now. Each tile fills in as its part lands.',page:'Here is the page I would start from. Pick an area to open it.',team:'Roles, not people. The ideas below are where I would start.',view:'Here is what I found, and how I would set it up.',flow:'One workflow, step by step. A person always approves.',ask:'Type your company, and I will build your workspace.'};
   function chipSet(k){
     if(k==='looking'||k==='ask') return [];
-    if(k==='page') return ['Show me the team','What tools?','Projects','Customers'];
-    var more=TILES.filter(function(t){ return t.key!==currentView; }).slice(0,2).map(function(t){ return t.key==='tools'?'What tools?':t.key==='team'?'Show me the team':t.label; });
+    function said(t){ return t.key==='tools'?'What tools?':t.key==='team'?'Show me the team':t.label; }
+    if(k==='page') return TILES.filter(function(t){ return pstate[t.key]==='ok'; }).map(said);
+    var more=TILES.filter(function(t){ return t.key!==currentView&&pstate[t.key]==='ok'; }).slice(0,2).map(said);
     if(k==='flow') return [{t:'I want this for real',go:1},'Replay','Go back'];
     if(k==='team') return [teamLayout==='orgchart'?'As a list':'As an org chart','How would that work?'].concat(more,['Go back']);
     return ['How would that work?'].concat(more,['Go back']);
   }
-  function stepTo(k){
+  function stepTo(k,quiet){
     step=k; var box=$('zchips'); box.textContent='';
     chipSet(k).forEach(function(c){ var t=typeof c==='string'?c:c.t, b=el('button','zchip'+(c.go?' go':''),t); b.type='button'; b.onclick=function(){ tap(t); }; box.appendChild(b); });
-    if(LINES[k]) caption(LINES[k]);
+    if(LINES[k]&&!quiet) caption(LINES[k]);
     idleState(); dock();
   }
   /* a tapped chip does exactly what saying it does */
@@ -705,7 +794,7 @@ footer{border-top:1px solid var(--ink-18);padding:22px 0 40px}
 
   $('vend').addEventListener('click',function(){ finish('ended'); });
 
-  var nomic=false, voiceDone=false, typedQ='', silentCtx=null;
+  var nomic=false, voiceDone=false, silentCtx=null, missed=null;
   function unlockAudio(){ if(vaudio) return; vaudio=new Audio(); vaudio.autoplay=true; vaudio.playsInline=true; try{ var pr=vaudio.play(); if(pr&&pr.catch) pr.catch(function(){}); }catch(e){} }
   function voiceButtons(){ $('vend').hidden=!(vpc||vlive); dock(); }
   function onOut(delta){
@@ -718,8 +807,7 @@ footer{border-top:1px solid var(--ink-18);padding:22px 0 40px}
   async function begin(q){
     if(vlive||vpc) return;
     unlockAudio();
-    typedQ=q||'';
-    $('err').hidden=true; vstate('','asking for the mic'); voiceButtons();
+    vstate('','asking for the mic'); voiceButtons();
     try{ vstream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true}}); }
     catch(e){ vstream=null; nomic=true; }
     vstate('','connecting');
@@ -737,13 +825,19 @@ footer{border-top:1px solid var(--ink-18);padding:22px 0 40px}
     var offer=await vpc.createOffer(); await vpc.setLocalDescription(offer);
     await new Promise(function(res){ if(vpc.iceGatheringState==='complete') return res(); var t=setTimeout(res,1500); vpc.onicegatheringstatechange=function(){ if(vpc&&vpc.iceGatheringState==='complete'){ clearTimeout(t); res(); } }; });
     var r,j;
-    try{ r=await fetch('/api/live',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({sdp:vpc.localDescription.sdp,mode:'demo'})}); j=await r.json(); }
+    try{ r=await fetch('/api/live',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({sdp:vpc.localDescription.sdp,mode:'demo',company:String(q||'').slice(0,80)})}); j=await r.json(); }
     catch(e){ j={error:'Could not reach the voice service.'}; }
-    if(!r||!r.ok||j.error||!j.transport||!j.transport.sdp){ cleanup(); nomic=true; voiceDone=true; vstate('','voice is off'); voiceButtons(); typeOut($('vline'),'My voice isn’t working right now, but I can still build it. Tap the suggestions to explore.'); if(!$('ask').hidden) typeOut($('abubble'),'Sorry, my voice isn’t working right now. Type your company anyway and I’ll still build your workspace.'); return; }
+    if(!r||!r.ok||j.error||!j.transport||!j.transport.sdp){ cleanup(); nomic=true; voiceDone=true; vstate('','voice is off'); voiceButtons(); typeOut($('vline'),'My voice isn’t working right now, but I can still build it. Tap the suggestions to explore.'); if(!$('ask').hidden) typeOut($('abubble'),'Sorry, my voice isn’t working right now. Type your company and I’ll still build your workspace.'); return; }
     await vpc.setRemoteDescription({type:'answer',sdp:j.transport.sdp});
     vlive=true; vt0=Date.now(); idleState(); voiceButtons(); say('');
-    if(data){ var s=screenNote(); note('Speak now, first. '+s.ask,s.facts,{key:'screen'}); lastScreenKey=currentView==='overview'?'overview':null; }
-    else if(looking) note('Speak now, first. The visitor typed "'+typedQ+'" and their workspace is being built on screen. Say you are building it now and will say what you are looking at while it loads. One or two short, warm sentences.',null,{key:'lookup'});
+    // the company is already in the startup instructions; this only says "go"
+    if(data){
+      note('Speak now, first: say your first words from your instructions, the line about building their workspace, then listen.',null,{key:'open'});
+      if(data.core) note(null,headFacts());
+      PARTS.slice(1).forEach(function(k){ if(data[k]&&data.core) note(null,partFacts(k)); });
+      maybeSummary();
+    }
+    else if(missed) note('Speak now, first: say "Oh hey!" and then that '+(missed==='notfound'?'nothing reliable came up for what they typed; ask them to type the company website, like company.com, in the box on screen':'the lookup failed on our side; ask them to type the name again')+'. Two short sentences.',null,{key:'screen'});
     else note('Speak now, first: say "Oh hey, welcome!" and ask them to type their company name in the box on screen so you can build their workspace. Two short sentences at most.',null,{key:'screen'});
     vticker=setInterval(function(){ if(!speaking&&vlive) idleState(); },1000);
     vwarn=setTimeout(function(){ note('Time is almost up. Wrap up in one sentence and point them to the "Book a session" button.',null,{key:'time'}); },MAX_MS-20000);
@@ -761,29 +855,16 @@ footer{border-top:1px solid var(--ink-18);padding:22px 0 40px}
     t=t.replace(/[\s,.!?]+(thanks|thank you|please)?[\s,.!?]*$/i,'').replace(/[.!?]+$/,'').trim();
     return t.length>=2 && t.length<=80 ? t : null;
   }
-  /* two "thinking out loud" beats while it builds, dropped if Za3tar is mid-sentence */
-  var NARRATE=[[8000,'Status: reading who does what there, and the tools they talk about in public.'],[20000,'Status: reading recent news and who their customers are; the page is nearly ready.']];
-  async function lookup(q, spoken){
-    if(looking) return; looking=true;
-    var nt=NARRATE.map(function(n){ return setTimeout(function(){ if(looking&&vlive) note(null,n[1],{key:'narrate'}); },n[0]); });
-    var p=run(q);
-    if(spoken&&vlive) note('The visitor gave their company, "'+q+'", and the workspace is being built on screen now. Say you are building it now and it takes about half a minute, and while it loads ask them one question: what is their role there? Two short sentences.',null,{key:'lookup'});
-    var res=await p; looking=false; nt.forEach(clearTimeout); dropNotes(['narrate','lookup']); idleState();
-    if(!vlive) return res;
-    if(res==='ok'){ var s=screenNote(); lastScreenKey='overview'; note(s.ask+' If they told you their role or what takes their time while it loaded, tie one sentence to that.',s.facts,{key:'screen'}); }
-    else if(res==='notfound') note('Nothing reliable came up for "'+q+'". Say so in one line and ask them to type the website address, like company.com.',null,{key:'screen'});
-    else note('The lookup failed on our side. Apologise in one line and ask them to try the name again.',null,{key:'screen'});
-    return res;
-  }
-  async function onUtterance(u){
-    if(looking) return;
+  function onUtterance(u){
     var t=u.toLowerCase();
     if(!data || /\b(start over|another company|different company|try another)\b/.test(t)){
-      if(data){ data=null; lastScreenKey=null; backToAsk(); note('Back to the start. Ask which company they want to try next.',null,{key:'screen'}); return; }
+      if(data){ gen++; cancelBuild(); data=null; lastScreenKey=null; backToAsk(); note('Back to the start. Ask which company they want to try next.',null,{key:'screen'}); return; }
       var q=companyFrom(u); if(!q) return;
-      $('q').value=q; lookup(q, true);
+      $('q').value=q; note('The visitor said their company, "'+q+'", and its workspace is being built on screen now. Say so in one short line.',null,{key:'lookup'}); build(q);
       return;
     }
+    // while it builds, what they say is small talk (their role, their week), not navigation
+    if(!summarized&&!settled()) return;
     var i=intent(t); if(!i) return;
     act(i);
   }
@@ -801,9 +882,16 @@ footer{border-top:1px solid var(--ink-18);padding:22px 0 40px}
   }
   function act(i){
     if(!data) return;
+    summarized=true; clearTimeout(sumTimer); // they are exploring: no overview speech on top of it
+    if(i.view&&i.view!=='overview'&&pstate[i.view]!=='ok'){
+      var lb=i.view, broke=pstate[i.view]==='fail';
+      caption(broke?'The '+lb+' part didn’t load. Tap retry on its tile.':'Still loading the '+lb+' part. It shows up on its tile in a moment.');
+      note(broke?'The '+lb+' part could not load. Say so in one short line and that they can tap retry on its tile.':'The '+lb+' part is still loading. Say so in one short line; it will show up on its tile in a moment.',null,{key:'screen'});
+      return;
+    }
     if(i.book){ var c=document.querySelector('.cta'); c.scrollIntoView({behavior:smooth,block:'center'}); c.classList.remove('pulse'); void c.offsetWidth; c.classList.add('pulse'); note('The "Book a session" button is highlighted. In one line, say tapping it opens WhatsApp with us to set up a first session.',null,{key:'screen'}); return; }
     if(i.flow){ if(currentPlay&&currentSteps){ currentPlay(); stepTo('flow'); var f=document.querySelector('.flow'); if(f) f.scrollIntoView({behavior:smooth,block:'center'}); note('A workflow is playing step by step. Narrate it in a few short sentences as it plays, naming each step, then ask if they would like this for real.',flowFacts(),{key:'screen'}); } else note('No view is open yet. Ask which area they want a workflow for: team, tools, projects or customers.',null,{key:'screen'}); return; }
-    if(i.view==='overview'){ overview(); toTop(); note('Back to the overview with four tiles: team, tools, projects, customers. Ask which one they want, in one sentence.',null,{key:'screen',view:'overview'}); return; }
+    if(i.view==='overview'){ overview(); toTop(); stepTo(data.core?'page':'looking'); note('Back to the overview with four tiles: team, tools, projects, customers. Ask which one they want, in one sentence.',null,{key:'screen',view:'overview'}); return; }
     if(currentView!==i.view) open(i.view);
     if(i.view==='team'&&i.layout&&teamSet) teamSet(i.layout);
     stepTo(i.view==='team'?'team':'view');
@@ -816,37 +904,52 @@ footer{border-top:1px solid var(--ink-18);padding:22px 0 40px}
   function viewNote(k,layout){
     var d=data, tail=' Ideas on screen ("How we\'d set it up"): '+recs(k)+((d[k].workflow||[]).length?' A workflow example is below them.':'');
     var ask='The '+k+' view is open. In two or three short sentences, name one or two things on screen and the first idea, then offer to play the workflow.';
-    if(k==='team'){ var org=layout==='orgchart'; return {facts:'View: team of '+d.company.name+', shown as '+(org?'an org chart':'a list')+' of roles: '+d.team.roles.slice(0,12).map(function(r){ return r.title+(r.name?' ('+r.name+')':''); }).join('; ')+'.'+tail, ask:'The team is showing as '+(org?'an org chart':'a list')+'. In two or three short sentences, name a role or two and the first idea, then offer the workflow or '+(org?'the list':'an org chart')+'.'}; }
+    if(k==='team'){ var org=layout==='orgchart'; return {facts:'View: team of '+(d.company.name||buildQ)+', shown as '+(org?'an org chart':'a list')+' of roles: '+d.team.roles.slice(0,12).map(function(r){ return r.title+(r.name?' ('+r.name+')':''); }).join('; ')+'.'+tail, ask:'The team is showing as '+(org?'an org chart':'a list')+'. In two or three short sentences, name a role or two and the first idea, then offer the workflow or '+(org?'the list':'an org chart')+'.'}; }
     if(k==='tools') return {facts:'View: tools. '+names(d.tools.items,12)+'.'+tail, ask:ask};
     if(k==='projects') return {facts:'View: likely projects. '+names(d.projects.items,10)+'.'+tail, ask:ask};
     if(k==='customers') return {facts:'View: customers. Segments: '+names(d.customers.segments,8)+'. Channels: '+names(d.customers.channels,8)+'.'+tail, ask:ask};
     return {facts:'',ask:''};
   }
   function screenNote(){
-    var d=data, c=d.company||{};
-    var facts={name:c.name,what:c.oneliner,sector:c.sector,size:c.size,location:c.location,team_roles:d.team.roles.length,tools:names(d.tools.items,6),projects:names(d.projects.items,4),customers:names(d.customers.segments,4)};
-    return {facts:'The overview page for '+c.name+' is showing, built from public sources, with four tiles: team, tools, projects, customers. Company data: '+JSON.stringify(facts), ask:'The page for '+c.name+' is ready. In two short sentences, say what they do, then invite them to ask for the team, tools, projects or customers.'};
+    var d=data, c=d.company||{}, ready=PARTS.slice(1).filter(function(k){ return pstate[k]==='ok'; }), wait=PARTS.slice(1).filter(function(k){ return pstate[k]!=='ok'; });
+    var facts={name:c.name,what:c.oneliner,sector:c.sector,size:c.size,location:c.location};
+    if(d.team) facts.team_roles=d.team.roles.length;
+    if(d.tools) facts.tools=names(d.tools.items,6);
+    if(d.projects) facts.projects=names(d.projects.items,4);
+    if(d.customers) facts.customers=names(d.customers.segments,4);
+    return {facts:'The overview page for '+c.name+' is showing, built from public sources, with four tiles: team, tools, projects, customers. Ready: '+(ready.join(', ')||'none')+'.'+(wait.length?' Still loading or not loaded: '+wait.join(', ')+'.':'')+' Company data: '+JSON.stringify(facts), ask:'The page for '+c.name+' is on screen. In two short sentences, say what they do, then invite them to ask for '+(ready.length?ready.join(', '):'an area')+(wait.length?' (the rest is still filling in)':'')+'.'};
   }
-
-  function openForm(){ $('startrow').hidden=true; $('form').hidden=false; try{ $('q').focus({preventScroll:true}); }catch(e){} }
-  $('start').addEventListener('click',function(){ unlockAudio(); openForm(); $('abubble').textContent=''; begin(''); });
-  $('skip').addEventListener('click',function(){ openForm(); typeOut($('abubble'),"Type your company name here, and I'll build your workspace."); });
+  /* quiet facts as the header and each part land: context for the voice, no speech */
+  function headFacts(){ var c=data.company||{}; return 'The header for '+c.name+' is on screen now: '+JSON.stringify({name:c.name,what:c.oneliner,sector:c.sector,size:c.size,location:c.location})+'. The tiles are still filling in.'; }
+  function partFacts(k){
+    var d=data[k];
+    if(k==='team') return 'The team tile just filled in: '+d.roles.length+' roles, e.g. '+d.roles.slice(0,6).map(function(r){ return r.title; }).join('; ')+'.';
+    if(k==='customers') return 'The customers tile just filled in. Segments: '+names(d.segments,5)+'. Channels: '+names(d.channels,5)+'.';
+    return 'The '+k+' tile just filled in: '+names(d.items,8)+'.';
+  }
 
   /* the mascot types when it is not talking */
   var typeGen=0;
   function typeOut(node,text,done){ var gen=++typeGen, i=0, caret=el('span','caret'); node._g=gen; node.textContent=''; var t=document.createTextNode(''); node.appendChild(t); node.appendChild(caret);
     if(reduce){ t.data=text; caret.remove(); return done&&done(); }
     (function stepT(){ if(node._g!==gen) return; t.data=text.slice(0,++i); if(i<text.length) setTimeout(stepT, /[,.!]/.test(text[i-1])?200:24); else { setTimeout(function(){ caret.remove(); },900); done&&done(); } })(); }
-  setTimeout(function(){ if(!$('abubble').textContent) typeOut($('abubble'),"Hey! Want to see what Za3tar would build for your company?"); },400);
+  // a company can be passed in from the homepage: /demo/?q=acme.com (prefilled, never auto-started: sound needs a tap)
+  var pre=(new URLSearchParams(location.search).get('q')||'').replace(/[\u0000-\u001f\u007f]/g,' ').replace(/\s+/g,' ').trim().slice(0,120);
+  if(pre){ $('q').value=pre; try{ $('go').focus({preventScroll:true}); }catch(e){} }
+  setTimeout(function(){ if(!$('abubble').textContent) typeOut($('abubble'),pre?"Hey, I'm Za3tar. Ready to build "+pre+"'s workspace? Tap the button and I'll talk you through it.":"Hey, I'm Za3tar. Tell me your company and I'll build its workspace while we chat."); },400);
 
   // test hook for the headless checks only: /demo/?debug=1
   if(/[?&]debug=1/.test(location.search)){
     var sent=[];
     window.__demo={intent:intent,companyFrom:companyFrom,notes:[],
-      load:function(j){ data=j; render(); },
+      // parts: feed a part's JSON as if /api/demo returned it; {error:'…'} makes it fail
+      build:function(q){ build(q,{noFetch:true}); },
+      loadPart:function(k,j){ land(gen,k,!(j&&j.error),j); },
+      state:function(){ return JSON.parse(JSON.stringify(pstate)); },
+      summarized:function(){ return summarized; },
+      load:function(j){ build((j.company&&j.company.name)||'Company',{noFetch:true}); land(gen,'core',true,j); PARTS.slice(1).forEach(function(k){ var p=j[k]; if(p) land(gen,k,true,p); }); },
       say:function(u){ return onUtterance(u); },
       tap:function(label){ tap(label); },
-      build:function(q){ skeleton(q); },
       view:function(){ return currentView; },
       speak:function(text){ lastOut=0; onOut(String(text)); return spotOn&&spotOn.textContent; },
       spot:function(){ return spotOn&&spotOn.textContent; },
@@ -857,8 +960,6 @@ footer{border-top:1px solid var(--ink-18);padding:22px 0 40px}
       note:function(a,f,o){ note(a,f,o); }
     };
   }
-  // a website can be passed in: /demo/?q=acme.com
-  var pre=new URLSearchParams(location.search).get('q'); if(pre){ $('q').value=pre.slice(0,120); }
 })();
 </script>
 </body>
