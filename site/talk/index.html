@@ -1,0 +1,332 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>za3tar — talk to it</title>
+<meta name="description" content="Tell Za3tar who you are, talk for a few minutes about how your business runs, and get an honest read on where you are with AI.">
+<meta name="robots" content="noindex">
+<link rel="canonical" href="https://za3tar.ai/talk/">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<meta name="theme-color" content="#F2EEE2">
+<script defer src="/_vercel/insights/script.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,100..900&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#0B1710;--paper:#F2EEE2;--ink-66:rgba(11,23,16,.66);--ink-40:rgba(11,23,16,.4);--ink-18:rgba(11,23,16,.18);--ink-08:rgba(11,23,16,.08);--olive:#6F7F5A;--sans:"Archivo",ui-sans-serif,system-ui,-apple-system,"Helvetica Neue",Arial,sans-serif;--mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace}
+*{box-sizing:border-box;margin:0}
+[hidden]{display:none!important}
+body{background:var(--paper);color:var(--ink);font-family:var(--sans);line-height:1.5;-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none}
+.wrap{max-width:1200px;margin:0 auto;padding:0 max(24px,env(safe-area-inset-right)) 0 max(24px,env(safe-area-inset-left))}
+nav{display:flex;align-items:center;justify-content:space-between;height:64px}
+.logo{display:flex;align-items:center;gap:10px;font-stretch:78%;font-weight:700;font-size:22px;letter-spacing:-.01em}
+.logo img{width:22px;height:22px;display:block}
+.mono{font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-66)}
+.btn{display:inline-flex;align-items:center;gap:10px;border:1.5px solid var(--ink);background:var(--ink);color:var(--paper);font-size:15px;font-weight:600;padding:11px 18px;border-radius:6px;cursor:pointer;font-family:inherit;transition:background .15s,color .15s}
+.btn:hover{background:var(--paper);color:var(--ink)}
+.btn.ghost{background:transparent;color:var(--ink)}
+.btn.ghost:hover{background:var(--ink);color:var(--paper)}
+.btn[disabled]{opacity:.45;cursor:default;pointer-events:none}
+.btn .ar{font-family:var(--mono);font-size:14px}
+h1{font-size:clamp(36px,4.8vw,60px);font-weight:800;font-stretch:88%;letter-spacing:-.035em;line-height:.98;text-wrap:balance}
+.sub{margin-top:14px;font-size:clamp(16px,1.3vw,18px);color:var(--ink-66);max-width:52ch;text-wrap:pretty}
+
+/* intake */
+.intake{display:grid;grid-template-columns:minmax(0,7fr) minmax(0,5fr);gap:48px;align-items:start;padding:20px 0 48px}
+.form{display:grid;grid-template-columns:1fr 1fr;gap:14px 16px;margin-top:26px}
+.f{display:flex;flex-direction:column;gap:6px}
+.f.wide{grid-column:1/-1}
+.f label{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-66)}
+.f input,.f textarea,.f select{font:inherit;font-size:16px;color:var(--ink);background:transparent;border:1.5px solid var(--ink-18);border-radius:8px;padding:11px 12px;outline:none;width:100%}
+.f input:focus,.f textarea:focus,.f select:focus{border-color:var(--ink)}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{font-family:var(--mono);font-size:12px;padding:6px 11px;border:1.5px solid var(--ink-18);border-radius:999px;cursor:pointer;user-select:none;color:var(--ink-66)}
+.chip.on{border-color:var(--ink);background:var(--ink);color:var(--paper)}
+.markwrap{justify-self:end;width:100%;max-width:440px}
+.markwrap svg{width:100%;height:auto;display:block}
+.eye{transform-box:fill-box;transform-origin:center;transition:transform .11s ease-in}
+.eye.blink{transform:scaleY(.06)}
+.jaw{transition:transform .06s linear}
+
+/* session */
+.session{display:none;grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:40px;padding:8px 0 40px;align-items:start}
+.session.on{display:grid}
+.talk{display:flex;flex-direction:column;min-width:0}
+.talk .head{display:flex;align-items:center;gap:16px}
+.talk .head .z{width:88px;flex:none}
+.talk .head .z svg{width:100%;height:auto;display:block}
+.talk .head h2{font-size:clamp(26px,2.6vw,34px);font-weight:800;font-stretch:88%;letter-spacing:-.03em;line-height:1}
+.state{font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-66);margin-top:6px;display:flex;align-items:center;gap:10px}
+.state .dot{width:8px;height:8px;border-radius:50%;background:var(--ink-18)}
+.state.live .dot{background:var(--olive);animation:pulse 1.1s ease-in-out infinite}
+.state.speaking .dot{background:var(--ink);animation:pulse .5s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:.35}50%{opacity:1}}
+.lines{margin-top:18px;display:flex;flex-direction:column;gap:10px;max-height:52vh;overflow:auto;padding-right:6px}
+.line{font-size:16px;line-height:1.45;text-wrap:pretty;white-space:pre-wrap}
+.line.z{padding-left:14px;border-left:2px solid var(--ink)}
+.line.u{color:var(--ink-66)}
+.ctas{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px;align-items:center}
+.consent{font-size:12.5px;color:var(--ink-66);margin-top:14px;max-width:52ch;text-wrap:pretty}
+.err{color:#8a2d1f;font-size:14px;margin-top:8px}
+
+/* page */
+.page{min-width:0}
+.pagehead{display:flex;align-items:baseline;justify-content:space-between;gap:12px;border-bottom:1.5px solid var(--ink);padding-bottom:10px;margin-bottom:14px}
+.pagehead h2{font-size:clamp(22px,2.4vw,30px);font-weight:800;font-stretch:88%;letter-spacing:-.025em;line-height:1.05;min-width:0;flex:1;overflow-wrap:anywhere}
+.pagehead h2 .dim{color:var(--ink-40);font-weight:600}
+.cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;min-width:0}
+.card{border:1.5px solid var(--ink);border-radius:10px;padding:13px 15px;min-height:88px;min-width:0;overflow-wrap:anywhere;transition:border-color .3s}
+.card.empty{border:1.5px dashed var(--ink-40);color:var(--ink-40)}
+.card.empty .body{font-size:14px}
+.card.wide{grid-column:1/-1}
+.card .k{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-66);margin-bottom:8px;display:flex;justify-content:space-between}
+.card.empty .k{color:var(--ink-40)}
+.card ul{list-style:none;padding:0;display:flex;flex-direction:column;gap:6px}
+.card li{font-size:14.5px;line-height:1.4;text-wrap:pretty}
+.card li.new{animation:arrive .5s cubic-bezier(.2,.8,.2,1)}
+@keyframes arrive{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.pill{display:inline-block;font-family:var(--mono);font-size:11px;padding:2px 7px;border:1px solid var(--ink-18);border-radius:999px;margin:2px 6px 0 0;color:var(--ink-66)}
+.wf b{font-weight:700}
+.wf .meta{display:block;color:var(--ink-66);font-size:13.5px;margin-top:2px}
+.tag{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-40);margin-left:6px}
+.prov{font-family:var(--mono);font-size:11px;color:var(--ink-40);margin-top:12px;letter-spacing:.04em}
+
+/* assessment */
+.assess{margin-top:22px;border-top:1.5px solid var(--ink);padding-top:16px;animation:arrive .6s ease}
+.assess .k{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-66)}
+.assess h3{font-size:clamp(24px,2.6vw,34px);font-weight:800;font-stretch:88%;letter-spacing:-.025em;line-height:1.05;margin:6px 0 14px;text-wrap:balance}
+.meter{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:0 0 14px}
+.meter div{border-top:4px solid var(--ink-18);padding-top:8px;font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-40)}
+.meter div.on{border-top-color:var(--ink);color:var(--ink)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:8px}
+.two b{display:block;font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-66);margin-bottom:6px}
+.two ul{list-style:none;padding:0;display:flex;flex-direction:column;gap:5px}
+.two li{font-size:14.5px;padding-left:14px;position:relative;text-wrap:pretty}
+.two li:before{content:"";position:absolute;left:0;top:.6em;width:6px;height:6px;background:var(--ink)}
+.rec{display:grid;grid-template-columns:44px minmax(0,1fr);gap:12px;padding:12px 0;border-top:1px solid var(--ink-18)}
+.rec svg{width:36px;height:36px;display:block}
+.rec .kind{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--olive)}
+.rec b{display:block;font-size:18px;font-weight:700;font-stretch:90%;letter-spacing:-.015em;margin:2px 0 3px}
+.rec p{font-size:14.5px;color:var(--ink-66);text-wrap:pretty}
+.rec p+p{margin-top:3px;color:var(--ink)}
+footer{border-top:1px solid var(--ink-18);padding:22px 0 40px;display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
+@media(max-width:900px){
+  .intake{grid-template-columns:1fr;gap:20px}
+  .markwrap{order:-1;justify-self:end;width:44vw;max-width:220px}
+  .form{grid-template-columns:1fr}
+  .session.on{display:flex;flex-direction:column;gap:28px}
+  .lines{max-height:40vh}
+  .cards{grid-template-columns:1fr}
+  .two{grid-template-columns:1fr}
+}
+@media(prefers-reduced-motion:reduce){.card li.new,.assess{animation:none}.eye,.jaw{transition:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<nav>
+  <a class="logo" href="/"><img src="/brand/mark-mono.svg" alt="" width="22" height="22">za3tar</a>
+  <a class="btn ghost" href="/demo/">See how it works <span class="ar">→</span></a>
+</nav>
+
+<!-- ============ 0 · intake ============ -->
+<section class="intake" id="intake">
+  <div>
+    <h1>Talk to it.</h1>
+    <p class="sub">Tell Za3tar who you are, then talk for a few minutes about how your business runs. Your workspace fills in as you talk, and you end with an honest read on where you are with AI.</p>
+    <form class="form" id="form" autocomplete="on">
+      <div class="f"><label for="name">Your name</label><input id="name" required maxlength="60" placeholder="Ala"></div>
+      <div class="f"><label for="role">Your role</label><input id="role" maxlength="60" placeholder="Founder"></div>
+      <div class="f"><label for="company">Company</label><input id="company" required maxlength="60" placeholder="Madar Events"></div>
+      <div class="f"><label for="size">Team size</label><input id="size" maxlength="20" placeholder="6"></div>
+      <div class="f wide"><label for="what">What it does, in a line</label><input id="what" required maxlength="160" placeholder="Corporate events in Amman and Dubai, end to end"></div>
+      <div class="f wide"><label>Systems you already use</label>
+        <div class="chips" id="chips"></div>
+      </div>
+      <div class="f wide"><label for="ai">How the team uses AI today</label>
+        <select id="ai">
+          <option value="">Choose one</option>
+          <option>Not at all</option>
+          <option>A few people use ChatGPT on their own</option>
+          <option>AI is part of at least one shared workflow</option>
+          <option>Something runs on its own with a person reviewing</option>
+          <option>Not sure</option>
+        </select>
+      </div>
+      <div class="f wide">
+        <div class="ctas" style="margin-top:4px">
+          <button class="btn" type="submit" id="start">Start talking <span class="ar">→</span></button>
+          <span class="mono">about four minutes</span>
+        </div>
+        <p class="err" id="ferr" hidden></p>
+        <p class="consent">What you say and type is sent to our AI providers to hold the conversation and build the page. Nothing is stored on our side, and nothing here connects to your systems. Works best with headphones.</p>
+      </div>
+    </form>
+  </div>
+  <div class="markwrap" aria-hidden="true" id="bigmark"></div>
+</section>
+
+<!-- ============ 1 · session ============ -->
+<section class="session" id="session">
+  <div class="talk">
+    <div class="head"><div class="z" id="smallmark"></div><div><h2 id="greet">Za3tar</h2><div class="state" id="state"><span class="dot"></span><span id="stateText">connecting</span></div></div></div>
+    <div class="lines" id="lines"></div>
+    <div class="ctas">
+      <button class="btn ghost" id="stop">End and get the assessment <span class="ar">■</span></button>
+      <a class="btn" id="book" hidden target="_blank" rel="noopener" href="#">Book a session <span class="ar">→</span></a>
+      <button class="btn ghost" id="again" hidden>Start over</button>
+    </div>
+    <p class="err" id="err" hidden></p>
+  </div>
+  <div class="page" id="page">
+    <div class="pagehead"><h2 id="title"><span class="dim">Your company</span></h2><span class="mono">spoken · not connected</span></div>
+    <div class="cards" id="cards"></div>
+    <p class="prov">Every line here is something you said. Nothing was read from a system.</p>
+    <div class="assess" id="assess" hidden></div>
+  </div>
+</section>
+
+<footer class="mono"><span>za3tar · Dubai</span><a href="/try/">Prefer typing? Try it →</a></footer>
+</div>
+
+<script>
+(function(){
+  var MAX_MS=4*60*1000, WA='https://wa.me/962798885558?text=';
+  var $=function(id){return document.getElementById(id)};
+  var SYSTEMS=['WhatsApp','Google Sheets','Excel','Gmail / Outlook','Notion','Zoho','Odoo','QuickBooks','Xero','HubSpot','Salesforce','Shopify','POS','Talabat / delivery apps','Instagram DMs','Slack','Trello / Asana','Nothing much'];
+  var chips=$('chips'); SYSTEMS.forEach(function(s){ var c=document.createElement('span'); c.className='chip'; c.textContent=s; c.onclick=function(){c.classList.toggle('on')}; chips.appendChild(c); });
+
+  /* the mark: eye blinks, pupil follows/wanders, and the lower half is a jaw that moves with Za3tar's voice */
+  function markSvg(id){ return '<svg viewBox="56 14 134 134"><defs><clipPath id="ct'+id+'"><path d="M0 0H190V14C147.2 88 102 128 56 148L0 200Z"/></clipPath><clipPath id="cb'+id+'"><path d="M56 148C150 140 195.4 96 190 14H200V200H56Z"/></clipPath></defs><rect x="56" y="14" width="134" height="44" fill="#0B1710" clip-path="url(#ct'+id+')"/><g class="jaw" data-jaw><rect x="56" y="104" width="134" height="44" fill="#0B1710" clip-path="url(#cb'+id+')"/><path d="M190 14C195.4 96 150 140 56 148C102 128 147.2 88 190 14Z" fill="#0B1710"/></g><g class="eye" data-eye><circle cx="126" cy="36" r="11" fill="#F2EEE2"/><circle data-pupil cx="126" cy="36" r="5" fill="#0B1710"/></g></svg>'; }
+  $('bigmark').innerHTML=markSvg('a'); $('smallmark').innerHTML=markSvg('b');
+  var eyes=function(){return document.querySelectorAll('[data-eye]')}, pupils=function(){return document.querySelectorAll('[data-pupil]')}, jaws=function(){return document.querySelectorAll('[data-jaw]')};
+  function blink(){ eyes().forEach(function(e){e.classList.add('blink')}); setTimeout(function(){eyes().forEach(function(e){e.classList.remove('blink')})},130); setTimeout(blink,2600+Math.random()*4200); }
+  setTimeout(blink,1200);
+  var wx=0,wy=0,cx=0,cy=0,level=0;
+  setInterval(function(){ if(speaking){wx=0;wy=0;return;} var a=Math.random()*Math.PI*2,k=Math.random()<.3?0:3.5; wx=Math.cos(a)*k; wy=Math.sin(a)*k*.8; },1800);
+  (function tick(){ cx+=(wx-cx)*.12; cy+=(wy-cy)*.12; pupils().forEach(function(p){ p.setAttribute('transform','translate('+cx.toFixed(2)+' '+cy.toFixed(2)+')'); }); requestAnimationFrame(tick); })();
+  function mouth(rms){ level+=(rms-level)*.5; var open=Math.min(9,level*70); jaws().forEach(function(j){ j.style.transform='translateY('+open.toFixed(2)+'px)'; }); pupils().forEach(function(p){ p.setAttribute('r', (5+Math.min(2.5,level*25)).toFixed(2)); }); }
+
+  /* ---- state ---- */
+  var ctx=null, pc=null, stream=null, audio=null, dc=null, timer=null, ticker=null, t0=0, live=false, speaking=false, ended=false;
+  var you='', za='', history=[], seen={}, page=null, extracting=false, pendingExtract=false, lastExtractAt=0;
+  var state=$('state'), stateText=$('stateText'), lines=$('lines'), err=$('err');
+  function setState(cls,text){ state.className='state '+(cls||''); stateText.textContent=text; }
+  function fail(t){ err.textContent=t; err.hidden=false; }
+  function line(role,text){ var last=lines.lastElementChild; if(last&&last.dataset.role===role){ last.textContent=text; } else { var d=document.createElement('div'); d.className='line '+(role==='za3tar'?'z':'u'); d.dataset.role=role; d.textContent=text; lines.appendChild(d); } lines.scrollTop=lines.scrollHeight; }
+  function push(role,delta){ var last=history[history.length-1]; if(last&&last.role===role) last.text+=delta; else history.push({role:role,text:delta}); }
+
+  /* ---- intake → session ---- */
+  $('form').addEventListener('submit',function(e){
+    e.preventDefault();
+    var f=function(id){return $(id).value.trim()};
+    ctx={name:f('name'),role:f('role'),company:f('company'),size:f('size'),what:f('what'),ai:$('ai').value,systems:[].slice.call(chips.querySelectorAll('.chip.on')).map(function(c){return c.textContent})};
+    if(!ctx.name||!ctx.company||!ctx.what){ $('ferr').textContent='Name, company and what it does are enough to start.'; $('ferr').hidden=false; return; }
+    $('intake').style.display='none'; $('session').classList.add('on');
+    $('greet').textContent='Za3tar · with '+ctx.name;
+    seedPage(); begin();
+  });
+
+  /* ---- voice ---- */
+  var analyser=null, raf=null;
+  function watchOutput(remote){ try{ var ac=new (window.AudioContext||window.webkitAudioContext)(); if(ac.state==='suspended') ac.resume(); var src=ac.createMediaStreamSource(remote); analyser=ac.createAnalyser(); analyser.fftSize=512; src.connect(analyser); var buf=new Uint8Array(analyser.frequencyBinCount);
+    (function loop(){ analyser.getByteTimeDomainData(buf); var s=0; for(var i=0;i<buf.length;i++){var v=(buf[i]-128)/128; s+=v*v;} var rms=Math.sqrt(s/buf.length); var on=rms>0.02; if(on!==speaking){ speaking=on; if(live) setState(on?'speaking':'live', on?'za3tar is speaking':'listening'); } mouth(on?rms:0); raf=requestAnimationFrame(loop); })(); }catch(e){} }
+  async function begin(){
+    err.hidden=true; setState('','asking for the mic');
+    try{ stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true}}); }
+    catch(e){ return fail('Microphone access is needed to talk. Reload to try again.'); }
+    setState('','connecting');
+    pc=new RTCPeerConnection(); audio=new Audio(); audio.autoplay=true;
+    pc.ontrack=function(e){ audio.srcObject=e.streams[0]; watchOutput(e.streams[0]); };
+    stream.getTracks().forEach(function(t){ pc.addTrack(t,stream); });
+    dc=pc.createDataChannel('oai-events');
+    dc.onmessage=function(e){ var x; try{ x=JSON.parse(e.data);}catch(_){return;}
+      if(x.type==='error') fail(x.error&&x.error.message||'voice error');
+      else if(x.type==='session.closed') finish('the session ended');
+      else if(x.type==='session.input_transcript.delta'){ if(za){ push('za3tar',''); } you+=x.delta; za=''; line('you',you); push('you',x.delta); }
+      else if(x.type==='session.output_transcript.delta'){ if(you){ you=''; scheduleExtract(); } za+=x.delta; line('za3tar',za); push('za3tar',x.delta); }
+      if(window.__talkLog) window.__talkLog.push(x.type);
+    };
+    var offer=await pc.createOffer(); await pc.setLocalDescription(offer);
+    await new Promise(function(res){ if(pc.iceGatheringState==='complete') return res(); var t=setTimeout(res,1500); pc.onicegatheringstatechange=function(){ if(pc.iceGatheringState==='complete'){clearTimeout(t);res();} }; });
+    var r,j;
+    try{ r=await fetch('/api/live',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({sdp:pc.localDescription.sdp,context:ctx})}); j=await r.json(); }
+    catch(e){ return fail('Could not reach the voice service.'); }
+    if(!r.ok||j.error||!j.transport||!j.transport.sdp) return fail(j&&j.error||'Could not start the session.');
+    await pc.setRemoteDescription({type:'answer',sdp:j.transport.sdp});
+    live=true; t0=Date.now(); setState('live','listening');
+    // open the conversation ourselves: the voice waits to be spoken to unless nudged
+    var known=[ctx.company+(ctx.what?' ('+ctx.what+')':''), ctx.size?ctx.size+' people':'', ctx.systems.length?'on '+ctx.systems.slice(0,4).join(', '):'', ctx.ai&&ctx.ai!=='Not sure'?'AI today: '+ctx.ai.toLowerCase():''].filter(Boolean).join('; ');
+    var opener='Speak now, first. In two or three short sentences: greet '+ctx.name+' by name, thank them for filling in the form, say back in one breath what you already know ('+known+'), then ask one specific question about how the main thing they deliver moves from the first enquiry to done. Then stop and listen.';
+    var nudge=function(){ try{ dc.send(JSON.stringify({type:'session.instructions.append',event_id:(crypto.randomUUID?crypto.randomUUID():String(Date.now())),delegation_id:null,content:opener})); }catch(e){} };
+    if(dc.readyState==='open') nudge(); else dc.onopen=nudge;
+    ticker=setInterval(function(){ var left=Math.max(0,MAX_MS-(Date.now()-t0)); if(!speaking&&live) stateText.textContent='listening · '+Math.ceil(left/60000)+' min left'; },1000);
+    timer=setTimeout(function(){ finish('time is up'); },MAX_MS);
+  }
+  function cleanup(){ live=false; speaking=false; clearTimeout(timer); clearInterval(ticker); if(raf) cancelAnimationFrame(raf); mouth(0); try{dc&&dc.close();}catch(_){} try{pc&&pc.close();}catch(_){} if(stream) stream.getTracks().forEach(function(t){t.stop();}); pc=null; dc=null; stream=null; }
+
+  /* ---- the page ---- */
+  function msgs(){ return history.filter(function(h){return h.text.trim()}).map(function(h){return {role:h.role==='you'?'user':'assistant',content:h.text.trim().slice(0,1500)}}); }
+  function seedPage(){
+    page={company:{name:ctx.company,what:ctx.what,locations:[]},people:[{name:ctx.name,role:ctx.role||'—'}],systems:ctx.systems.filter(function(s){return s!=='Nothing much'}),workflows:[],sources_of_truth:[],never_automatic:[],open_questions:[],ai_use:{tools:[],used_for:[],who:null,tried_and_stalled:[]}};
+    if(ctx.ai&&ctx.ai!=='Not sure'&&ctx.ai!=='Not at all') page.ai_use.used_for=[ctx.ai];
+    render(page);
+  }
+  function scheduleExtract(){ pendingExtract=true; runExtract(); }
+  async function runExtract(){
+    if(extracting||!pendingExtract||ended) return; if(Date.now()-lastExtractAt<4000){ setTimeout(runExtract,4200); return; }
+    var m=msgs(); if(m.filter(function(x){return x.role==='user'}).length<1) return;
+    extracting=true; pendingExtract=false; lastExtractAt=Date.now();
+    try{ var r=await fetch('/api/try',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({mode:'page',messages:m,context:ctx})}); var j=await r.json(); if(r.ok&&j.page){ page=j.page; render(page); } }catch(e){}
+    extracting=false; if(pendingExtract) runExtract();
+  }
+  function esc(s){ return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]}); }
+  function li(html,key){ var l=document.createElement('li'); l.innerHTML=html; if(!seen[key]){ l.className='new'; seen[key]=1; } return l; }
+  function card(k,items,emptyText,wide){ var d=document.createElement('div'); d.className='card'+(items.length?'':' empty')+(wide?' wide':''); var h=document.createElement('div'); h.className='k'; h.innerHTML='<span>'+k+'</span><span>'+(items.length||'')+'</span>'; d.appendChild(h); if(!items.length){ var b=document.createElement('div'); b.className='body'; b.textContent=emptyText; d.appendChild(b);} else { var ul=document.createElement('ul'); items.forEach(function(x){ul.appendChild(x)}); d.appendChild(ul);} return d; }
+  function render(p){
+    $('title').innerHTML=(p.company.name?esc(p.company.name):'<span class="dim">Your company</span>')+(p.company.what?' <span class="dim">· '+esc(p.company.what)+'</span>':'');
+    var c=$('cards'); c.innerHTML='';
+    c.appendChild(card('People',p.people.map(function(x){return li('<b>'+esc(x.name)+'</b><span class="tag">'+esc(x.role)+'</span>','p:'+x.name)}),'Who is involved, and what each person owns.'));
+    c.appendChild(card('Systems',p.systems.map(function(x){return li('<span class="pill">'+esc(x)+'</span>','s:'+x)}).concat(p.company.locations.map(function(x){return li('<span class="pill">'+esc(x)+'</span><span class="tag">location</span>','l:'+x)})),'The sheets, apps and inboxes the work lives in.'));
+    c.appendChild(card('Workflows · where it breaks',p.workflows.map(function(w){ var m=[]; if(w.owner) m.push('owner: '+esc(w.owner)); if(w.approval) m.push('approval: '+esc(w.approval)); if(w.systems&&w.systems.length) m.push(w.systems.map(esc).join(' → ')); return li('<div class="wf"><b>'+esc(w.name)+'</b>'+(w.breaks_at?'<span class="meta">breaks at: '+esc(w.breaks_at)+'</span>':'')+(m.length?'<span class="meta">'+m.join(' · ')+'</span>':'')+'</div>','w:'+w.name)}),'How the main thing you deliver moves, and where it gets stuck.',true));
+    var ai=p.ai_use||{tools:[],used_for:[],who:null,tried_and_stalled:[]}; var aiItems=[];
+    ai.tools.forEach(function(t){aiItems.push(li('<span class="pill">'+esc(t)+'</span>','at:'+t))});
+    ai.used_for.forEach(function(t){aiItems.push(li(esc(t)+(ai.who?'<span class="tag">'+esc(ai.who)+'</span>':''),'au:'+t))});
+    ai.tried_and_stalled.forEach(function(t){aiItems.push(li(esc(t)+'<span class="tag">stalled</span>','as:'+t))});
+    c.appendChild(card('AI today',aiItems,'What the team uses already, and what fizzled.'));
+    c.appendChild(card('Never automatic',p.never_automatic.map(function(x){return li(esc(x),'n:'+x)}),'What should always go through a person.'));
+    c.appendChild(card('Still open',p.open_questions.map(function(x){return li(esc(x),'q:'+x)}),'What the conversation has not answered yet.',true));
+  }
+
+  /* ---- assessment ---- */
+  var GLYPH={learn:'<svg viewBox="113 23 26 26"><circle cx="126" cy="36" r="13" fill="#0B1710"/><circle cx="126" cy="36" r="11" fill="#F2EEE2"/><circle cx="126" cy="36" r="5" fill="#0B1710"/></svg>',connect:'<svg viewBox="56 14 135 134"><path d="M190 14C195.4 96 150 140 56 148C102 128 147.2 88 190 14Z" fill="#0B1710"/></svg>',build:'<svg viewBox="56 104 134 44"><defs><clipPath id="gb"><path d="M56 148C150 140 195.4 96 190 14H200V200H56Z"/></clipPath></defs><rect x="56" y="104" width="134" height="44" fill="#0B1710" clip-path="url(#gb)"/></svg>',teach:'<svg viewBox="56 14 134 44"><defs><clipPath id="gt"><path d="M0 0H190V14C147.2 88 102 128 56 148L0 200Z"/></clipPath></defs><rect x="56" y="14" width="134" height="44" fill="#0B1710" clip-path="url(#gt)"/></svg>'};
+  var LEVELS=['not started','a few people','team workflows','agents at work'];
+  async function finish(why){
+    if(ended) return; ended=true; cleanup(); $('stop').hidden=true; setState('', why+' · writing the assessment');
+    var m=msgs(); var a=$('assess'); a.hidden=false; a.innerHTML='<div class="k">Assessment</div><h3>Reading what you said…</h3>';
+    try{
+      var body=JSON.stringify({mode:'assess',messages:m.length?m:[{role:'user',content:'(no conversation)'}],context:ctx});
+      var r,j; for(var attempt=0;attempt<2;attempt++){ try{ r=await fetch('/api/try',{method:'POST',headers:{'content-type':'application/json'},body:body}); j=await r.json().catch(function(){return {error:'bad reply from the assessment ('+r.status+')'}}); if(r.ok&&!j.error) break; }catch(e){ j={error:'network: '+e.message}; } if(attempt===0) await new Promise(function(res){setTimeout(res,1500)}); }
+      if(!r||!r.ok||j.error) throw new Error((j&&j.error)||'assessment failed ('+(r&&r.status)+')');
+      if(j.page){ page=j.page; render(page); }
+      var idx=LEVELS.indexOf(j.level);
+      var h='<div class="k">Assessment · where '+esc(ctx.company)+' is with AI</div><h3>'+esc(j.headline)+'</h3><div class="meter">'+LEVELS.map(function(l,i){return '<div class="'+(i<=idx?'on':'')+'">'+l+'</div>'}).join('')+'</div>';
+      h+='<div class="two"><div><b>Already working</b><ul>'+(j.working||[]).map(function(x){return '<li>'+esc(x)+'</li>'}).join('')+(j.working&&j.working.length?'':'<li>—</li>')+'</ul></div><div><b>Gaps</b><ul>'+(j.gaps||[]).map(function(x){return '<li>'+esc(x)+'</li>'}).join('')+'</ul></div></div>';
+      h+='<div class="k" style="margin-top:12px">What we would look at first</div>';
+      (j.recommendations||[]).slice(0,3).forEach(function(s){ h+='<div class="rec">'+(GLYPH[s.kind]||'')+'<div><span class="kind">'+esc(s.kind)+'</span><b>'+esc(s.title)+'</b><p>'+esc(s.why)+'</p><p>'+esc(s.first_step)+'</p></div></div>'; });
+      a.innerHTML=h;
+      var txt='Hi, I talked to za3tar.ai about '+ctx.company+'. It read us as: '+j.level+'. First three things: '+(j.recommendations||[]).slice(0,3).map(function(s){return s.title}).join('; ')+'. I would like to book a session.';
+      $('book').href=WA+encodeURIComponent(txt); $('book').hidden=false; $('again').hidden=false;
+      setState('', why+' · assessment ready');
+      if(innerWidth<=900) a.scrollIntoView({behavior:'smooth',block:'start'});
+    }catch(e){ a.innerHTML='<div class="k">Assessment</div><h3>Could not write the assessment.</h3><p class="err">'+esc(e.message)+'</p>'; fail(e.message); $('again').hidden=false; }
+  }
+  $('stop').addEventListener('click',function(){ finish('ended'); });
+  $('again').addEventListener('click',function(){ location.reload(); });
+  addEventListener('pagehide',cleanup);
+})();
+</script>
+</body>
+</html>

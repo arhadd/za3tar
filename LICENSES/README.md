@@ -28,6 +28,14 @@ may implement the Za3tar protocol without adopting the application licence.
 The Za3tar application code that sends and parses those envelopes remains
 AGPL-3.0-only.
 
+## Website and brand assets (not licensed)
+
+`site/` holds the za3tar.ai website: its copy, design, brand marks, images,
+video and the site's serverless functions. It is published for reference and
+deployment only and is **not licensed for reuse** (all rights reserved). Neither
+the AGPL-3.0 nor the Apache-2.0 grant above applies to it. The brand marks are
+also covered by the brand-rights note below.
+
 ## Commercial services
 
 A hosted or managed Za3tar service can be offered separately. This repository

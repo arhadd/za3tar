@@ -1,0 +1,10 @@
+{
+  "redirects": [
+    {
+      "source": "/:path*",
+      "has": [{ "type": "host", "value": "www.za3tar.ai" }],
+      "destination": "https://za3tar.ai/:path*",
+      "permanent": true
+    }
+  ]
+}

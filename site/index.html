@@ -1,0 +1,480 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>za3tar — we help companies work</title>
+<meta name="description" content="za3tar helps you bring the latest AI tools and frameworks into your organisation and move to AI-native ways of working, through implementation and hands-on education.">
+<meta property="og:title" content="za3tar — we help companies work">
+<meta property="og:description" content="za3tar helps you bring the latest AI tools and frameworks into your organisation and move to AI-native ways of working, through implementation and hands-on education.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://za3tar.ai/">
+<meta property="og:image" content="https://za3tar.ai/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="za3tar — we help companies work">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://za3tar.ai/og.png">
+<link rel="canonical" href="https://za3tar.ai/">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<meta name="theme-color" content="#F2EEE2">
+<script defer src="/_vercel/insights/script.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,100..900&display=swap" rel="stylesheet">
+<style>
+:root{
+  /* mono: thyme black on limestone, nothing else (BRAND.md) */
+  --ink:#0B1710;
+  --paper:#F2EEE2;
+  --ink-66:rgba(11,23,16,.66);
+  --ink-18:rgba(11,23,16,.18);
+  --ink-08:rgba(11,23,16,.08);
+  --sans:"Archivo",ui-sans-serif,system-ui,-apple-system,"Helvetica Neue",Arial,sans-serif;
+  --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box;margin:0}
+html{scroll-behavior:smooth}
+@media(min-width:821px){html{scroll-snap-type:y proximity}.steps,.see,.page3{scroll-snap-align:start}}
+body{background:var(--paper);color:var(--ink);font-family:var(--sans);font-stretch:100%;line-height:1.5;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+a{color:inherit;text-decoration:none}
+.wrap{max-width:1200px;margin:0 auto;padding:0 max(24px,env(safe-area-inset-right)) 0 max(24px,env(safe-area-inset-left))}
+
+/* ---------- type ---------- */
+.mono{font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-66)}
+.display{font-stretch:88%;font-weight:800;letter-spacing:-.035em;line-height:.94;text-wrap:balance}
+.muted{color:var(--ink-66)}
+
+/* ---------- nav ---------- */
+nav{display:flex;align-items:center;justify-content:space-between;height:72px}
+.logo{display:flex;align-items:center;gap:10px;font-stretch:78%;font-weight:700;font-size:22px;letter-spacing:-.01em}
+.navr{display:flex;align-items:center;gap:22px;flex-wrap:nowrap;white-space:nowrap}
+.trylink{color:var(--ink);padding:8px 0}
+.trylink:hover{color:var(--olive)}
+.trylink .short{display:none}
+.logo img{width:22px;height:22px;display:block}
+.btn{display:inline-flex;align-items:center;gap:10px;border:1.5px solid var(--ink);background:var(--ink);color:var(--paper);font-size:15px;font-weight:600;padding:11px 18px;border-radius:6px;transition:background .15s,color .15s}
+.btn:hover{background:var(--paper);color:var(--ink)}
+.btn.ghost{background:transparent;color:var(--ink)}
+.btn.ghost:hover{background:var(--ink);color:var(--paper)}
+.btn .ar{font-family:var(--mono);font-size:14px}
+
+/* ---------- hero ---------- */
+.hero{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr);gap:32px;align-items:center;min-height:calc(100vh - 72px);min-height:calc(100svh - 72px);padding:0 0 48px}
+.hero h1{font-size:clamp(46px,7.6vw,110px)}
+.hero p{margin-top:26px;font-size:clamp(17px,1.5vw,20px);max-width:56ch;color:var(--ink-66);text-wrap:pretty;line-height:1.55}
+.ctas{display:flex;gap:12px;margin-top:34px;flex-wrap:wrap}
+.cue{display:none}
+@keyframes cue{0%,100%{transform:translateY(0)}50%{transform:translateY(5px)}}
+.flip{display:block;white-space:nowrap;line-height:1.08;margin-top:.04em}
+.flip .fw{font-family:var(--mono);font-weight:700;font-stretch:100%;letter-spacing:-.03em;color:#6F7F5A;font-size:.9em}
+.markwrap{justify-self:end;width:100%;max-width:560px}
+.markwrap svg{width:100%;height:auto;display:block}
+.eye{transform-box:fill-box;transform-origin:center;transition:transform .11s ease-in}
+.eye.blink{transform:scaleY(.06)}
+/* the mark disintegrates on scroll: pieces are drawn in a fixed overlay,
+   the in-flow svgs below only reserve layout and serve as no-js fallback */
+#overlay{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:5;display:none}
+body.fx #overlay{display:block}
+body.fx .markwrap svg,body.fx .howmark svg{visibility:hidden}
+body.fx .slot svg{visibility:visible;transition:opacity .25s}
+body.fx .slot svg rect,body.fx .slot svg path,body.fx .slot svg circle{fill:rgba(11,23,16,.05);stroke:rgba(11,23,16,.45);stroke-width:1.5px;stroke-dasharray:4 3;vector-effect:non-scaling-stroke}
+body.fx .slot.s-eye svg circle:not(:first-child){display:none}
+body.fx .slot.filled svg{opacity:0}
+.slot{height:76px;display:flex;align-items:flex-end;margin-bottom:14px}
+.slot svg{display:block}
+.slot.s-bar svg{width:118px;height:39px}
+.slot.s-leaf svg{width:66px;height:66px}
+.slot.s-eye svg{width:50px;height:50px}
+
+
+/* ---------- see it ---------- */
+.see{min-height:100vh;min-height:100svh;display:flex;flex-direction:column;justify-content:center;padding:48px 0 56px}
+.seelead{font-size:clamp(17px,1.5vw,20px);color:var(--ink-66);max-width:52ch;text-wrap:pretty;margin:-16px 0 32px}
+.doors{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 40px}
+.door{display:flex;flex-direction:column;border-top:1.5px solid var(--ink);padding:20px 0 24px;transition:color .15s}
+.door .k{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-66)}
+.door b{font-size:clamp(28px,3vw,40px);font-weight:700;font-stretch:88%;letter-spacing:-.025em;line-height:1;margin:18px 0 10px}
+.door p{font-size:15.5px;color:var(--ink-66);text-wrap:pretty;max-width:36ch}
+.door .go{margin-top:18px;font-weight:600;font-size:15px;display:inline-flex;gap:8px;align-items:center}
+.door:hover .go{color:var(--olive)}
+.watch{margin-top:28px;font-size:14.5px;color:var(--ink-66)}
+.watch a:hover{color:var(--ink)}
+@media(max-width:820px){.see{min-height:0;padding:36px 0 44px}}
+@media(max-width:700px){.doors{grid-template-columns:1fr;gap:8px}.door{padding:18px 0 20px}.door b{margin-top:12px}.seelead{margin:-8px 0 20px}}
+
+/* ---------- reveals ---------- */
+body.fx .rv{opacity:0;transform:translateY(14px);transition:opacity .6s ease,transform .6s cubic-bezier(.2,.8,.2,1)}
+body.fx .rv.in{opacity:1;transform:none}
+body.fx .row .rv:nth-child(2){transition-delay:.06s}
+body.fx .row .rv:nth-child(3){transition-delay:.14s}
+.markwrap,.howmark{cursor:pointer}
+
+/* ---------- sections ---------- */
+section{border-top:1px solid var(--ink-18);padding:48px 0 72px}
+.sh{font-size:clamp(26px,3vw,38px);font-weight:700;font-stretch:90%;letter-spacing:-.025em;line-height:1.1;margin-bottom:36px;text-wrap:balance}
+.sh small{display:block;font-size:15px;font-weight:400;font-stretch:100%;letter-spacing:0;color:var(--ink-66);margin-top:8px}
+
+
+.steps{min-height:100vh;min-height:100svh;display:flex;flex-direction:column;justify-content:center;padding:24px 0}
+.row{display:grid;grid-template-columns:150px minmax(0,4fr) minmax(0,7fr);gap:0 40px;padding:22px 0 26px;border-top:1.5px solid var(--ink);align-items:start}
+.row:first-child{border-top:0}
+.row .slot{height:auto;margin:0;align-items:flex-start;padding-top:6px}
+.rt h3{font-size:clamp(28px,3vw,40px);font-weight:700;font-stretch:88%;letter-spacing:-.025em;line-height:1;margin-bottom:12px}
+.rt .lead{font-size:17px;color:var(--ink-66);text-wrap:pretty;max-width:26ch}
+.rb p{font-size:clamp(16px,1.3vw,17.5px);line-height:1.5;text-wrap:pretty;max-width:60ch}
+.rb p+p{margin-top:10px}
+.how{display:grid;grid-template-columns:minmax(0,6fr) minmax(0,5fr);gap:64px;align-items:center}
+.page3{min-height:100vh;min-height:100svh;display:flex;flex-direction:column}
+.cta{flex:1;display:flex;align-items:center;padding:48px 0}
+.cta>.how{width:100%}
+.ctacopy h2{font-size:clamp(32px,4.2vw,58px);max-width:16ch}
+.ctacopy p{margin-top:20px;font-size:clamp(17px,1.5vw,20px);color:var(--ink-66);max-width:44ch;text-wrap:pretty}
+.ctacopy .ctas{margin-top:26px}
+.howmark{justify-self:end;width:100%;max-width:400px;position:sticky;top:96px}
+.howmark svg{width:100%;height:auto;display:block}
+
+
+/* ---------- close / footer ---------- */
+footer{border-top:1px solid var(--ink-18);padding:24px 0 40px}
+.fbar{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.flinks{display:flex;gap:22px}
+footer a:hover{color:var(--ink)}
+
+/* ---------- responsive ---------- */
+@media(max-width:980px){
+  .row{grid-template-columns:110px minmax(0,1fr);gap:0 28px}
+  .row .rb{grid-column:2;margin-top:12px}
+  .how{grid-template-columns:1fr;gap:36px}
+  .howmark{position:static;order:-1;justify-self:end;width:46vw;max-width:240px;margin-bottom:8px}
+}
+@media(max-width:820px){
+  .hero{grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr);gap:24px;min-height:calc(100vh - 64px);min-height:calc(100svh - 64px);padding:0 0 36px}
+  .hero h1{font-size:clamp(42px,7.4vw,64px)}
+  .markwrap{max-width:320px}
+  .hero p{margin-top:16px;font-size:17px}
+  .steps{min-height:0;padding:20px 0 40px}
+  .page3{min-height:100vh}
+  .ctas{margin-top:22px}
+  section{padding:36px 0 48px}
+  .cta{padding:64px 0 72px}
+}
+@media(max-width:700px){
+  /* phone: headline left, Z to its right, sub-line full width beneath */
+  /* phone: a poster. headline up top, the Z owning the middle, the line and the cue at the foot */
+  .hero{grid-template-columns:1fr;grid-template-rows:auto 1fr auto auto;gap:0;align-items:center;align-content:stretch;padding:22px 0 12px;min-height:calc(100vh - 64px);min-height:calc(100svh - 64px)}
+  .hero>div:first-child{display:contents}
+  .hero h1{grid-row:1;font-size:clamp(44px,12.5vw,64px)}
+  .markwrap{grid-row:2;order:0;justify-self:end;align-self:center;width:66vw;max-width:300px;margin:12px 0}
+  .hero p{grid-row:3;margin-top:6px;line-height:1.55;align-self:end}
+  .cue{grid-row:4;align-self:end;display:flex;align-items:center;gap:10px;font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-66);padding:18px 0 6px}
+  .cue .arr{display:inline-block;font-size:16px;color:var(--ink);animation:cue 1.6s ease-in-out infinite}
+  /* phone: closing heading left, reassembled Z to its right */
+  .how{grid-template-columns:minmax(0,1fr) 34vw;gap:0 12px;align-items:center}
+  .ctacopy{display:contents}
+  .ctacopy h2{grid-column:1;grid-row:1;font-size:clamp(24px,7vw,34px);max-width:none}
+  .howmark{grid-column:2;grid-row:1;order:0;position:static;justify-self:end;width:100%;max-width:none;margin:0}
+  .ctacopy p{grid-column:1/-1;grid-row:2;margin-top:28px}
+  .ctacopy .ctas{grid-column:1/-1;grid-row:3;margin-top:22px}
+  .fbar{gap:10px 22px}
+  .fbar a{display:inline-block;padding:10px 0;font-size:13px}
+  .flinks{gap:26px}
+}
+@media(max-width:700px) and (max-height:700px){
+  .markwrap{width:52vw;max-width:240px}
+  .hero h1{font-size:clamp(40px,11vw,56px)}
+}
+@media(max-width:560px){
+  nav .btn{padding:9px 14px;font-size:14px}
+  .navr{gap:14px}
+  .trylink{font-size:11px}
+  .trylink .full{display:none!important}
+  .trylink .short{display:inline!important}
+  footer{padding:32px 0 56px}
+  .row{grid-template-columns:72px minmax(0,1fr);gap:0 16px;padding:40px 0 44px}
+  .row .slot{grid-row:1;padding-top:4px}
+  .row .rt{grid-column:2}
+  .row .rb{grid-column:1/-1;margin-top:22px}
+  .rt h3{font-size:28px}
+  .rt .lead{max-width:none;font-size:16px}
+  .slot.s-bar svg{width:64px;height:21px}
+  .slot.s-leaf svg{width:44px;height:44px}
+  .slot.s-eye svg{width:36px;height:36px}
+  .ctacopy p{font-size:17px}
+  nav{height:64px}
+  .logo{font-size:20px}
+}
+@media(prefers-reduced-motion:reduce){
+  .eye,.pupil{transition:none!important}
+  .cue .arr{animation:none}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<nav>
+  <a class="logo" href="/"><img src="/brand/mark-mono.svg" alt="" width="22" height="22">za3tar</a>
+  <span class="navr"><a class="trylink mono" href="#see"><span class="full">See it on your business →</span><span class="short">Try it →</span></a><a class="btn" href="https://wa.me/962798885558?text=Hi%2C%20I%27d%20like%20to%20book%20a%20session." target="_blank" rel="noopener">Book a session <span class="ar">→</span></a></span>
+</nav>
+
+<header class="hero">
+  <div>
+    <h1 class="display">We help companies <span class="flip" id="flip"><span class="fw">work</span></span></h1>
+    <p>za3tar helps you bring the latest AI tools and frameworks into your organisation and move to AI-native ways of working, through implementation and hands-on education.</p>
+  </div>
+
+  <a class="cue" href="#steps" aria-label="See how it works"><span>See how it works</span><span class="arr">↓</span></a>
+
+  <!-- za3tar mark, mono variant (BRAND.md) — geometry verbatim; the dot is the eye -->
+  <div class="markwrap" aria-hidden="true">
+    <svg id="bigmark" viewBox="56 14 134 134">
+      <defs>
+        <clipPath id="ct"><path d="M0 0H190V14C147.2 88 102 128 56 148L0 200Z"/></clipPath>
+        <clipPath id="cb"><path d="M56 148C150 140 195.4 96 190 14H200V200H56Z"/></clipPath>
+      </defs>
+      <rect x="56" y="14" width="134" height="44" fill="#0B1710" clip-path="url(#ct)"/>
+      <rect x="56" y="104" width="134" height="44" fill="#0B1710" clip-path="url(#cb)"/>
+      <path d="M190 14C195.4 96 150 140 56 148C102 128 147.2 88 190 14Z" fill="#0B1710"/>
+      <g class="eye">
+        <circle cx="126" cy="36" r="11" fill="#F2EEE2"/>
+        <circle cx="126" cy="36" r="5" fill="#0B1710"/>
+      </g>
+    </svg>
+  </div>
+</header>
+
+<section class="steps" id="steps">
+  <div class="row">
+    <div class="slot s-eye" data-piece="eye"><svg viewBox="113 23 26 26"><circle cx="126" cy="36" r="13" fill="#0B1710"/><circle cx="126" cy="36" r="11" fill="#F2EEE2"/><circle cx="126" cy="36" r="5" fill="#0B1710"/></svg></div>
+    <div class="rt rv"><h3>Learn</h3><p class="lead">How your business actually runs, and where the time goes.</p></div>
+    <div class="rb rv"><p>Two weeks alongside your team, with an agent doing the watching and one of us in the loop. We follow the daily work: who knows what, where information sits, what keeps getting delayed, what depends on one person remembering.</p><p>It goes on one page you can open anywhere, and you finish with a shortlist of what is worth doing first.</p></div>
+  </div>
+  <div class="row">
+    <div class="slot s-leaf" data-piece="leaf"><svg viewBox="56 14 135 134"><path d="M190 14C195.4 96 150 140 56 148C102 128 147.2 88 190 14Z" fill="#0B1710"/></svg></div>
+    <div class="rt rv"><h3>Connect</h3><p class="lead">Your systems, wired together.</p></div>
+    <div class="rb rv"><p>Most of what a company needs to know already exists somewhere: a spreadsheet, an inbox, a calendar, a system someone set up years ago. We connect them one at a time and check that the right information reaches the right place, so people stop carrying it across by hand.</p><p>Every fact on the page shows where it came from.</p></div>
+  </div>
+  <div class="row">
+    <div class="slot s-bar" data-piece="bottom"><svg viewBox="56 104 134 44"><defs><clipPath id="fcb"><path d="M56 148C150 140 195.4 96 190 14H200V200H56Z"/></clipPath></defs><rect x="56" y="104" width="134" height="44" fill="#0B1710" clip-path="url(#fcb)"/></svg></div>
+    <div class="rt rv"><h3>Build</h3><p class="lead">The parts nobody sells software for.</p></div>
+    <div class="rb rv"><p>Every company has work that is specific to it, and off-the-shelf tools do not cover it. We build agents and small tools for those parts, using what we learned with your team. We ship one, watch it run, and adjust it with you.</p><p>You can see what it did and what it saved, and question any entry.</p></div>
+  </div>
+  <div class="row">
+    <div class="slot s-bar" data-piece="top"><svg viewBox="56 14 134 44"><defs><clipPath id="fct"><path d="M0 0H190V14C147.2 88 102 128 56 148L0 200Z"/></clipPath></defs><rect x="56" y="14" width="134" height="44" fill="#0B1710" clip-path="url(#fct)"/></svg></div>
+    <div class="rt rv"><h3>Teach</h3><p class="lead">Your team learns a new way of working.</p></div>
+    <div class="rb rv"><p>We work through real tasks together until people are using AI in their own work: running it, checking what it did, and telling when something needs a person. Someone on your side knows how it all fits and who to call.</p><p>We stay involved after it ships. Each month we look at what got done, what it saved, and what is still missing, and that sets what comes next.</p></div>
+  </div>
+</section>
+
+<section class="see" id="see">
+  <h2 class="sh rv">See it on your business.</h2>
+  <p class="seelead rv">Four minutes, and you leave with an honest read on where you are with AI: what already works, what doesn't, and the three things we would look at first.</p>
+  <div class="doors">
+    <a class="door rv" href="/talk/"><span class="k">By voice</span><b>Talk to it</b><p>It asks what we ask in a real session, and your page fills in as you speak.</p><span class="go">Start talking <span class="ar">→</span></span></a>
+    <a class="door rv" href="/try/"><span class="k">By typing</span><b>Type instead</b><p>Same questions, same assessment, no microphone.</p><span class="go">Start typing <span class="ar">→</span></span></a>
+  </div>
+  <p class="watch rv"><a href="/demo/">Watch the app, one minute <span class="ar">→</span></a></p>
+</section>
+
+<div class="page3">
+<section id="how" class="cta">
+  <div class="how">
+    <div class="ctacopy">
+      <h2 class="display rv">Less time thinking about AI tools. More time finding out what works for your business.</h2>
+      <p class="rv">Book a session and start building.</p>
+      <div class="ctas rv">
+        <a class="btn" href="https://wa.me/962798885558?text=Hi%2C%20I%27d%20like%20to%20book%20a%20session." target="_blank" rel="noopener">Book a session <span class="ar">→</span></a>
+        <a class="btn ghost" href="/talk/">Talk to it <span class="ar">→</span></a>
+      </div>
+    </div>
+    <!-- the four pieces reassemble here as the steps scroll by; static mark is the no-js fallback -->
+    <div class="howmark" aria-hidden="true">
+      <svg viewBox="56 14 134 134">
+        <defs><clipPath id="hct"><path d="M0 0H190V14C147.2 88 102 128 56 148L0 200Z"/></clipPath><clipPath id="hcb"><path d="M56 148C150 140 195.4 96 190 14H200V200H56Z"/></clipPath></defs>
+        <rect x="56" y="14" width="134" height="44" fill="#0B1710" clip-path="url(#hct)"/>
+        <rect x="56" y="104" width="134" height="44" fill="#0B1710" clip-path="url(#hcb)"/>
+        <path d="M190 14C195.4 96 150 140 56 148C102 128 147.2 88 190 14Z" fill="#0B1710"/>
+        <circle cx="126" cy="36" r="11" fill="#F2EEE2"/><circle cx="126" cy="36" r="5" fill="#0B1710"/>
+      </svg>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="mono fbar">
+    <span>za3tar · Dubai</span>
+    <span class="flinks"><a href="https://wa.me/962798885558?text=Hi%2C%20I%27d%20like%20to%20book%20a%20session." target="_blank" rel="noopener">Book a session →</a><a href="https://wa.me/962798885558?text=Hi%2C%20I%27d%20like%20to%20book%20a%20session." target="_blank" rel="noopener">WhatsApp</a></span>
+  </div>
+</footer>
+</div><!-- /page3 -->
+
+</div>
+
+<svg id="overlay" aria-hidden="true">
+  <defs>
+    <clipPath id="oct"><path d="M0 0H190V14C147.2 88 102 128 56 148L0 200Z"/></clipPath>
+    <clipPath id="ocb"><path d="M56 148C150 140 195.4 96 190 14H200V200H56Z"/></clipPath>
+  </defs>
+  <g id="pc-bottom"><rect x="56" y="104" width="134" height="44" fill="#0B1710" clip-path="url(#ocb)"/></g>
+  <g id="pc-leaf"><path d="M190 14C195.4 96 150 140 56 148C102 128 147.2 88 190 14Z" fill="#0B1710"/></g>
+  <g id="pc-top"><rect x="56" y="14" width="134" height="44" fill="#0B1710" clip-path="url(#oct)"/></g>
+  <g id="pc-eye">
+    <circle id="ring" cx="126" cy="36" r="13" fill="#0B1710" opacity="0"/>
+    <g class="eye" id="eye">
+      <circle id="sclera" cx="126" cy="36" r="11" fill="#F2EEE2"/>
+      <circle id="pupil" cx="126" cy="36" r="5" fill="#0B1710"/>
+    </g>
+  </g>
+</svg>
+<script>
+(function(){
+  var words=['work','sell','hire','ship','plan','scale','decide','deliver','respond','grow','run'];
+  var box=document.getElementById('flip'), w=box&&box.querySelector('.fw');
+  if(!box||!w||matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  // the word sits on its own line, so its width never moves the rest of the headline
+  // split-flap: each letter runs through random characters, then settles left to right
+  var chars='abcdefghijklmnopqrstuvwxyz', i=0, busy=false;
+  function scramble(next){
+    busy=true; var t0=performance.now(), dur=560, tick=0;
+    (function frame(now){
+      var p=Math.min(1,(now-t0)/dur), out='';
+      for(var k=0;k<next.length;k++){
+        var settle=0.25+(k/next.length)*0.7;
+        out+= p>=settle ? next[k] : chars[Math.random()*26|0];
+      }
+      if((tick++%2)===0||p>=1) w.textContent=out;
+      if(p<1) requestAnimationFrame(frame); else { w.textContent=next; busy=false; }
+    })(t0);
+  }
+  setInterval(function(){ if(busy) return; i=(i+1)%words.length; scramble(words[i]); },2600);
+})();
+(function(){
+  var reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var noHover=matchMedia('(hover: none)').matches;
+  var hero=document.querySelector('.markwrap svg');
+  var howZ=document.querySelector('.howmark svg');
+  var howSec=document.getElementById('how');
+  var overlay=document.getElementById('overlay');
+  if(reduce||!hero||!overlay||!howZ) return;
+  document.body.classList.add('fx');
+
+  /* ---- pieces: overlay group, its bbox in mark units, and the slot it flies to ---- */
+  var pieces=[
+    {g:document.getElementById('pc-eye'),    box:[113,23,26,26],  slot:document.querySelector('[data-piece=eye]'),    delay:0,   d2:0,   intro:[0,-90,.45]},
+    {g:document.getElementById('pc-leaf'),   box:[56,14,135,134], slot:document.querySelector('[data-piece=leaf]'),   delay:.07, d2:.62, intro:[120,-40,.2]},
+    {g:document.getElementById('pc-bottom'), box:[56,104,134,44], slot:document.querySelector('[data-piece=bottom]'), delay:.14, d2:.28, intro:[-140,60,.1]},
+    {g:document.getElementById('pc-top'),    box:[56,14,134,44],  slot:document.querySelector('[data-piece=top]'),    delay:.21, d2:.42, intro:[-120,-70,0]}
+  ];
+  var ring=document.getElementById('ring'), t0=performance.now(), introBlinked=false;
+  function ease(t){ return t<.5 ? 4*t*t*t : 1-Math.pow(-2*t+2,3)/2; }
+  function clamp(v){ return v<0?0:v>1?1:v; }
+
+  function layout(){
+    var vh=innerHeight, y=scrollY;
+    var h=hero.getBoundingClientRect();              // whole mark in the hero (live)
+    var s0=h.width/134, ox=h.left-56*s0, oy=h.top-14*s0;
+    var z=howZ.getBoundingClientRect();              // whole mark in "how we work" (live)
+    var s2=z.width/134, ox2=z.left-56*s2, oy2=z.top-14*s2;
+
+    // stage 1: hero -> four slots (a longer runway on phones, where the hero is short)
+    var firstSlot=pieces[0].slot.querySelector('svg').getBoundingClientRect();
+    var phone=innerWidth<=700;
+    var start=vh*(phone?.08:.14), end=(firstSlot.top+y)-vh*(phone?.42:.58);
+    if(end<start+(phone?360:240)) end=start+(phone?360:240);
+    var p1=clamp((y-start)/(end-start));
+    // intro: pieces fly in and assemble on first paint
+    var it=clamp((performance.now()-t0)/950);
+    dbg.p1=p1; dbg.p2=p2; dbg.it=it;
+
+    // stage 2: slots -> reassembled mark, paced by the steps
+    // paced by the steps, not the (sticky) mark box, so the end point stays put
+    var secTop=howSec.getBoundingClientRect().top+y;
+    var btn=howSec.querySelector('.ctacopy .btn').getBoundingClientRect();
+    var start2=secTop-vh*.72, end2=(btn.top+y)-vh*.52;
+    // the page may end before that point: never pace past the last scrollable pixel
+    var maxY=document.documentElement.scrollHeight-vh-4;
+    if(end2>maxY) end2=maxY;
+    if(end2<start2+320) start2=Math.max(end, end2-320);
+    if(start2<end) { start2=end; }
+    var p2=clamp((y-start2)/(end2-start2));
+
+    pieces.forEach(function(pc){
+      var t=pc.slot.querySelector('svg').getBoundingClientRect();
+      var s1=t.width/pc.box[2];
+      var cxm=pc.box[0]+pc.box[2]/2, cym=pc.box[1]+pc.box[3]/2;
+      var c0x=ox+cxm*s0, c0y=oy+cym*s0;            // in hero
+      var c1x=t.left+t.width/2, c1y=t.top+t.height/2; // in slot
+      var c2x=ox2+cxm*s2, c2y=oy2+cym*s2;          // in reassembled mark
+      var sc,cx,cy,ringA;
+      if(p2>0){
+        var e=ease(clamp((p2-pc.d2)/(1-pc.d2)));
+        sc=s1+(s2-s1)*e; cx=c1x+(c2x-c1x)*e; cy=c1y+(c2y-c1y)*e; ringA=1-e;
+      } else {
+        var e1=ease(clamp((p1-pc.delay)/(1-pc.delay)));
+        sc=s0+(s1-s0)*e1; cx=c0x+(c1x-c0x)*e1; cy=c0y+(c1y-c0y)*e1; ringA=e1;
+      }
+      if(it<1 && p1===0 && p2===0){
+        var ie=1-Math.pow(1-clamp((it-pc.intro[2])/(1-pc.intro[2])),3);   // ease-out, staggered
+        cx+=pc.intro[0]*s0*(1-ie); cy+=pc.intro[1]*s0*(1-ie); sc*=0.72+0.28*ie;
+        if(pc.g.id==='pc-eye'&&ie>=1&&!introBlinked){introBlinked=true; setTimeout(blink,60);}
+      }
+      pc.g.setAttribute('transform','translate('+(cx-cxm*sc).toFixed(2)+' '+(cy-cym*sc).toFixed(2)+') scale('+sc.toFixed(4)+')');
+      if(pc.g.id==='pc-eye') ring.setAttribute('opacity', ringA.toFixed(2));
+      pc.slot.classList.toggle('filled', p2===0 && ringA>=.97);   // ringA == this piece's stage-1 ease
+    });
+  }
+
+  /* ---- the eye: follows the cursor, wanders when idle, blinks ---- */
+  var eye=document.getElementById('eye'), pupil=document.getElementById('pupil'), sclera=document.getElementById('sclera');
+  var MAX=4.6, tx=0,ty=0,cx=0,cy=0, lastMove=0, wanderTimer, blinkTimer;
+  function lookAt(px,py){
+    var r=sclera.getBoundingClientRect(), ex=r.left+r.width/2, ey=r.top+r.height/2;
+    var dx=px-ex, dy=py-ey, d=Math.hypot(dx,dy)||1, k=Math.min(1,d/260)*MAX;
+    tx=dx/d*k; ty=dy/d*k;
+  }
+  function wander(){
+    var a=Math.random()*Math.PI*2, k=(Math.random()<.2?0:MAX*(0.55+Math.random()*0.45));
+    tx=Math.cos(a)*k; ty=Math.sin(a)*k*0.8;
+    wanderTimer=setTimeout(wander,1400+Math.random()*2200);
+  }
+  function blink(){
+    eye.classList.add('blink'); setTimeout(function(){eye.classList.remove('blink');},130);
+    if(Math.random()<.18) setTimeout(function(){eye.classList.add('blink');setTimeout(function(){eye.classList.remove('blink');},120);},260);
+    blinkTimer=setTimeout(blink,2600+Math.random()*4200);
+  }
+  function attend(){ lastMove=Date.now(); if(wanderTimer){clearTimeout(wanderTimer);wanderTimer=null;} }
+  if(!noHover){
+    addEventListener('mousemove',function(e){ attend(); lookAt(e.clientX,e.clientY); },{passive:true});
+  } else {
+    // the eye follows a thumb, and glances the way the page is scrolling
+    addEventListener('touchmove',function(e){ var t=e.touches[0]; if(t){ attend(); lookAt(t.clientX,t.clientY); } },{passive:true});
+    var lastY=scrollY;
+    addEventListener('scroll',function(){ var d=scrollY-lastY; lastY=scrollY; if(Math.abs(d)<2) return; attend(); tx=0; ty=(d>0?1:-1)*MAX*.85; },{passive:true});
+    wander();
+  }
+  setInterval(function(){ if(!wanderTimer && Date.now()-lastMove>(noHover?1400:2600)) wander(); },600);
+  // tap the mark: a blink and a quick dart
+  ['.markwrap','.howmark'].forEach(function(sel){ var el=document.querySelector(sel); if(!el) return;
+    el.addEventListener('click',function(){ blink(); attend(); tx=(Math.random()<.5?-1:1)*MAX; ty=-MAX*.4; setTimeout(function(){tx=0;ty=0;},420); }); });
+  // reveals
+  if('IntersectionObserver' in window){
+    var io=new IntersectionObserver(function(es){ es.forEach(function(en){ if(en.isIntersecting){ en.target.classList.add('in'); io.unobserve(en.target);} }); },{rootMargin:'0px 0px -8% 0px',threshold:.15});
+    document.querySelectorAll('.rv').forEach(function(el){ io.observe(el); });
+  } else document.querySelectorAll('.rv').forEach(function(el){ el.classList.add('in'); });
+  blinkTimer=setTimeout(blink,1200);
+  document.addEventListener('visibilitychange',function(){ if(document.hidden) clearTimeout(blinkTimer); else blinkTimer=setTimeout(blink,600); });
+
+  var dbg={};
+  window.__za3tar=function(){ return {tx:tx,ty:ty,cx:cx,cy:cy,p1:dbg.p1,p2:dbg.p2,it:dbg.it,w:innerWidth}; };
+  function tick(){
+    layout();
+    cx+=(tx-cx)*0.14; cy+=(ty-cy)*0.14;
+    pupil.setAttribute('transform','translate('+cx.toFixed(2)+' '+cy.toFixed(2)+')');
+    requestAnimationFrame(tick);
+  }
+  tick();
+})();
+</script>
+</body>
+</html>

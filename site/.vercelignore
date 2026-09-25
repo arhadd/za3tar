@@ -1,0 +1,9 @@
+# only the site and its functions are served
+demo/record-walkthrough.mjs
+*.md
+*.bak*
+*.backup*
+*-backup*
+.env*
+node_modules
+video/
