@@ -762,15 +762,15 @@ footer{border-top:1px solid var(--ink-18);padding:22px 0 40px}
     return t.length>=2 && t.length<=80 ? t : null;
   }
   /* two "thinking out loud" beats while it builds, dropped if Za3tar is mid-sentence */
-  var NARRATE=[[8000,'One short line, thinking out loud: you are looking at who does what there, and the tools they talk about in public.'],[20000,'One short line: you are reading recent news and who their customers are, and it is nearly ready.']];
+  var NARRATE=[[8000,'Status: reading who does what there, and the tools they talk about in public.'],[20000,'Status: reading recent news and who their customers are; the page is nearly ready.']];
   async function lookup(q, spoken){
     if(looking) return; looking=true;
-    var nt=NARRATE.map(function(n){ return setTimeout(function(){ if(looking&&vlive) note(n[1],null,{key:'narrate',soft:true}); },n[0]); });
+    var nt=NARRATE.map(function(n){ return setTimeout(function(){ if(looking&&vlive) note(null,n[1],{key:'narrate'}); },n[0]); });
     var p=run(q);
-    if(spoken&&vlive) note('The visitor gave their company, "'+q+'", and the workspace is being built on screen now. Say you are building it and will say what you are looking at while it loads. One or two short sentences.',null,{key:'lookup'});
+    if(spoken&&vlive) note('The visitor gave their company, "'+q+'", and the workspace is being built on screen now. Say you are building it now and it takes about half a minute, and while it loads ask them one question: what is their role there? Two short sentences.',null,{key:'lookup'});
     var res=await p; looking=false; nt.forEach(clearTimeout); dropNotes(['narrate','lookup']); idleState();
     if(!vlive) return res;
-    if(res==='ok'){ var s=screenNote(); lastScreenKey='overview'; note(s.ask,s.facts,{key:'screen'}); }
+    if(res==='ok'){ var s=screenNote(); lastScreenKey='overview'; note(s.ask+' If they told you their role or what takes their time while it loaded, tie one sentence to that.',s.facts,{key:'screen'}); }
     else if(res==='notfound') note('Nothing reliable came up for "'+q+'". Say so in one line and ask them to type the website address, like company.com.',null,{key:'screen'});
     else note('The lookup failed on our side. Apologise in one line and ask them to try the name again.',null,{key:'screen'});
     return res;
