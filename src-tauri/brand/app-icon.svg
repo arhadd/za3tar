@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <!-- Za3tar app icon: dark tile, shaded mark at 72% (BRAND.md favicon/app-icon spec) -->
+  <defs>
+    <clipPath id="ct"><path d="M0 0H190V14C147.2 88 102 128 56 148L0 200Z"/></clipPath>
+    <clipPath id="cb"><path d="M56 148C150 140 195.4 96 190 14H200V200H56Z"/></clipPath>
+    <linearGradient id="g" x1="190" y1="14" x2="56" y2="148" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#DFF06A"/><stop offset="1" stop-color="#8FA828"/>
+    </linearGradient>
+  </defs>
+  <rect x="0" y="0" width="1024" height="1024" rx="230" fill="#0B1710"/>
+  <g transform="translate(-164.5 66.5) scale(5.5)">
+    <rect x="56" y="14" width="134" height="44" fill="#F2EEE2" clip-path="url(#ct)"/>
+    <rect x="56" y="104" width="134" height="44" fill="#F2EEE2" clip-path="url(#cb)"/>
+    <path d="M190 14C195.4 96 150 140 56 148C102 128 147.2 88 190 14Z" fill="url(#g)"/>
+    <circle cx="126" cy="36" r="11" fill="#C6DE3E"/>
+  </g>
+</svg>
