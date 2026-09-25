@@ -191,7 +191,7 @@ footer{border-top:1px solid var(--ink-18);padding:22px 0 40px}
 .btn.big{font-size:18px;padding:16px 26px;border-radius:999px;gap:12px}
 .btn .mic{width:20px;height:20px;fill:currentColor}
 .or{margin:26px 0 10px}
-.vbar{position:fixed;left:50%;bottom:max(16px,env(safe-area-inset-bottom));transform:translateX(-50%);width:min(720px,calc(100vw - 32px));display:flex;align-items:center;gap:14px;background:var(--paper);border:1.5px solid var(--ink);border-radius:16px;padding:10px 12px 10px 14px;box-shadow:0 10px 30px rgba(11,23,16,.18);z-index:20}
+.voicebar{position:fixed;left:50%;bottom:max(16px,env(safe-area-inset-bottom));transform:translateX(-50%);width:min(720px,calc(100vw - 32px));display:flex;align-items:center;gap:14px;background:var(--paper);border:1.5px solid var(--ink);border-radius:16px;padding:10px 12px 10px 14px;box-shadow:0 10px 30px rgba(11,23,16,.18);z-index:20}
 .vz{width:46px;flex:none}.vz svg{width:100%;height:auto;display:block}
 .vtext{flex:1;min-width:0}
 .vstate{font-family:var(--mono);font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-66);display:flex;align-items:center;gap:8px}
@@ -267,7 +267,7 @@ body.voice{padding-bottom:110px}
   <a class="btn" href="https://wa.me/962798885558?text=Hi%2C%20I%27d%20like%20to%20book%20a%20session." target="_blank" rel="noopener">Book a session <span class="ar">→</span></a>
 </div>
 <footer class="mono">za3tar · Dubai</footer>
-<div class="vbar" id="vbar" hidden>
+<div class="voicebar" id="vbar" hidden>
   <div class="vz" id="vz" aria-hidden="true"></div>
   <div class="vtext"><div class="vstate" id="vstate"><span class="dot"></span><span id="vstateText">connecting</span></div><div class="vline" id="vline"></div></div>
   <button class="btn ghost" type="button" id="vend">End</button>
