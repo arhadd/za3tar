@@ -106,8 +106,9 @@ body.fx .slot.filled svg{opacity:0}
 /* ---------- reveals ---------- */
 body.fx .rv{opacity:0;transform:translateY(14px);transition:opacity .6s ease,transform .6s cubic-bezier(.2,.8,.2,1)}
 body.fx .rv.in{opacity:1;transform:none}
-body.fx .row .rv:nth-child(2){transition-delay:.06s}
-body.fx .row .rv:nth-child(3){transition-delay:.14s}
+body.fx .card4:nth-child(2) .rv{transition-delay:.06s}
+body.fx .card4:nth-child(3) .rv{transition-delay:.12s}
+body.fx .card4:nth-child(4) .rv{transition-delay:.18s}
 .markwrap,.howmark{cursor:pointer}
 
 /* ---------- sections ---------- */
@@ -117,13 +118,13 @@ section{border-top:1px solid var(--ink-18);padding:48px 0 72px}
 
 
 .steps{min-height:100vh;min-height:100svh;display:flex;flex-direction:column;justify-content:center;padding:24px 0}
-.row{display:grid;grid-template-columns:150px minmax(0,4fr) minmax(0,7fr);gap:0 40px;padding:22px 0 26px;border-top:1.5px solid var(--ink);align-items:start}
-.row:first-child{border-top:0}
-.row .slot{height:auto;margin:0;align-items:flex-start;padding-top:6px}
-.rt h3{font-size:clamp(28px,3vw,40px);font-weight:700;font-stretch:88%;letter-spacing:-.025em;line-height:1;margin-bottom:12px}
-.rt .lead{font-size:17px;color:var(--ink-66);text-wrap:pretty;max-width:26ch}
-.rb p{font-size:clamp(16px,1.3vw,17.5px);line-height:1.5;text-wrap:pretty;max-width:60ch}
-.rb p+p{margin-top:10px}
+.cards{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:0 28px}
+.card4{border-top:1.5px solid var(--ink);padding:20px 0 8px;display:flex;flex-direction:column}
+.card4 .slot{height:66px;margin:0 0 18px;align-items:flex-end}
+.card4 h3{font-size:clamp(26px,2.4vw,34px);font-weight:700;font-stretch:88%;letter-spacing:-.025em;line-height:1;margin-bottom:12px}
+.card4 p{font-size:16.5px;line-height:1.45;text-wrap:pretty}
+.card4 .get{margin-top:14px;color:var(--ink-66);font-size:15.5px}
+.card4 .get span{display:block;font-family:var(--mono,ui-monospace,monospace);font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink);margin-bottom:4px}
 .how{display:grid;grid-template-columns:minmax(0,6fr) minmax(0,5fr);gap:64px;align-items:center}
 .page3{min-height:100vh;min-height:100svh;display:flex;flex-direction:column}
 .cta{flex:1;display:flex;align-items:center;padding:48px 0}
@@ -143,8 +144,7 @@ footer a:hover{color:var(--ink)}
 
 /* ---------- responsive ---------- */
 @media(max-width:980px){
-  .row{grid-template-columns:110px minmax(0,1fr);gap:0 28px}
-  .row .rb{grid-column:2;margin-top:12px}
+  .cards{grid-template-columns:repeat(2,minmax(0,1fr));gap:28px 28px}
   .how{grid-template-columns:1fr;gap:36px}
   .howmark{position:static;order:-1;justify-self:end;width:46vw;max-width:240px;margin-bottom:8px}
 }
@@ -191,12 +191,10 @@ footer a:hover{color:var(--ink)}
   .trylink .full{display:none!important}
   .trylink .short{display:inline!important}
   footer{padding:32px 0 56px}
-  .row{grid-template-columns:72px minmax(0,1fr);gap:0 16px;padding:40px 0 44px}
-  .row .slot{grid-row:1;padding-top:4px}
-  .row .rt{grid-column:2}
-  .row .rb{grid-column:1/-1;margin-top:22px}
-  .rt h3{font-size:28px}
-  .rt .lead{max-width:none;font-size:16px}
+  .cards{grid-template-columns:1fr;gap:8px}
+  .card4{display:grid;grid-template-columns:56px minmax(0,1fr);gap:0 16px;padding:22px 0 18px}
+  .card4 .slot{height:auto;margin:4px 0 0;align-items:flex-start}
+  .card4 h3{font-size:26px}
   .slot.s-bar svg{width:64px;height:21px}
   .slot.s-leaf svg{width:44px;height:44px}
   .slot.s-eye svg{width:36px;height:36px}
@@ -245,25 +243,24 @@ footer a:hover{color:var(--ink)}
 </header>
 
 <section class="steps" id="steps">
-  <div class="row">
+  <h2 class="sh rv">How it works</h2>
+  <div class="cards">
+  <div class="card4">
     <div class="slot s-eye" data-piece="eye"><svg viewBox="113 23 26 26"><circle cx="126" cy="36" r="13" fill="#0B1710"/><circle cx="126" cy="36" r="11" fill="#F2EEE2"/><circle cx="126" cy="36" r="5" fill="#0B1710"/></svg></div>
-    <div class="rt rv"><h3>Learn</h3><p class="lead">How your business actually runs, and where the time goes.</p></div>
-    <div class="rb rv"><p>Two weeks alongside your team, with an agent doing the watching and one of us in the loop. We follow the daily work: who knows what, where information sits, what keeps getting delayed, what depends on one person remembering.</p><p>It goes on one page you can open anywhere, and you finish with a shortlist of what is worth doing first.</p></div>
+    <div class="rv"><h3>Learn</h3><p>We spend two weeks with your team and map how the work really runs.</p><p class="get"><span>You get</span>one page of your business, and a shortlist of what to fix first.</p></div>
   </div>
-  <div class="row">
+  <div class="card4">
     <div class="slot s-leaf" data-piece="leaf"><svg viewBox="56 14 135 134"><path d="M190 14C195.4 96 150 140 56 148C102 128 147.2 88 190 14Z" fill="#0B1710"/></svg></div>
-    <div class="rt rv"><h3>Connect</h3><p class="lead">Your systems, wired together.</p></div>
-    <div class="rb rv"><p>Most of what a company needs to know already exists somewhere: a spreadsheet, an inbox, a calendar, a system someone set up years ago. We connect them one at a time and check that the right information reaches the right place, so people stop carrying it across by hand.</p><p>Every fact on the page shows where it came from.</p></div>
+    <div class="rv"><h3>Connect</h3><p>We link the tools you already use, so nobody copies information by hand.</p><p class="get"><span>You get</span>every fact on the page, with where it came from.</p></div>
   </div>
-  <div class="row">
+  <div class="card4">
     <div class="slot s-bar" data-piece="bottom"><svg viewBox="56 104 134 44"><defs><clipPath id="fcb"><path d="M56 148C150 140 195.4 96 190 14H200V200H56Z"/></clipPath></defs><rect x="56" y="104" width="134" height="44" fill="#0B1710" clip-path="url(#fcb)"/></svg></div>
-    <div class="rt rv"><h3>Build</h3><p class="lead">The parts nobody sells software for.</p></div>
-    <div class="rb rv"><p>Every company has work that is specific to it, and off-the-shelf tools do not cover it. We build agents and small tools for those parts, using what we learned with your team. We ship one, watch it run, and adjust it with you.</p><p>You can see what it did and what it saved, and question any entry.</p></div>
+    <div class="rv"><h3>Build</h3><p>We build agents for the work no software covers, then watch them run.</p><p class="get"><span>You get</span>a log of what each one did and saved.</p></div>
   </div>
-  <div class="row">
+  <div class="card4">
     <div class="slot s-bar" data-piece="top"><svg viewBox="56 14 134 44"><defs><clipPath id="fct"><path d="M0 0H190V14C147.2 88 102 128 56 148L0 200Z"/></clipPath></defs><rect x="56" y="14" width="134" height="44" fill="#0B1710" clip-path="url(#fct)"/></svg></div>
-    <div class="rt rv"><h3>Teach</h3><p class="lead">Your team learns a new way of working.</p></div>
-    <div class="rb rv"><p>We work through real tasks together until people are using AI in their own work: running it, checking what it did, and telling when something needs a person. Someone on your side knows how it all fits and who to call.</p><p>We stay involved after it ships. Each month we look at what got done, what it saved, and what is still missing, and that sets what comes next.</p></div>
+    <div class="rv"><h3>Teach</h3><p>We work beside your team until using AI is part of the job.</p><p class="get"><span>You get</span>a monthly review of what worked and what’s next.</p></div>
+  </div>
   </div>
 </section>
 
