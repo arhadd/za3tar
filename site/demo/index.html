@@ -502,7 +502,7 @@ body.voice{padding-bottom:110px}
     var r,j;
     try{ r=await fetch('/api/live',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({sdp:vpc.localDescription.sdp,mode:'demo'})}); j=await r.json(); }
     catch(e){ j={error:'Could not reach the voice service.'}; }
-    if(!r||!r.ok||j.error||!j.transport||!j.transport.sdp){ cleanup(); vstate('','voice is off'); vline('za',(j&&j.error)||'Voice could not start.'); nomic=true; hint(data?'page':''); return; }
+    if(!r||!r.ok||j.error||!j.transport||!j.transport.sdp){ cleanup(); vstate('','voice is off'); vline('za','My voice isn’t working right now, but I can still build it. Tap the tiles to explore.'); nomic=true; hint(data?'page':''); if(!$('ask').hidden) typeOut($('abubble'),'Sorry, my voice isn’t working right now. Type your company anyway and I’ll still build your workspace.'); return; }
     await vpc.setRemoteDescription({type:'answer',sdp:j.transport.sdp});
     vlive=true; vt0=Date.now(); vstate('live','listening'); hint(data?'page':looking?'looking':'ask');
     var opener=data
