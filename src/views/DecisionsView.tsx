@@ -50,7 +50,7 @@ export function DecisionRow({
             className="self-start text-[12px] text-olive hover:text-ink"
           >
             {d.person ? `${d.person} · ` : ""}
-            {d.meeting_title || "untitled meeting"} ·{" "}
+            {d.meeting_title || "untitled note"} ·{" "}
             {relDate(d.meeting_created)} ↗
           </button>
         )}
@@ -118,7 +118,7 @@ export function DecisionsView({
       </div>
       {decisions.length === 0 && (
         <Empty>
-          No decisions yet. They appear here once a meeting is processed.
+          No decisions yet. They appear here once a note is processed.
         </Empty>
       )}
       {groups.map((g) => {

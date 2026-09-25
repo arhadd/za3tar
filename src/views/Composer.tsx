@@ -80,7 +80,7 @@ export function Composer({
             onChange={(e) => onChange({ ...draft, thread: e.target.value })}
             className="max-w-[220px] rounded-md border border-line bg-white px-1.5 py-1 text-[12px] text-ink outline-none focus:border-ink"
           >
-            <option value="">no thread</option>
+            <option value="">no project</option>
             {threads.map((t) => (
               <option key={t.id} value={t.id}>
                 {t.title}

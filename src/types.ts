@@ -185,4 +185,6 @@ export type View =
   | "meetings"
   | "people"
   | "decisions"
-  | "followups";
+  | "followups"
+  /** every to-do across workspaces (the sidebar's To-dos) */
+  | "todos";

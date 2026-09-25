@@ -1,4 +1,4 @@
-// Threads: the initiatives inside a workspace. The list is the workspace's
+// Threads (called Projects on screen): the initiatives inside a workspace. The list is the workspace's
 // map of what is in motion; a thread's page is its living state — where it
 // stands, what is open, what was decided, what is still a question, and
 // every meeting or brief that fed it.
@@ -22,6 +22,13 @@ export const threadTone: Record<ThreadStatus, "accent" | "outline" | "olive"> =
     parked: "outline",
     done: "olive",
   };
+
+/** what the status is called on screen (the stored value stays) */
+export const statusLabel: Record<ThreadStatus, string> = {
+  active: "active",
+  parked: "on hold",
+  done: "done",
+};
 
 export type ThreadStats = {
   open: number;
@@ -76,11 +83,15 @@ export function ThreadCard({
           {t.title}
         </span>
         {stats.overdue > 0 && <Chip tone="alert">{stats.overdue} overdue</Chip>}
-        {stats.open > 0 && <Chip tone="accent">{stats.open} open</Chip>}
+        {stats.open > 0 && (
+          <Chip tone="accent">
+            {stats.open} to-do{stats.open === 1 ? "" : "s"}
+          </Chip>
+        )}
         {stats.proposed > 0 && (
           <Chip tone="outline">{stats.proposed} to confirm</Chip>
         )}
-        <Chip tone={threadTone[t.status]}>{t.status}</Chip>
+        <Chip tone={threadTone[t.status]}>{statusLabel[t.status]}</Chip>
       </div>
       {t.summary && (
         <p
@@ -92,8 +103,8 @@ export function ThreadCard({
       )}
       <span className="text-[11px] text-olive">
         {t.owner ? `${t.owner} · ` : ""}
-        {stats.entries} {stats.entries === 1 ? "entry" : "entries"}
-        {stats.last ? ` · moved ${relDate(stats.last)}` : ""}
+        {stats.entries} {stats.entries === 1 ? "note" : "notes"}
+        {stats.last ? ` · updated ${relDate(stats.last)}` : ""}
       </span>
     </button>
   );
@@ -119,8 +130,8 @@ export function ThreadsView({
   const [adding, setAdding] = useState(false);
   const [title, setTitle] = useState("");
   const groups: { status: ThreadStatus; label: string }[] = [
-    { status: "active", label: "In motion" },
-    { status: "parked", label: "Parked" },
+    { status: "active", label: "Active" },
+    { status: "parked", label: "On hold" },
     { status: "done", label: "Done" },
   ];
   const unfiled = library.filter((s) => !s.thread).length;
@@ -128,9 +139,9 @@ export function ThreadsView({
   return (
     <div className="flex flex-col gap-6">
       <div className="flex items-center gap-2 px-1">
-        <Eyebrow>Threads</Eyebrow>
+        <Eyebrow>Projects</Eyebrow>
         <span className="text-[12px] text-olive">
-          one line per thing in motion. If it is not here, it is not in motion.
+          one line on where each project stands
         </span>
         <Button
           tone="quiet"
@@ -138,7 +149,7 @@ export function ThreadsView({
           className="ml-auto"
           onClick={() => setAdding((v) => !v)}
         >
-          {adding ? "cancel" : "+ thread"}
+          {adding ? "cancel" : "+ project"}
         </Button>
       </div>
       {adding && (
@@ -157,7 +168,7 @@ export function ThreadsView({
             autoFocus
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            placeholder="what is this initiative?"
+            placeholder="what is this project called?"
             className="arabic flex-1"
           />
           <Button tone="primary" size="sm" type="submit">
@@ -167,8 +178,8 @@ export function ThreadsView({
       )}
       {threads.length === 0 && !adding && (
         <Empty>
-          No threads yet. A thread is an initiative or project that moves over
-          weeks: give it a name and a "where it stands" line.
+          No projects yet. A project is anything that moves over weeks: give
+          it a name and a line on where it stands.
         </Empty>
       )}
       {groups.map((g) => {
@@ -193,8 +204,8 @@ export function ThreadsView({
       {unfiled > 0 && (
         <div className="flex items-center gap-2 rounded-lg border border-line bg-paper px-3 py-2 text-[12px] text-olive">
           <span>
-            {unfiled} {unfiled === 1 ? "entry" : "entries"} here not filed under a
-            thread yet.
+            {unfiled} {unfiled === 1 ? "note" : "notes"} here not under a project
+            yet.
           </span>
           {onSort && (
             <Button size="sm" tone="quiet" className="ml-auto" onClick={onSort}>
@@ -254,7 +265,7 @@ export function ThreadDetail({
         onClick={onBack}
         className="self-start text-[12px] text-olive hover:text-ink"
       >
-        ← all threads
+        ← all projects
       </button>
 
       {edit ? (
@@ -287,7 +298,7 @@ export function ThreadDetail({
               className="rounded-lg border border-line bg-white px-2 py-2 text-[13px] outline-none focus:border-ink"
             >
               <option value="active">active</option>
-              <option value="parked">parked</option>
+              <option value="parked">on hold</option>
               <option value="done">done</option>
             </select>
           </div>
@@ -322,13 +333,13 @@ export function ThreadDetail({
               onClick={async () => {
                 if (
                   confirm(
-                    `Delete the thread "${t.title}"? Its entries stay, unfiled.`,
+                    `Delete the project "${t.title}"? Its notes stay, just not under a project.`,
                   )
                 )
                   await onDelete(t);
               }}
             >
-              delete thread
+              delete project
             </Button>
           </div>
         </form>
@@ -336,7 +347,7 @@ export function ThreadDetail({
         <Card className="flex flex-col gap-2">
           <div className="flex items-center gap-2">
             <Eyebrow>Where it stands</Eyebrow>
-            <Chip tone={threadTone[t.status]}>{t.status}</Chip>
+            <Chip tone={threadTone[t.status]}>{statusLabel[t.status]}</Chip>
             {t.owner && <Chip tone="outline">{t.owner}</Chip>}
             <span className="text-[12px] text-olive">
               {t.updated ? `moved ${relDate(t.updated)}` : ""}
@@ -363,11 +374,11 @@ export function ThreadDetail({
 
       <section className="flex flex-col gap-2">
         <div className="flex items-center gap-2 px-1">
-          <Eyebrow>Open</Eyebrow>
+          <Eyebrow>To-dos</Eyebrow>
           {mineOpen.length > 0 && <Chip tone="accent">{mineOpen.length}</Chip>}
         </div>
         {mineOpen.length === 0 ? (
-          <Empty>Nothing open on this thread.</Empty>
+          <Empty>No to-dos on this project.</Empty>
         ) : (
           <Card pad={false} className="p-2">
             {mineOpen.map((oa) => {
@@ -466,7 +477,7 @@ export function ThreadDetail({
 
       <section className="flex flex-col gap-2">
         <div className="flex items-center gap-2 px-1">
-          <Eyebrow>Meetings & briefs</Eyebrow>
+          <Eyebrow>Notes</Eyebrow>
           {people.length > 0 && (
             <span className="text-[12px] text-olive">
               with {people.join(", ")}
@@ -478,12 +489,12 @@ export function ThreadDetail({
             className="ml-auto"
             onClick={onAddBrief}
           >
-            + brief
+            + note
           </Button>
         </div>
         {entries.length === 0 ? (
           <Empty>
-            Nothing filed here yet. Open a meeting and pick this thread.
+            No notes here yet. Open a note and pick this project.
           </Empty>
         ) : (
           <Card pad={false} className="p-2">
@@ -497,10 +508,10 @@ export function ThreadDetail({
                   dir="auto"
                   className="arabic min-w-0 flex-1 truncate text-start text-[13px]"
                 >
-                  {s.title || "Untitled meeting"}
+                  {s.title || "Untitled note"}
                 </span>
                 {s.person && <Chip tone="outline">{s.person}</Chip>}
-                {!s.has_audio && <Chip tone="outline">brief</Chip>}
+                {s.has_audio && <Chip tone="outline">recording</Chip>}
                 <span className="shrink-0 text-[12px] text-olive">
                   {relDate(s.created)}
                 </span>

@@ -116,7 +116,7 @@ export function MeetingsView({
 
       <div className="flex flex-col gap-2">
         <div className="flex items-center gap-2 px-1">
-          <Eyebrow>Meetings & briefs</Eyebrow>
+          <Eyebrow>Notes</Eyebrow>
           <Field
             value={q}
             onChange={(e) => setQ(e.target.value)}
@@ -130,7 +130,7 @@ export function MeetingsView({
               setBrief(brief ? null : { title: "", person: "", notes: "" })
             }
           >
-            {brief ? "cancel" : "+ brief"}
+            {brief ? "cancel" : "+ paste notes"}
           </Button>
         </div>
         {brief && (
@@ -143,8 +143,8 @@ export function MeetingsView({
             className="flex flex-col gap-2 rounded-xl border border-ink/40 bg-paper p-4"
           >
             <span className="text-[12px] text-olive">
-              A brief is a meeting without a recording: paste notes, a thread,
-              a message. Za3tar pulls out decisions and actions from it.
+              Paste meeting notes, a chat, or a message. Za3tar pulls out the
+              decisions and to-dos from it.
             </span>
             <div className="flex gap-2">
               <Field
@@ -172,14 +172,14 @@ export function MeetingsView({
             />
             <div>
               <Button tone="primary" size="sm" type="submit" disabled={busy}>
-                add brief
+                add note
               </Button>
             </div>
           </form>
         )}
         {library.length === 0 && !brief && (
           <Empty>
-            Nothing here yet. Hit Record when a meeting starts, or add a brief.
+            No notes yet. Hit Record when a meeting starts, or paste notes.
           </Empty>
         )}
         {library.length > 0 && shown.length === 0 && (
@@ -201,18 +201,18 @@ export function MeetingsView({
                   dir="auto"
                   className="arabic truncate text-start text-[14px] font-medium"
                 >
-                  {s.title || "Untitled meeting"}
+                  {s.title || "Untitled note"}
                 </span>
                 <span className="text-[12px] text-olive">
                   {s.person ? `${s.person} · ` : ""}
                   {relDate(s.created)}
-                  {s.has_audio ? ` · ${fmtDur(s.duration_secs)}` : " · brief"}
+                  {s.has_audio ? ` · ${fmtDur(s.duration_secs)}` : ""}
                 </span>
               </div>
               {!s.has_audio ? (
-                <Chip tone="outline">imported</Chip>
+                <Chip tone="outline">pasted</Chip>
               ) : s.has_notes ? (
-                <Chip tone="olive">notes</Chip>
+                <Chip tone="olive">recording</Chip>
               ) : s.has_transcript ? (
                 <Chip tone="outline">transcript</Chip>
               ) : (

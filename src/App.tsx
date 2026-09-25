@@ -5,9 +5,10 @@ import { MeetingsView } from "./views/MeetingsView";
 import { MeetingDetail } from "./views/MeetingDetail";
 import { PeopleView } from "./views/PeopleView";
 import { DecisionsView } from "./views/DecisionsView";
-import { FollowUpsView } from "./views/FollowUpsView";
+import { FollowUpsView, isMine } from "./views/FollowUpsView";
 import { WorkspaceView } from "./views/WorkspaceView";
-import { HomeView, isMine } from "./views/HomeView";
+import { HomeView } from "./views/HomeView";
+import { AskBox } from "./views/AskBox";
 import { ThreadsView, ThreadDetail } from "./views/ThreadsView";
 import { TalkPanel, type TalkState } from "./views/TalkPanel";
 import { ChatPanel, type ChatLine } from "./views/ChatPanel";
@@ -62,6 +63,28 @@ import type {
 } from "./types";
 
 const WS_KEY = "za3tar.workspace";
+
+/** what each view is called on screen (the brain's view ids stay) */
+const VIEW_LABEL: Record<View, string> = {
+  home: "Home",
+  todos: "To-dos",
+  overview: "Overview",
+  threads: "Projects",
+  meetings: "Notes",
+  people: "People",
+  decisions: "Decisions",
+  followups: "To-dos",
+};
+
+/** a workspace page's tabs, in order */
+const WS_TABS: View[] = [
+  "overview",
+  "threads",
+  "meetings",
+  "people",
+  "followups",
+  "decisions",
+];
 
 function App() {
   // capture + processing
@@ -136,6 +159,7 @@ function App() {
     }
   });
   const [view, setView] = useState<View>("home");
+  const [wsEdit, setWsEdit] = useState<Workspace | null>(null);
   const [userName, setUserName] = useState("");
   const [caps, setCaps] = useState<{
     transcription: boolean;
@@ -300,6 +324,7 @@ function App() {
       else if (routeOpen) setRouteOpen(null);
       else if (meetingOpen && phase !== "recording") closeMeeting();
       else if (threadOpen) setThreadOpen(null);
+      else if (wsEdit) setWsEdit(null);
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
@@ -482,7 +507,7 @@ function App() {
         owner: t.owner,
       });
       await refreshAll();
-      showFlash("thread moved");
+      showFlash("project updated");
     } catch (e) {
       setError(String(e));
     }
@@ -1150,6 +1175,9 @@ function App() {
     const D = home ? decisions : wsDecisions;
     const wsOf = (id: string) => workspaces.find((x) => x.id === id)?.name ?? id;
     lines.push(
+      "UI WORDS: on screen, threads are called projects, meetings & briefs are notes, open items are to-dos, routes are assistants, and the follow-ups view is To-dos. Say those words to the user; keep ids and op names exactly as below.",
+    );
+    lines.push(
       home
         ? `HOME view: everything across all workspaces (open items below are only the user's own) · today ${today}`
         : `workspace: ${wsName} (${wsId}) · today ${today}`,
@@ -1226,7 +1254,9 @@ function App() {
           }
           if (op.op === "done") await markOpenDone(oa);
           else await parkAction(oa, op.op === "park");
-          out.push(`${op.op}: ${oa.action.title}`);
+          out.push(
+            `${op.op === "done" ? "done" : op.op === "park" ? "later" : "back on"}: ${oa.action.title}`,
+          );
         } else if (op.op === "confirm" || op.op === "supersede") {
           const d = decisions.find((x) => dRefOf(x) === op.ref);
           if (!d) {
@@ -1246,7 +1276,7 @@ function App() {
             summary: op.summary ?? t.summary,
             status: (op.status as Thread["status"]) ?? t.status,
           });
-          out.push(`moved thread: ${t.title}`);
+          out.push(`updated project: ${t.title}`);
         } else if (op.op === "open_thread") {
           setThreadOpen(op.id);
           setView("threads");
@@ -1255,10 +1285,10 @@ function App() {
         } else if (op.op === "go") {
           setView(op.view as View);
           setMeetingOpen(false);
-          out.push(`showing ${op.view}`);
+          out.push(`showing ${VIEW_LABEL[op.view as View] ?? op.view}`);
         } else if (op.op === "brief") {
           await createBrief({ title: op.title, person: "", notes: op.notes });
-          out.push(`filed a brief: ${op.title}`);
+          out.push(`filed a note: ${op.title}`);
         } else if (op.op === "record") {
           if (phase !== "recording") await start();
           out.push("recording");
@@ -1283,7 +1313,7 @@ function App() {
             continue;
           }
           await openPast(m.dir);
-          out.push(`opened ${m.title || "untitled meeting"}`);
+          out.push(`opened ${m.title || "untitled note"}`);
         } else if (op.op === "draft") {
           if (!dir || !actions) {
             out.push("open a meeting with outcomes first");
@@ -1322,7 +1352,7 @@ function App() {
             owner: op.owner ?? null,
           });
           await refreshAll();
-          out.push(`in motion: ${t.title}`);
+          out.push(`new project: ${t.title}`);
         } else if (op.op === "describe_workspace") {
           const w = workspaces.find((x) => x.id === op.id || x.name.toLowerCase() === op.id.toLowerCase());
           if (!w) {
@@ -1480,10 +1510,10 @@ function App() {
       }
       if (n) {
         await refreshAll();
-        showFlash(`${n} thread ${n === 1 ? "line" : "lines"} refreshed from ${r.label}`);
+        showFlash(`${n} project ${n === 1 ? "update" : "updates"} from ${r.label}`);
       }
     } catch (e) {
-      setError(`thread lines: ${String(e)}`);
+      setError(`project updates: ${String(e)}`);
     } finally {
       setSyncing(false);
     }
@@ -1622,7 +1652,7 @@ function App() {
       mode === "onboarding"
         ? "Hi, I'm Za3tar. Let's set this up in a minute. What are you working on these days? Name the two or three things, in any language."
         : mode === "sorting"
-          ? `There ${wsLibrary.filter((x) => !x.thread).length === 1 ? "is one entry" : `are ${wsLibrary.filter((x) => !x.thread).length} entries`} here not filed under a thread. Want me to sort them? Say go, or tell me how.`
+          ? `There ${wsLibrary.filter((x) => !x.thread).length === 1 ? "is one note" : `are ${wsLibrary.filter((x) => !x.thread).length} notes`} here not under a project. Want me to sort them? Say go, or tell me how.`
           : "What do you want to look at?";
     setChatLines([{ role: "za3tar", text: opener }]);
   }
@@ -1730,7 +1760,9 @@ function App() {
           activity.push(`not sent to ${r.route}`);
           continue;
         }
-        activity.push(`handing to ${r.route}: ${r.message}`);
+        activity.push(
+          `passing to ${routesRef.current.find((x) => x.id === r.route)?.label ?? r.route}: ${r.message}`,
+        );
         const reply = await askRoute(r.route, r.message);
         if (reply) say = `${say}\n${reply}`.trim();
       }
@@ -1838,27 +1870,63 @@ function App() {
 
   // ── render ────────────────────────────────────────────────────────────
   const wsName = workspaces.find((w) => w.id === wsId)?.name ?? "Personal";
+  const inWorkspace = !showSettings && WS_TABS.includes(view);
+  const ws: Workspace = workspaces.find((w) => w.id === wsId) ?? {
+    id: wsId,
+    name: wsName,
+    created: 0,
+    description: "",
+    links: [],
+    runtime_command: "",
+  };
   const headline = showSettings
     ? "Settings"
     : view === "home"
-      ? "Home"
-      : view === "overview"
-      ? wsName
-      : view === "threads"
-      ? threadOpen
-        ? (threads.find((t) => t.id === threadOpen)?.title ?? "Thread")
-        : "Threads"
-      : view === "meetings"
       ? meetingOpen
         ? phase === "recording"
           ? "Recording"
-          : title.trim() || "Meeting"
-        : "Meetings"
-      : view === "people"
-        ? "People"
-        : view === "decisions"
-          ? "Decisions"
-          : "Follow-ups";
+          : title.trim() || "Note"
+        : "Home"
+      : view === "todos"
+        ? "To-dos"
+        : wsName;
+  const todayIso = new Date().toISOString().slice(0, 10);
+  const tabCount: Partial<Record<View, number>> = {
+    threads: wsThreads.filter((t) => t.status === "active").length,
+    meetings: wsLibrary.length,
+    people: wsPeople.filter((p) => p.workspaces.includes(wsId)).length,
+    followups: wsOpen.filter((o) => !o.action.parked).length,
+    decisions: wsDecisions.filter((d) => d.decision.status === "proposed").length,
+  };
+  const overdueHere = wsOpen.some(
+    (o) => !o.action.parked && !!o.action.due_date && o.action.due_date < todayIso,
+  );
+  const liveRoute = routes
+    .filter((r) => r.enabled)
+    .map((r) => ({ r, st: routeSessions[r.id]?.status }))
+    .find((x) => x.st === "ready" || x.st === "working" || x.st === "connecting");
+
+  function goView(v: View) {
+    setShowSettings(false);
+    setWsEdit(null);
+    setView(v);
+    setThreadOpen(null);
+    if (phase !== "recording") setMeetingOpen(false);
+  }
+
+  const askBox = (placeholder?: string, suggestions?: string[]) => (
+    <AskBox
+      placeholder={placeholder}
+      suggestions={suggestions}
+      workspaces={workspaces}
+      threads={threads}
+      onAsk={askZa3tar}
+      readAsk={caps?.fast ? readAsk : null}
+      routeLabel={(id) => routes.find((r) => r.id === id)?.label ?? id}
+      onTalk={startTalk}
+      talking={talk !== "idle"}
+    />
+  );
 
   const recordButton =
     phase === "recording" ? (
@@ -1944,94 +2012,102 @@ function App() {
         wsId={wsId}
         onSelectWorkspace={(id) => {
           setWsId(id);
-          setShowSettings(false);
-          setView("overview");
-          setThreadOpen(null);
-          if (phase !== "recording") setMeetingOpen(false);
+          goView("overview");
         }}
         onCreateWorkspace={createWorkspace}
         view={view}
-        onView={(v) => {
-          setView(v);
-          setShowSettings(false);
-          if (v === "threads") setThreadOpen(null);
-          if (v === "meetings" && phase !== "recording") setMeetingOpen(false);
-        }}
-        counts={{
-          home: openActions.filter(
-            (o) =>
-              !o.action.parked &&
-              isMine(o) &&
-              !!o.action.due_date &&
-              o.action.due_date < new Date().toISOString().slice(0, 10),
-          ).length,
-          overview: 0,
-          threads: wsThreads.filter((t) => t.status === "active").length,
-          meetings: wsLibrary.length,
-          people: wsPeople.length,
-          decisions: wsDecisions.filter((d) => d.decision.status === "proposed")
-            .length,
-          followups: wsOpen.filter((o) => !o.action.parked).length,
-        }}
-        runtimeReady={runtimeReady}
+        onHome={() => goView("home")}
+        onTodos={() => goView("todos")}
+        todosOnMe={openActions.filter((o) => !o.action.parked && isMine(o)).length}
+        inSettings={showSettings}
         onSettings={openSettings}
-        routes={routes.filter((r) => r.enabled)}
-        routeStatus={Object.fromEntries(
-          Object.values(routeSessions).map((x) => [x.route, x.status]),
-        )}
-        onRoute={(id) => {
-          setRouteOpen(id);
-          ensureRoute(id).catch((e) => setError(String(e)));
+        assistant={
+          liveRoute ? { label: liveRoute.r.label, status: liveRoute.st ?? "" } : null
+        }
+        onAssistant={() => {
+          if (!liveRoute) return;
+          setRouteOpen(liveRoute.r.id);
+          ensureRoute(liveRoute.r.id).catch((e) => setError(String(e)));
         }}
       />
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="flex items-center gap-4 border-b border-line px-8 py-4">
-          <div className="flex min-w-0 flex-col">
-            <span className="eyebrow text-olive">{view === "home" ? "everything" : wsName}</span>
-            <h1
-              dir="auto"
-              className="display arabic truncate text-start text-[22px] leading-tight"
-            >
-              {headline}
-            </h1>
-          </div>
-          <div className="ml-auto flex items-center gap-3">
-            {!chatMode && view !== "home" && (
-              <Button
-                tone="quiet"
-                size="lg"
-                onClick={() => openChat("chat")}
-                title="type to Za3tar"
+        <header className="flex flex-col gap-3 border-b border-line px-8 pt-4">
+          <div className={`flex items-center gap-4 ${inWorkspace ? "" : "pb-4"}`}>
+            <div className="flex min-w-0 flex-col gap-0.5">
+              <h1
+                dir="auto"
+                className="display arabic truncate text-start text-[22px] leading-tight"
               >
-                Chat
-              </Button>
-            )}
-            {talk === "idle" ? (
-              <Button tone="quiet" size="lg" onClick={startTalk} title="talk to Za3tar">
-                Talk
-              </Button>
-            ) : (
-              <Button
-                tone={talkMuted ? "quiet" : "accent"}
-                size="lg"
-                onClick={() => live.current?.setMuted(!talkMuted)}
-                title={talkMuted ? "unmute" : "mute"}
-              >
-                <span
-                  className={`inline-block h-2.5 w-2.5 rounded-full ${talkMuted ? "bg-olive" : "pulse bg-ink"}`}
-                />
-                {talk === "connecting" ? "Connecting…" : talkMuted ? "Muted" : "Listening"}
-              </Button>
-            )}
-            {busy && (
-              <span className="flex items-center gap-2 text-[12px] text-olive">
-                <span className="pulse inline-block h-1.5 w-1.5 rounded-full bg-ink" />
-                {busy}
-              </span>
-            )}
-            {recordButton}
+                {headline}
+              </h1>
+              {inWorkspace ? (
+                <div className="flex min-w-0 items-baseline gap-2">
+                  <p
+                    dir="auto"
+                    title={ws.description}
+                    className={`arabic truncate text-start text-[13px] ${
+                      ws.description ? "text-olive" : "text-olive/70"
+                    }`}
+                  >
+                    {ws.description || "Add a line on what this workspace is."}
+                  </p>
+                  <button
+                    onClick={() => {
+                      goView("overview");
+                      setWsEdit({ ...ws, links: ws.links.map((l) => ({ ...l })) });
+                    }}
+                    className="shrink-0 text-[12px] text-olive underline-offset-2 hover:text-ink hover:underline"
+                  >
+                    edit
+                  </button>
+                </div>
+              ) : !showSettings && view === "todos" ? (
+                <p className="text-[13px] text-olive">across all your workspaces</p>
+              ) : null}
+            </div>
+            <div className="ml-auto flex shrink-0 items-center gap-3">
+              {busy && (
+                <span className="flex items-center gap-2 text-[12px] text-olive">
+                  <span className="pulse inline-block h-1.5 w-1.5 rounded-full bg-ink" />
+                  {busy}
+                </span>
+              )}
+              {recordButton}
+            </div>
           </div>
+          {inWorkspace && (
+            <nav className="-mb-px flex gap-1 overflow-x-auto">
+              {WS_TABS.map((v) => {
+                const on = view === v;
+                const n = tabCount[v] ?? 0;
+                return (
+                  <button
+                    key={v}
+                    onClick={() => goView(v)}
+                    className={`flex shrink-0 items-center gap-1.5 border-b-2 px-2.5 pb-2.5 text-[13px] transition-colors ${
+                      on
+                        ? "border-ink text-ink"
+                        : "border-transparent text-olive hover:text-ink"
+                    }`}
+                  >
+                    {VIEW_LABEL[v]}
+                    {n > 0 && (
+                      <span
+                        className={`rounded px-1.5 text-[11px] tabular-nums ${
+                          v === "followups" && overdueHere
+                            ? "bg-thyme/90 text-ink"
+                            : "bg-ink/6 text-olive"
+                        }`}
+                      >
+                        {n}
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
+            </nav>
+          )}
         </header>
 
         <main className="flex-1 overflow-y-auto px-8 py-6">
@@ -2118,6 +2194,14 @@ function App() {
                 onClose={() => setShowSettings(false)}
                 routes={routesForm}
                 onRoutes={setRoutesForm}
+                routeStatus={Object.fromEntries(
+                  Object.values(routeSessions).map((x) => [x.route, x.status]),
+                )}
+                onOpenRoute={(id) => {
+                  setShowSettings(false);
+                  setRouteOpen(id);
+                  ensureRoute(id).catch((e) => setError(String(e)));
+                }}
                 hosted={!!caps?.hosted}
                 onSignIn={hostedSignIn}
                 onSignOut={hostedSignOut}
@@ -2139,25 +2223,17 @@ function App() {
                 open={openActions}
                 decisions={decisions}
                 library={library}
-                schedule={schedule}
-                runtimeReady={runtimeReady}
-                busy={!!busy}
-                onFetchToday={fetchToday}
                 onOpenMeeting={(d, ws) => {
                   setWsId(ws);
                   openPast(d);
                 }}
-                onOpenThread={(t) => {
-                  setWsId(t.workspace);
-                  setThreadOpen(t.id);
-                  setView("threads");
-                }}
                 onGoWorkspace={(id) => {
                   setWsId(id);
-                  setView("overview");
+                  goView("overview");
                 }}
+                onCreateWorkspace={createWorkspace}
+                onSeeTodos={() => goView("todos")}
                 onDone={markOpenDone}
-                onPark={parkAction}
                 onDecisionStatus={setDecisionStatus}
                 fresh={threads.length === 0 && library.length === 0}
                 onStartConversation={() => openChat("onboarding")}
@@ -2165,40 +2241,30 @@ function App() {
                 onAsk={askZa3tar}
                 readAsk={caps?.fast ? readAsk : null}
                 routeLabel={(id) => routes.find((r) => r.id === id)?.label ?? id}
-                sync={
-                  defaultRoute
-                    ? { label: defaultRoute.label, at: syncedAt, busy: syncing, run: () => void syncThreadLines(true) }
-                    : null
-                }
                 onTalk={startTalk}
+                talking={talk !== "idle"}
                 onRecord={start}
               />
             ) : view === "overview" && !(meetingOpen && phase === "recording") ? (
               <WorkspaceView
-                ws={
-                  workspaces.find((w) => w.id === wsId) ?? {
-                    id: wsId,
-                    name: wsName,
-                    created: 0,
-                    description: "",
-                    links: [],
-                    runtime_command: "",
-                  }
-                }
+                ws={ws}
                 library={wsLibrary}
                 people={wsPeople.filter((p) => p.workspaces.includes(wsId))}
                 open={wsOpen}
                 decisions={wsDecisions}
                 threads={wsThreads}
+                ask={askBox(`Ask about ${wsName}, or tell Za3tar what to write or do`)}
+                edit={wsEdit && wsEdit.id === wsId ? wsEdit : null}
+                setEdit={setWsEdit}
                 onOpenThread={(id) => {
                   setThreadOpen(id);
                   setView("threads");
                 }}
-                runtimeReady={runtimeReady}
                 onSave={saveWorkspace}
                 onOpenLink={openLink}
-                onGo={setView}
+                onGo={goView}
                 onOpenMeeting={openPast}
+                onDone={markOpenDone}
               />
             ) : view === "threads" && !meetingOpen ? (
               threadOpen && threads.find((t) => t.id === threadOpen) ? (
@@ -2272,11 +2338,15 @@ function App() {
                 backLabel={
                   meetingFrom?.view === "home"
                     ? "home"
-                    : meetingFrom?.view === "threads" && meetingFrom.thread
-                      ? (threads.find((t) => t.id === meetingFrom.thread)?.title ?? "thread")
-                      : meetingFrom?.view === "overview"
-                        ? "overview"
-                        : "all meetings"
+                    : meetingFrom?.view === "todos"
+                      ? "to-dos"
+                      : meetingFrom?.view === "threads" && meetingFrom.thread
+                        ? (threads.find((t) => t.id === meetingFrom.thread)?.title ?? "project")
+                        : meetingFrom?.view === "overview"
+                          ? "overview"
+                          : meetingFrom?.view === "followups"
+                            ? "to-dos"
+                            : "all notes"
                 }
                 onTranscribePast={transcribePast}
                 onMakeNotes={makeNotes}
@@ -2322,6 +2392,22 @@ function App() {
                 onOpenMeeting={openPast}
                 busy={!!busy}
               />
+            ) : view === "todos" ? (
+              <FollowUpsView
+                openActions={openActions}
+                workspaces={workspaces}
+                runtimeStatus={runtimeStatus}
+                runtimeReady={runtimeReady}
+                onSync={syncFollowups}
+                onDone={markOpenDone}
+                onPark={parkAction}
+                onNudge={nudge}
+                onOpenMeeting={(oa) => {
+                  setWsId(oa.workspace);
+                  openPast(oa.dir);
+                }}
+                busy={!!busy}
+              />
             ) : (
               <FollowUpsView
                 openActions={wsOpen}
@@ -2331,7 +2417,7 @@ function App() {
                 onDone={markOpenDone}
                 onPark={parkAction}
                 onNudge={nudge}
-                onOpenMeeting={openPast}
+                onOpenMeeting={(oa) => openPast(oa.dir)}
                 busy={!!busy}
               />
             )}
