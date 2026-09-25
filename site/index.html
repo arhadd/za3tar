@@ -91,18 +91,9 @@ body.fx .slot.filled svg{opacity:0}
 /* ---------- see it ---------- */
 .see{min-height:100vh;min-height:100svh;display:flex;flex-direction:column;justify-content:center;padding:48px 0 56px}
 .seelead{font-size:clamp(17px,1.5vw,20px);color:var(--ink-66);max-width:52ch;text-wrap:pretty;margin:-16px 0 32px}
-.doors{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 40px}
-.door{display:flex;flex-direction:column;border-top:1.5px solid var(--ink);padding:20px 0 24px;transition:color .15s}
-.door .k{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-66)}
-.door b{font-size:clamp(28px,3vw,40px);font-weight:700;font-stretch:88%;letter-spacing:-.025em;line-height:1;margin:18px 0 10px}
-.door p{font-size:15.5px;color:var(--ink-66);text-wrap:pretty;max-width:36ch}
-.door .go{margin-top:18px;font-weight:600;font-size:15px;display:inline-flex;gap:8px;align-items:center}
-.door:hover .go{color:var(--olive)}
-.watch{margin-top:28px;font-size:14.5px;color:var(--ink-66)}
-.watch a:hover{color:var(--ink)}
+.see .ctas{margin-top:0}
 @media(max-width:820px){.see{min-height:0;padding:36px 0 44px}}
-@media(max-width:700px){.doors{grid-template-columns:1fr;gap:8px}.door{padding:18px 0 20px}.door b{margin-top:12px}.seelead{margin:-8px 0 20px}}
-
+@media(max-width:700px){
 /* ---------- reveals ---------- */
 body.fx .rv{opacity:0;transform:translateY(14px);transition:opacity .6s ease,transform .6s cubic-bezier(.2,.8,.2,1)}
 body.fx .rv.in{opacity:1;transform:none}
@@ -213,7 +204,7 @@ footer a:hover{color:var(--ink)}
 
 <nav>
   <a class="logo" href="/"><img src="/brand/mark-mono.svg" alt="" width="22" height="22">za3tar</a>
-  <span class="navr"><a class="trylink mono" href="#see"><span class="full">See it on your business →</span><span class="short">Try it →</span></a><a class="btn" href="https://wa.me/962798885558?text=Hi%2C%20I%27d%20like%20to%20book%20a%20session." target="_blank" rel="noopener">Book a session <span class="ar">→</span></a></span>
+  <span class="navr"><a class="trylink mono" href="/demo/"><span class="full">See it on your business →</span><span class="short">Try it →</span></a><a class="btn" href="https://wa.me/962798885558?text=Hi%2C%20I%27d%20like%20to%20book%20a%20session." target="_blank" rel="noopener">Book a session <span class="ar">→</span></a></span>
 </nav>
 
 <header class="hero">
@@ -266,12 +257,8 @@ footer a:hover{color:var(--ink)}
 
 <section class="see" id="see">
   <h2 class="sh rv">See it on your business.</h2>
-  <p class="seelead rv">Four minutes, and you leave with an honest read on where you are with AI: what already works, what doesn't, and the three things we would look at first.</p>
-  <div class="doors">
-    <a class="door rv" href="/talk/"><span class="k">By voice</span><b>Talk to it</b><p>It asks what we ask in a real session, and your page fills in as you speak.</p><span class="go">Start talking <span class="ar">→</span></span></a>
-    <a class="door rv" href="/try/"><span class="k">By typing</span><b>Type instead</b><p>Same questions, same assessment, no microphone.</p><span class="go">Start typing <span class="ar">→</span></span></a>
-  </div>
-  <p class="watch rv"><a href="/demo/">Watch the app, one minute <span class="ar">→</span></a></p>
+  <p class="seelead rv">Type your company. In about a minute you see the page we would start from: your team, tools, projects and customers, and where agents would help first.</p>
+  <div class="ctas rv"><a class="btn" href="/demo/">Try it on your company <span class="ar">→</span></a></div>
 </section>
 
 <div class="page3">
@@ -282,7 +269,7 @@ footer a:hover{color:var(--ink)}
       <p class="rv">Book a session and start building.</p>
       <div class="ctas rv">
         <a class="btn" href="https://wa.me/962798885558?text=Hi%2C%20I%27d%20like%20to%20book%20a%20session." target="_blank" rel="noopener">Book a session <span class="ar">→</span></a>
-        <a class="btn ghost" href="/talk/">Talk to it <span class="ar">→</span></a>
+        <a class="btn ghost" href="/demo/">Try it on your company <span class="ar">→</span></a>
       </div>
     </div>
     <!-- the four pieces reassemble here as the steps scroll by; static mark is the no-js fallback -->
