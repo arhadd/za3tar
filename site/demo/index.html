@@ -310,7 +310,7 @@ body.voice{padding-bottom:110px}
   function show(id){ ['ask','load','co'].forEach(function(x){ $(x).hidden=(x!==id); }); document.querySelector('.cta').hidden=!(id==='co'&&data); var vb=$('vbar'); if(vb){ if(id==='ask') vb.hidden=true; else if(vpc||vlive) vb.hidden=false; } scrollTo(0,0); }
 
   /* ---- 1 → 2 ---- */
-  $('form').addEventListener('submit',function(e){ e.preventDefault(); var q=$('q').value.trim(); if(q.length<2) return fail('Type a company name or website.'); if(!vpc) begin(q); lookup(q, true); });
+  $('form').addEventListener('submit',function(e){ e.preventDefault(); unlockAudio(); var q=$('q').value.trim(); if(q.length<2) return fail('Type a company name or website.'); if(!vpc) begin(q); lookup(q, true); });
 
   /* the workspace appears straight away and fills in while the lookup runs */
   var buildTimers=[];
@@ -478,17 +478,20 @@ body.voice{padding-bottom:110px}
 
   $('vend').addEventListener('click',function(){ finish('ended'); });
 
-  var nomic=false, typedQ='';
+  var nomic=false, typedQ='', silentCtx=null;
+  function unlockAudio(){ if(vaudio) return; vaudio=new Audio(); vaudio.autoplay=true; vaudio.playsInline=true; try{ var pr=vaudio.play(); if(pr&&pr.catch) pr.catch(function(){}); }catch(e){} }
   async function begin(q){
     if(vlive||vpc) return;
+    unlockAudio();
     typedQ=q||'';
     $('err').hidden=true; if($('ask').hidden) $('vbar').hidden=false; document.body.classList.add('voice'); vstate('','asking for the mic'); vline('za','');
     try{ vstream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true}}); }
     catch(e){ vstream=null; nomic=true; }
     vstate('','connecting');
-    vpc=new RTCPeerConnection(); vaudio=new Audio(); vaudio.autoplay=true;
-    vpc.ontrack=function(e){ vaudio.srcObject=e.streams[0]; watchOutput(e.streams[0]); };
-    if(vstream) vstream.getTracks().forEach(function(t){ vpc.addTrack(t,vstream); }); else vpc.addTransceiver('audio',{direction:'recvonly'});
+    vpc=new RTCPeerConnection();
+    vpc.ontrack=function(e){ vaudio.srcObject=e.streams[0]; try{ var pr=vaudio.play(); if(pr&&pr.catch) pr.catch(function(){}); }catch(_){} watchOutput(e.streams[0]); };
+    if(!vstream){ try{ silentCtx=new (window.AudioContext||window.webkitAudioContext)(); var osc=silentCtx.createOscillator(), g=silentCtx.createGain(), dst=silentCtx.createMediaStreamDestination(); g.gain.value=0; if(silentCtx.state==='suspended') silentCtx.resume(); osc.connect(g); g.connect(dst); osc.start(); vstream=dst.stream; }catch(e){} }
+    if(vstream) vstream.getTracks().forEach(function(t){ vpc.addTrack(t,vstream); }); else vpc.addTransceiver('audio',{direction:'sendrecv'});
     vdc=vpc.createDataChannel('oai-events');
     var za='';
     vdc.onmessage=function(e){ var x; try{ x=JSON.parse(e.data); }catch(_){ return; }
@@ -515,7 +518,7 @@ body.voice{padding-bottom:110px}
     vwarn=setTimeout(function(){ note('SCREEN: time is almost up. Wrap up in one sentence and point them to the "Book a session" button.'); },MAX_MS-20000);
     vtimer=setTimeout(function(){ finish('time is up'); },MAX_MS);
   }
-  function cleanup(){ vlive=false; speaking=false; clearTimeout(vtimer); clearTimeout(vwarn); clearInterval(vticker); clearTimeout(heardTimer); if(raf) cancelAnimationFrame(raf); mouth(0); try{ vdc&&vdc.close(); }catch(_){} try{ vpc&&vpc.close(); }catch(_){} if(vstream) vstream.getTracks().forEach(function(t){ t.stop(); }); vpc=null; vdc=null; vstream=null; heard=''; }
+  function cleanup(){ vlive=false; speaking=false; clearTimeout(vtimer); clearTimeout(vwarn); clearInterval(vticker); clearTimeout(heardTimer); if(raf) cancelAnimationFrame(raf); mouth(0); try{ vdc&&vdc.close(); }catch(_){} try{ vpc&&vpc.close(); }catch(_){} if(vstream) vstream.getTracks().forEach(function(t){ t.stop(); }); try{ silentCtx&&silentCtx.close(); }catch(_){} silentCtx=null; vpc=null; vdc=null; vstream=null; heard=''; }
   function finish(why){ if(!vpc&&!vlive) return; cleanup(); hint(''); vstate('',why); vline('za','Want this for real? Tap “Book a session”.'); setTimeout(function(){ $('vbar').hidden=true; document.body.classList.remove('voice'); },6000); }
 
   /* what the visitor said, once they pause */
@@ -591,7 +594,7 @@ body.voice{padding-bottom:110px}
   }
 
   function openForm(){ $('startrow').hidden=true; $('form').hidden=false; try{ $('q').focus({preventScroll:true}); }catch(e){} }
-  $('start').addEventListener('click',function(){ openForm(); $('abubble').textContent=''; begin(''); });
+  $('start').addEventListener('click',function(){ unlockAudio(); openForm(); $('abubble').textContent=''; begin(''); });
   $('skip').addEventListener('click',function(){ openForm(); typeOut($('abubble'),"Type your company name here, and I'll build your workspace."); });
 
   /* the mascot says hello */
