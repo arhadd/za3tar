@@ -201,6 +201,9 @@ footer{border-top:1px solid var(--ink-18);padding:22px 0 40px}
 @keyframes vpulse{0%,100%{opacity:.35}50%{opacity:1}}
 .vline{font-size:15px;line-height:1.35;margin-top:3px;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
 .vline.you{color:var(--ink-66)}
+.vhint{font-size:13px;color:var(--olive);margin-top:4px}
+.vhint:empty{display:none}
+.vhint b{font-weight:600;color:var(--ink)}
 body.voice{padding-bottom:110px}
 .eye{transform-box:fill-box;transform-origin:center;transition:transform .11s ease-in}
 .eye.blink{transform:scaleY(.06)}
@@ -226,7 +229,7 @@ body.voice{padding-bottom:110px}
   <p class="sub">Tap the button and tell Za3tar. It reads what's public about your company and walks you through, by voice, the page we would start from: your team, tools, projects and customers, and where agents would help first.</p>
   <div class="talkgo">
     <button class="btn big" type="button" id="talk"><svg class="mic" viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Talk to Za3tar</button>
-    <span class="mono">about four minutes · best with headphones</span>
+    <span class="mono">tap, then say your company · about four minutes</span>
   </div>
   <p class="or mono">or type it</p>
   <form id="form" autocomplete="off">
@@ -269,7 +272,7 @@ body.voice{padding-bottom:110px}
 <footer class="mono">za3tar · Dubai</footer>
 <div class="voicebar" id="vbar" hidden>
   <div class="vz" id="vz" aria-hidden="true"></div>
-  <div class="vtext"><div class="vstate" id="vstate"><span class="dot"></span><span id="vstateText">connecting</span></div><div class="vline" id="vline"></div></div>
+  <div class="vtext"><div class="vstate" id="vstate"><span class="dot"></span><span id="vstateText">connecting</span></div><div class="vline" id="vline"></div><div class="vhint" id="vhint"></div></div>
   <button class="btn ghost" type="button" id="vend">End</button>
 </div>
 </div>
@@ -342,7 +345,7 @@ body.voice{padding-bottom:110px}
       var k=el('span','k'); k.appendChild(el('span',null,t.label)); k.appendChild(el('span',null,'→')); b.appendChild(k);
       b.appendChild(el('b',null,t.big(data)));
       b.appendChild(el('p',null,t.teaser(data)));
-      b.onclick=function(){ open(t.key); if(vlive) note(viewNote(t.key)); };
+      b.onclick=function(){ open(t.key); if(vlive){ hint(t.key==='team'?'team':'view'); note(viewNote(t.key)); } };
       g.appendChild(b);
     });
     v.appendChild(g);
@@ -432,6 +435,8 @@ body.voice{padding-bottom:110px}
   $('vz').innerHTML=markSvg('v');
   function note(text){ if(!vdc||vdc.readyState!=='open') return; try{ vdc.send(JSON.stringify({type:'session.instructions.append',event_id:(crypto.randomUUID?crypto.randomUUID():String(Date.now())),delegation_id:null,content:String(text).slice(0,3500)})); }catch(e){} }
   function vstate(cls,text){ $('vstate').className='vstate '+(cls||''); $('vstateText').textContent=text; }
+  var HINT={ask:'Say your company, like <b>“Careem”</b>',looking:'Looking it up… this takes about half a minute',page:'Try saying: <b>“show me the team”</b> · <b>“what tools?”</b> · <b>“customers”</b>',team:'Try: <b>“as an org chart”</b> · <b>“how would that work?”</b> · <b>“go back”</b>',view:'Try: <b>“how would that work?”</b> · <b>“show me the team”</b> · <b>“go back”</b>',flow:'Try: <b>“I want this for real”</b> · <b>“go back”</b>'};
+  function hint(k){ var h=$('vhint'); if(h) h.innerHTML=HINT[k]||''; }
   function vline(role,text){ var l=$('vline'); l.className='vline '+role; l.textContent=text; }
   function watchOutput(remote){ try{ var ac=new (window.AudioContext||window.webkitAudioContext)(); if(ac.state==='suspended') ac.resume(); var src=ac.createMediaStreamSource(remote), an=ac.createAnalyser(); an.fftSize=512; src.connect(an); var buf=new Uint8Array(an.frequencyBinCount);
     (function loop(){ an.getByteTimeDomainData(buf); var s2=0; for(var i=0;i<buf.length;i++){ var x=(buf[i]-128)/128; s2+=x*x; } var rms=Math.sqrt(s2/buf.length), on=rms>0.02; if(on!==speaking){ speaking=on; if(vlive) vstate(on?'speaking':'live', on?'za3tar is speaking':'listening'); } mouth(on?rms:0); raf=requestAnimationFrame(loop); })(); }catch(e){} }
@@ -463,7 +468,7 @@ body.voice{padding-bottom:110px}
     catch(e){ j={error:'Could not reach the voice service.'}; }
     if(!r||!r.ok||j.error||!j.transport||!j.transport.sdp){ var m=(j&&j.error)||'Could not start the voice session.'; cleanup(); $('vbar').hidden=true; document.body.classList.remove('voice'); return fail(m+' You can type your company instead.'); }
     await vpc.setRemoteDescription({type:'answer',sdp:j.transport.sdp});
-    vlive=true; vt0=Date.now(); vstate('live','listening');
+    vlive=true; vt0=Date.now(); vstate('live','listening'); hint(data?'page':'ask');
     var opener=data
       ? 'Speak now, first. '+screenSummary()
       : 'Speak now, first: one short sentence saying hi, then ask what company they are from, a name or a website. Then stop and listen.';
@@ -473,7 +478,7 @@ body.voice{padding-bottom:110px}
     vtimer=setTimeout(function(){ finish('time is up'); },MAX_MS);
   }
   function cleanup(){ vlive=false; speaking=false; clearTimeout(vtimer); clearTimeout(vwarn); clearInterval(vticker); clearTimeout(heardTimer); if(raf) cancelAnimationFrame(raf); mouth(0); try{ vdc&&vdc.close(); }catch(_){} try{ vpc&&vpc.close(); }catch(_){} if(vstream) vstream.getTracks().forEach(function(t){ t.stop(); }); vpc=null; vdc=null; vstream=null; heard=''; }
-  function finish(why){ if(!vpc&&!vlive) return; cleanup(); vstate('',why); vline('za','Want this for real? Tap “Book a session”.'); setTimeout(function(){ $('vbar').hidden=true; document.body.classList.remove('voice'); },6000); }
+  function finish(why){ if(!vpc&&!vlive) return; cleanup(); hint(''); vstate('',why); vline('za','Want this for real? Tap “Book a session”.'); setTimeout(function(){ $('vbar').hidden=true; document.body.classList.remove('voice'); },6000); }
 
   /* what the visitor said, once they pause */
   function flushHeard(){ clearTimeout(heardTimer); var u=heard.trim(); heard=''; if(u) onUtterance(u); }
@@ -488,11 +493,12 @@ body.voice{padding-bottom:110px}
     if(looking) return;
     var t=u.toLowerCase();
     if(!data || /\b(start over|another company|different company|try another)\b/.test(t)){
-      if(data){ data=null; show('ask'); note('SCREEN: back to the start. Ask which company they want to try next.'); return; }
+      if(data){ data=null; show('ask'); hint('ask'); note('SCREEN: back to the start. Ask which company they want to try next.'); return; }
       var q=companyFrom(u); if(!q) return;
-      looking=true; $('q').value=q;
+      looking=true; $('q').value=q; hint('looking');
       var slow=setTimeout(function(){ if(looking) note('SCREEN: still reading their website, LinkedIn and the news. Say one short line that it is nearly there, then wait.'); },14000);
       var res=await run(q); looking=false; clearTimeout(slow);
+      hint(res==='ok'?'page':'ask');
       if(res==='ok') note(screenSummary());
       else if(res==='notfound') note('SCREEN: nothing reliable came up for "'+q+'". Say so in one line and ask them to say the website address, like company dot com.');
       else note('SCREEN: the lookup failed on our side. Apologise in one line and ask them to say the company name again.');
@@ -515,7 +521,8 @@ body.voice{padding-bottom:110px}
   }
   function act(i){
     if(i.book){ var c=document.querySelector('.cta'); c.scrollIntoView({behavior:'smooth',block:'center'}); c.classList.remove('pulse'); void c.offsetWidth; c.classList.add('pulse'); note('SCREEN: the "Book a session" button is highlighted. In one line, say tapping it opens WhatsApp with us to set up a first session.'); return; }
-    if(i.flow){ if(currentPlay&&currentSteps){ currentPlay(); var f=document.querySelector('.flow'); if(f) f.scrollIntoView({behavior:'smooth',block:'center'}); note(flowNote()); } else note('SCREEN: no view is open yet. Ask which area they want a workflow for: team, tools, projects or customers.'); return; }
+    if(i.flow){ if(currentPlay&&currentSteps){ currentPlay(); hint('flow'); var f=document.querySelector('.flow'); if(f) f.scrollIntoView({behavior:'smooth',block:'center'}); note(flowNote()); } else note('SCREEN: no view is open yet. Ask which area they want a workflow for: team, tools, projects or customers.'); return; }
+    if(i.flow===undefined&&i.view) hint(i.view==='team'?'team':i.view==='overview'?'page':'view');
     if(i.view==='overview'){ overview(); scrollTo(0,$('co').offsetTop); note('SCREEN: back to the overview with four tiles: team, tools, projects, customers. Ask which one they want.'); return; }
     if(currentView!==i.view) open(i.view);
     if(i.view==='team'&&i.layout&&teamSet) teamSet(i.layout);
