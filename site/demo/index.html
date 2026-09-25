@@ -3,12 +3,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>za3tar — see how it works</title>
-<meta name="description" content="A one-minute walk through Za3tar: record a meeting without a bot, get notes and decisions in the language you spoke, and carry the work forward.">
-<meta property="og:title" content="za3tar — see how it works">
-<meta property="og:description" content="About a minute inside Za3tar: a meeting recorded without a bot, notes and decisions in the language you spoke, and the follow-through after.">
-<meta property="og:image" content="https://za3tar.ai/demo/poster.jpg">
+<title>za3tar — try it on your company</title>
+<meta name="description" content="Type your company. Za3tar reads what is public about it and sketches the page we would start from: team, tools, projects, customers, and where agents would help first.">
+<meta name="robots" content="noindex">
+<meta property="og:title" content="za3tar — try it on your company">
+<meta property="og:description" content="Type your company and see, in about a minute, how za3tar would set up AI for its team, tools, projects and customers.">
+<meta property="og:type" content="website">
 <meta property="og:url" content="https://za3tar.ai/demo/">
+<meta property="og:image" content="https://za3tar.ai/og.png">
 <link rel="canonical" href="https://za3tar.ai/demo/">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <meta name="theme-color" content="#F2EEE2">
@@ -17,32 +19,309 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,100..900&display=swap" rel="stylesheet">
 <style>
-:root{--ink:#0B1710;--paper:#F2EEE2;--ink-66:rgba(11,23,16,.66);--ink-18:rgba(11,23,16,.18);--olive:#6F7F5A;--sans:"Archivo",ui-sans-serif,system-ui,-apple-system,"Helvetica Neue",Arial,sans-serif;--mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace}
+:root{--ink:#0B1710;--paper:#F2EEE2;--ink-66:rgba(11,23,16,.66);--ink-40:rgba(11,23,16,.4);--ink-18:rgba(11,23,16,.18);--ink-08:rgba(11,23,16,.08);--olive:#6F7F5A;--olive-16:rgba(111,127,90,.16);--olive-30:rgba(111,127,90,.3);--tint:#E3E2D0;--card:rgba(255,255,255,.28);--sans:"Archivo",ui-sans-serif,system-ui,-apple-system,"Helvetica Neue",Arial,sans-serif;--mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;--dockh:150px}
 *{box-sizing:border-box;margin:0}
-body{background:var(--paper);color:var(--ink);font-family:var(--sans);line-height:1.5;-webkit-font-smoothing:antialiased}
+[hidden]{display:none!important}
+html{scroll-padding-top:12px}
+body{background:var(--paper);color:var(--ink);font-family:var(--sans);line-height:1.5;-webkit-font-smoothing:antialiased;overflow-x:hidden}
 a{color:inherit;text-decoration:none}
-.wrap{max-width:1200px;margin:0 auto;padding:0 max(24px,env(safe-area-inset-right)) 0 max(24px,env(safe-area-inset-left))}
+button{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--olive);outline-offset:3px}
+.wrap{max-width:1340px;margin:0 auto;padding:0 max(24px,env(safe-area-inset-right)) 0 max(24px,env(safe-area-inset-left))}
 nav{display:flex;align-items:center;justify-content:space-between;height:64px}
 .logo{display:flex;align-items:center;gap:10px;font-stretch:78%;font-weight:700;font-size:22px;letter-spacing:-.01em}
 .logo img{width:22px;height:22px;display:block}
-.btn{display:inline-flex;align-items:center;gap:10px;border:1.5px solid var(--ink);background:var(--ink);color:var(--paper);font-size:15px;font-weight:600;padding:11px 18px;border-radius:6px;transition:background .15s,color .15s}
+.mono{font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-66)}
+.btn{display:inline-flex;align-items:center;gap:10px;border:1.5px solid var(--ink);background:var(--ink);color:var(--paper);font-size:15px;font-weight:600;padding:11px 18px;border-radius:6px;cursor:pointer;font-family:inherit;transition:background .15s,color .15s;white-space:nowrap}
 .btn:hover{background:var(--paper);color:var(--ink)}
 .btn.ghost{background:transparent;color:var(--ink)}
 .btn.ghost:hover{background:var(--ink);color:var(--paper)}
+.btn[disabled]{opacity:.45;cursor:default;pointer-events:none}
 .btn .ar{font-family:var(--mono);font-size:14px}
-header{padding:28px 0 22px;max-width:760px}
-h1{font-size:clamp(34px,4.6vw,60px);font-weight:800;font-stretch:88%;letter-spacing:-.035em;line-height:.98}
-header p{margin-top:14px;font-size:clamp(16px,1.4vw,19px);color:var(--ink-66);max-width:56ch;text-wrap:pretty}
-.player{position:relative;border:1.5px solid var(--ink);border-radius:12px;overflow:hidden;background:#0B1710;aspect-ratio:16/10}
-.player video{width:100%;height:100%;display:block;object-fit:cover}
-.beats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:0 32px;margin:36px 0 12px}
-.beats div{border-top:1.5px solid var(--ink);padding-top:14px}
-.beats b{display:block;font-size:20px;font-weight:700;font-stretch:90%;letter-spacing:-.02em;margin-bottom:6px}
-.beats p{font-size:14.5px;color:var(--ink-66);text-wrap:pretty}
-.ctas{display:flex;gap:12px;flex-wrap:wrap;margin:40px 0 56px}
-footer{border-top:1px solid var(--ink-18);padding:22px 0 40px;font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-66)}
-@media(max-width:820px){.beats{grid-template-columns:repeat(2,minmax(0,1fr));gap:24px 24px}}
-@media(max-width:520px){.beats{grid-template-columns:1fr}header{padding:18px 0 18px}}
+.err{color:#8a2d1f;font-size:14.5px;margin-top:12px;text-wrap:pretty}
+
+/* ---- stage 1 · ask: the mascot, big and centred ---- */
+.ask{padding:7vh 0 56px;max-width:720px;margin:0 auto;display:flex;flex-direction:column;align-items:center;text-align:center}
+.hello{display:flex;flex-direction:column;align-items:center;gap:18px;width:100%}
+.amark{width:clamp(110px,15vw,150px)}.amark svg,.zmark svg{width:100%;height:auto;display:block}
+.bubble{position:relative;border:1.5px solid var(--ink);border-radius:20px;padding:16px 22px;font-size:clamp(20px,2.4vw,28px);font-weight:700;font-stretch:92%;letter-spacing:-.015em;line-height:1.2;min-height:1.2em;max-width:600px;text-wrap:balance;background:var(--paper)}
+.bubble:before{content:"";position:absolute;top:-9px;left:50%;width:16px;height:16px;background:var(--paper);border-left:1.5px solid var(--ink);border-top:1.5px solid var(--ink);transform:translateX(-50%) rotate(45deg)}
+.bubble:empty:after{content:"…";color:var(--ink-40)}
+.caret{display:inline-block;width:2px;height:1em;background:currentColor;margin-left:2px;vertical-align:-.12em;animation:vpulse .8s steps(1) infinite}
+.btn.big{font-size:17px;padding:14px 22px;border-radius:999px;gap:10px}
+.btn .mic{width:20px;height:20px;fill:currentColor}
+.skip{background:none;border:0;padding:6px 0;margin-top:12px;cursor:pointer;color:var(--ink-66);text-decoration:underline;text-underline-offset:3px}
+.skip:hover{color:var(--ink)}
+.ask form{display:flex;gap:10px;margin-top:30px;width:100%;max-width:600px}
+.ask input{flex:1;min-width:0;font:inherit;font-size:18px;color:var(--ink);background:transparent;border:1.5px solid var(--ink);border-radius:999px;padding:13px 20px;outline:none}
+.ask input::placeholder{color:var(--ink-40)}
+.ask input:focus{box-shadow:0 0 0 3px var(--olive-30)}
+.note{margin-top:16px;font-size:13.5px;color:var(--ink-66);max-width:58ch;text-wrap:pretty}
+
+/* ---- stage 2 · workspace: Za3tar column + the page ---- */
+.shell{display:block}
+.zcol{display:none}
+main{min-width:0;container-type:inline-size}
+body.stage-work .zcol{display:block}
+@media(min-width:1024px){
+  body.stage-work .shell{display:grid;grid-template-columns:minmax(320px,360px) minmax(0,1fr);gap:44px;align-items:start}
+  .zcol{position:sticky;top:16px;padding-top:12px}
+}
+
+/* the Za3tar column (desktop) / dock (phones) */
+.zc{display:flex;flex-direction:column;gap:14px}
+.zhead{display:flex;align-items:flex-end;gap:16px}
+.zmark{width:124px;flex:none}
+.zmeta{min-width:0;padding-bottom:6px}
+.zname{display:block;font-size:22px;font-weight:800;font-stretch:88%;letter-spacing:-.02em;line-height:1}
+.vstate{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-66);display:flex;align-items:center;gap:8px;margin-top:6px;white-space:nowrap}
+.vstate .dot{width:8px;height:8px;border-radius:50%;background:var(--ink-18);flex:none}
+.vstate.live .dot{background:var(--olive);animation:vpulse 1.4s ease-in-out infinite}
+.vstate.speaking .dot{background:var(--ink);animation:vpulse .5s ease-in-out infinite}
+.vstate.looking .dot{background:var(--olive);animation:vpulse .7s ease-in-out infinite}
+@keyframes vpulse{0%,100%{opacity:.35}50%{opacity:1}}
+.zbub{position:relative;border:1.5px solid var(--ink);border-radius:16px;padding:14px 16px;background:var(--paper);min-height:84px}
+.zbub:before{content:"";position:absolute;top:-9px;left:52px;width:16px;height:16px;background:var(--paper);border-left:1.5px solid var(--ink);border-top:1.5px solid var(--ink);transform:rotate(45deg)}
+.zyou{font-size:13.5px;color:var(--ink-40);line-height:1.35;margin-bottom:8px;overflow-wrap:anywhere}
+.zyou:before{content:"You · ";font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase}
+.zsay{font-size:19px;font-weight:600;font-stretch:94%;letter-spacing:-.01em;line-height:1.3;text-wrap:pretty;overflow-wrap:anywhere}
+.zsay:empty:after{content:"…";color:var(--ink-40)}
+.zchips{display:flex;flex-wrap:wrap;gap:8px}
+.zchips:empty{display:none}
+.zchip{border:1.5px solid var(--ink);background:transparent;border-radius:999px;padding:7px 13px;font-size:14px;font-weight:600;cursor:pointer;white-space:nowrap;transition:background .15s,color .15s}
+.zchip:hover{background:var(--ink);color:var(--paper)}
+.zchip:before{content:"“";color:var(--olive);margin-right:1px}
+.zchip:after{content:"”";color:var(--olive);margin-left:1px}
+.zchip.go{background:var(--ink);color:var(--paper)}
+.zchip.go:before,.zchip.go:after{content:none}
+.zhead .zbtn{margin-left:auto;margin-bottom:8px;flex:none}
+.zbtn{background:transparent;border:1.5px solid var(--ink-40);border-radius:999px;padding:6px 13px;font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;color:var(--ink-66)}
+.zbtn:hover{border-color:var(--ink);color:var(--ink)}
+@media(max-width:1023px){
+  body.stage-work{padding-bottom:calc(var(--dockh) + 28px)}
+  body.stage-work .zcol{position:fixed;left:max(12px,env(safe-area-inset-left));right:max(12px,env(safe-area-inset-right));bottom:max(12px,env(safe-area-inset-bottom));z-index:30;background:var(--paper);border:1.5px solid var(--ink);border-radius:18px;box-shadow:0 12px 32px rgba(11,23,16,.2);padding:10px 12px 12px;max-width:720px;margin:0 auto}
+  .zc{display:grid;grid-template-columns:48px minmax(0,1fr) auto;grid-template-areas:"m s e" "m b b" "c c c";gap:2px 12px}
+  .zhead .zbtn{grid-area:e;margin:0;align-self:start;padding:4px 11px}
+  .zhead{display:contents}
+  .zmark{grid-area:m;width:48px;align-self:start;margin-top:2px}
+  .zmeta{grid-area:s;padding:0;display:flex;align-items:center;gap:8px}
+  .zname{font-size:15px}
+  .vstate{margin-top:0;font-size:10px}
+  .zbub{grid-area:b;border:0;padding:0;min-height:0;background:transparent}
+  .zbub:before{content:none}
+  .zyou{font-size:12.5px;margin:2px 0 0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .zsay{font-size:15px;font-weight:500;line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+  .zchips{grid-area:c;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;margin:8px -12px 0;padding:0 12px 2px;-webkit-overflow-scrolling:touch}
+  .zchips::-webkit-scrollbar{display:none}
+  .zchip{font-size:13.5px;padding:6px 12px;flex:none}
+}
+.eye{transform-box:fill-box;transform-origin:center;transition:transform .11s ease-in}
+.eye.blink{transform:scaleY(.06)}
+.jaw{transition:transform .06s linear}
+
+/* ---- company page ---- */
+.co{padding:12px 0 8px}
+.cohead{border-bottom:1.5px solid var(--ink);padding-bottom:18px;background:var(--paper)}
+.cohead h1{font-size:clamp(34px,4.4vw,58px);font-weight:800;font-stretch:88%;letter-spacing:-.035em;line-height:.98;margin-top:10px;overflow-wrap:anywhere;text-wrap:balance}
+.cohead .one{margin-top:10px;font-size:clamp(16px,1.4vw,19px);color:var(--ink-66);max-width:60ch;text-wrap:pretty}
+.meta{margin-top:14px;display:flex;flex-wrap:wrap;gap:6px 0}
+.meta span:not(:last-child):after{content:"·";margin:0 10px;color:var(--ink-40)}
+.srcs{margin-top:12px}
+.srcbtn{background:transparent;border:0;padding:4px 0;cursor:pointer;font-family:var(--mono);font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-66);display:inline-flex;align-items:center;gap:6px}
+.srcbtn:hover{color:var(--ink)}
+.srcbtn .car{display:inline-block;transition:transform .2s}
+.srcbtn[aria-expanded=true] .car{transform:rotate(180deg)}
+.srclist{list-style:none;padding:8px 0 0;display:flex;flex-direction:column;gap:6px}
+.srclist a{font-size:14px;border-bottom:1px solid var(--ink-18);max-width:100%;display:inline-block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;vertical-align:bottom}
+.srclist a:hover{border-color:var(--ink)}
+.srclist small{font-family:var(--mono);font-size:11px;color:var(--ink-40);margin-left:8px}
+.tabs{display:none;gap:4px;margin-top:10px;overflow-x:auto;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tabs button{border:0;background:transparent;border-radius:999px;padding:6px 12px;font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-66);cursor:pointer;white-space:nowrap}
+.tabs button:hover{color:var(--ink);background:var(--ink-08)}
+.tabs button[aria-current=true]{background:var(--ink);color:var(--paper)}
+/* in a view the header shrinks and stays on screen */
+.cohead.compact{position:sticky;top:0;z-index:10;padding:10px 0 10px;margin:0 -2px;padding-left:2px;padding-right:2px}
+.cohead.compact>.mono,.cohead.compact .one,.cohead.compact .meta,.cohead.compact .srcs{display:none}
+.cohead.compact h1{font-size:clamp(22px,2.2vw,28px);margin-top:0;letter-spacing:-.025em}
+.cohead.compact .tabs{display:flex}
+
+/* overview tiles */
+.tiles{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:22px}
+@container (min-width:820px){.tiles{grid-template-columns:repeat(4,minmax(0,1fr))}}
+.tile{position:relative;display:flex;flex-direction:column;text-align:left;border:1.5px solid var(--ink);border-radius:12px;padding:16px 18px 18px;min-height:200px;background:var(--card);cursor:pointer;transition:background .15s,color .15s,transform .15s,box-shadow .2s,opacity .3s;min-width:0}
+.tile .k{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-66);display:flex;justify-content:space-between;align-items:center;gap:8px}
+.tile .k .ar{color:var(--olive);font-size:14px;transition:transform .15s}
+.ic{display:block;height:24px;width:auto;margin-bottom:14px;color:var(--ink)}
+.ic svg{height:100%;width:auto;display:block;overflow:visible}
+.ic svg *{fill:currentColor}
+.ic svg .hole{fill:var(--paper)}
+.tile .num{margin:auto 0 8px;padding-top:18px;display:flex;align-items:baseline;gap:8px;min-width:0}
+.tile .num b{font-size:clamp(40px,4vw,56px);font-weight:800;font-stretch:84%;letter-spacing:-.04em;line-height:.9;font-variant-numeric:tabular-nums}
+.tile .num span{font-size:15px;font-weight:600;color:var(--ink-66)}
+.tile p{font-size:14.5px;color:var(--ink-66);text-wrap:pretty;overflow-wrap:anywhere;line-height:1.4}
+.tile:not(.loading):hover{background:var(--ink);color:var(--paper);transform:translateY(-2px)}
+.tile:not(.loading):hover .k,.tile:not(.loading):hover p,.tile:not(.loading):hover .num span{color:rgba(242,238,226,.72)}
+.tile:not(.loading):hover .ic{color:var(--paper)}
+.tile:not(.loading):hover .ic svg .hole{fill:var(--ink)}
+.tile:not(.loading):hover .k .ar{transform:translateX(3px)}
+.tile.loading{cursor:default;border-style:dashed;border-color:var(--ink-40);background:transparent}
+.tile.loading .ic{color:var(--ink-18)}
+.tile.loading .num b{color:var(--ink-18)}
+.tile.loading.active{border-style:solid;border-color:var(--ink)}
+.tile.loading.active .ic{color:var(--olive)}
+.tile.loading.active .num b{background:linear-gradient(90deg,var(--ink-18),var(--ink-40),var(--ink-18));background-size:200% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:shimmer 1.2s linear infinite}
+@keyframes shimmer{from{background-position:200% 0}to{background-position:0 0}}
+.tile.fail{cursor:default;border-style:dashed;border-color:#8a2d1f;background:transparent}
+.tile.fail .ic,.tile.fail .num b{color:var(--ink-18)}
+.tile.fail p{color:#8a2d1f}
+.retry{margin-top:10px;align-self:flex-start;background:transparent;border:1.5px solid var(--ink);border-radius:999px;padding:5px 12px;font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;cursor:pointer}
+.retry:hover{background:var(--ink);color:var(--paper)}
+/* a part landing: the tile flips from skeleton to real */
+.tile.reveal{animation:tilein .6s cubic-bezier(.2,.8,.2,1)}
+.tile.reveal .num b{animation:numin .6s cubic-bezier(.2,.8,.2,1)}
+@keyframes tilein{0%{opacity:0;transform:translateY(10px) scale(.97);box-shadow:0 0 0 0 var(--olive-30)}60%{opacity:1;box-shadow:0 0 0 6px var(--olive-30)}100%{transform:none;box-shadow:0 0 0 0 transparent}}
+@keyframes numin{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+.cohead.landed h1,.cohead.landed .one,.cohead.landed .meta,.cohead.landed .srcs{animation:vin .45s cubic-bezier(.2,.8,.2,1) both}
+.cohead.landed .one{animation-delay:.06s}.cohead.landed .meta{animation-delay:.12s}.cohead.landed .srcs{animation-delay:.18s}
+.tabs button[aria-disabled=true]{opacity:.45}
+.legend{margin-top:16px;font-size:13px;color:var(--ink-66);display:flex;gap:8px 14px;flex-wrap:wrap;align-items:center}
+
+/* public / likely tags */
+.tag{display:inline-flex;align-items:center;gap:5px;font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--olive);white-space:nowrap;vertical-align:1px;font-weight:500}
+.tag:before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor;flex:none}
+a.tag{border-bottom:1px solid transparent}
+a.tag:hover{border-bottom-color:currentColor}
+a.tag:after{content:"↗";font-size:10px}
+.tag.likely{color:var(--ink-40)}
+.tag.likely:before{background:transparent;border:1.2px solid currentColor;width:5px;height:5px}
+
+/* views */
+#views.swap{animation:vin .32s cubic-bezier(.2,.8,.2,1)}
+@keyframes vin{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.view h2{display:flex;align-items:center;gap:12px;font-size:clamp(28px,3.2vw,42px);font-weight:800;font-stretch:88%;letter-spacing:-.03em;line-height:1;margin:22px 0 18px}
+.view h2 .ic{margin:0;height:26px}
+.block{border-top:1.5px solid var(--ink);padding:14px 0 28px}
+.block>.k{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-66);margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.toggle{display:inline-flex;border:1.5px solid var(--ink);border-radius:999px;overflow:hidden}
+.toggle button{border:0;background:transparent;padding:6px 14px;font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;cursor:pointer}
+.toggle button.on{background:var(--ink);color:var(--paper)}
+.rows{list-style:none;padding:0}
+.rows li{display:grid;grid-template-columns:minmax(0,4fr) minmax(0,7fr);gap:6px 20px;padding:11px 0;border-top:1px solid var(--ink-18);border-radius:6px}
+.rows li:first-child{border-top:0;padding-top:0}
+.rows b{font-weight:700;font-size:16px;overflow-wrap:anywhere}
+.rows .d{color:var(--ink-66);font-size:15px;text-wrap:pretty}
+.who{display:block;font-size:13px;color:var(--ink-66);font-weight:400;margin-top:2px}
+.who a{border-bottom:1px solid var(--ink-18)}
+.chips{display:flex;flex-wrap:wrap;gap:10px}
+.chip{display:inline-flex;align-items:center;gap:10px;border:1.5px solid var(--ink);border-radius:10px;padding:9px 12px;font-size:15px;font-weight:600;max-width:100%;overflow-wrap:anywhere;background:var(--card)}
+.chip.likely{border-style:dashed;border-color:var(--ink-40);font-weight:500;background:transparent}
+.two{display:grid;grid-template-columns:1fr;gap:0 28px}
+@container (min-width:700px){.two{grid-template-columns:1fr 1fr}}
+.recs{list-style:none;padding:0;counter-reset:r;display:grid;grid-template-columns:1fr;gap:12px}
+@container (min-width:760px){.recs{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.recs li{counter-increment:r;border:1.5px solid var(--ink-18);border-radius:12px;padding:14px 16px 16px;font-size:15.5px;line-height:1.42;text-wrap:pretty;background:var(--card);display:flex;flex-direction:column;gap:10px}
+.recs li:before{content:"0" counter(r);font-family:var(--mono);font-size:22px;font-weight:600;letter-spacing:-.02em;color:var(--olive);line-height:1}
+.prov{font-size:13px;color:var(--ink-66);margin-top:10px;text-wrap:pretty}
+
+/* org chart: top-down tree when there is room, indented tree otherwise */
+.org{overflow-x:auto;padding:12px 0 8px}
+.org ul{list-style:none;padding:0;margin:0}
+.org>ul{display:flex;justify-content:center;min-width:max-content}
+.org li{position:relative}
+.node{display:inline-block;border:1.5px solid var(--ink);border-radius:8px;padding:7px 10px;background:var(--paper);text-align:left;max-width:150px}
+.node b{display:block;font-size:13px;line-height:1.25}
+.node span{display:block;font-size:12px;color:var(--ink-66);line-height:1.3;margin-top:2px}
+.node.top{background:var(--ink);color:var(--paper)}
+.node.top span{color:rgba(242,238,226,.72)}
+@container (min-width:700px){
+  .org li{display:flex;flex-direction:column;align-items:center;padding:18px 6px 0}
+  .org>ul>li{padding-top:0}
+  .org li ul{display:flex;justify-content:center;position:relative;padding-top:0}
+  .org li li:before,.org li li:after{content:"";position:absolute;top:0;height:18px;border-top:1.5px solid var(--ink);width:50%}
+  .org li li:before{right:50%}
+  .org li li:after{left:50%;border-left:1.5px solid var(--ink)}
+  .org li li:first-child:before,.org li li:last-child:after{border-top:0}
+  .org li li:first-child:after{border-radius:6px 0 0 0}
+  .org li li:last-child:before{border-right:1.5px solid var(--ink);border-radius:0 6px 0 0}
+  .org li li:only-child:before{display:none}
+  .org li li:only-child:after{border-top:0;border-radius:0}
+  .org li>ul:before{content:"";position:absolute;top:-18px;left:50%;height:18px;border-left:1.5px solid var(--ink)}
+  .org li>ul{margin-top:18px}
+}
+@container (max-width:699px){
+  .org>ul{display:block;min-width:0}
+  .org li ul{margin-left:14px;padding-left:14px;border-left:1.5px solid var(--ink-18)}
+  .org li{padding-top:8px}
+  .node{max-width:none;display:block}
+}
+
+/* workflow: a connected flow, vertical when narrow */
+.flow{--gap:30px;list-style:none;padding:0;display:grid;grid-template-columns:1fr;gap:var(--gap)}
+@container (min-width:700px){.flow{grid-template-columns:repeat(var(--n,4),minmax(0,1fr))}}
+.flow li{position:relative;border:1.5px solid var(--ink);border-radius:12px;padding:12px 14px 14px;background:var(--paper);opacity:.32;transform:translateY(4px);transition:opacity .45s ease,transform .45s cubic-bezier(.2,.8,.2,1),box-shadow .3s,background .3s}
+.flow li.in{opacity:1;transform:none}
+.flow li.now{box-shadow:0 0 0 4px var(--olive-30)}
+.flow li .w{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-66);display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.flow li .w i{font-style:normal;min-width:24px;height:22px;padding:0 5px;border-radius:999px;border:1.5px solid currentColor;display:inline-grid;place-items:center;font-size:10px;letter-spacing:0}
+.flow li.done .w i{background:var(--olive);border-color:var(--olive);color:var(--paper)}
+.flow li.agent{background:var(--ink);color:var(--paper)}
+.flow li.agent .w{color:rgba(242,238,226,.72)}
+.flow li.person{border-width:2px}
+.flow li p{font-size:15px;line-height:1.4;text-wrap:pretty}
+.cx{position:absolute;pointer-events:none;border-color:var(--ink-18);border-style:solid;border-width:0;transition:border-color .4s}
+.cx:after{content:"";position:absolute;border:5px solid transparent}
+.flow li.in .cx{border-color:var(--olive)}
+.cx{left:26px;top:calc(-1 * var(--gap) - 1.5px);height:var(--gap);width:0;border-left-width:1.5px}
+.cx:after{bottom:-1px;left:-5.75px;border-top:7px solid;border-top-color:inherit;border-bottom:0}
+@container (min-width:700px){
+  .cx{left:calc(-1 * var(--gap) - 1.5px);top:50%;width:var(--gap);height:0;border-left-width:0;border-top-width:1.5px}
+  .cx:after{bottom:auto;left:auto;right:-1px;top:-5.75px;border:5px solid transparent;border-left:7px solid;border-left-color:inherit;border-right:0}
+}
+.replay{background:transparent;border:0;cursor:pointer;font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-66);padding:4px 0}
+.replay:hover{color:var(--ink)}
+
+/* spotlight: what Za3tar is talking about right now */
+[data-spot]{transition:opacity .3s,background-color .3s,box-shadow .3s,transform .3s}
+.dimming [data-spot]:not(.spot){opacity:.55}
+.dimming .flow li:not(.in):not(.spot){opacity:.25}
+.spot{position:relative;z-index:1;box-shadow:0 0 0 2px var(--olive),0 10px 24px rgba(11,23,16,.12)!important;transform:translateY(-2px)}
+.rows li.spot{background-color:var(--tint);box-shadow:0 0 0 8px var(--tint),0 0 0 9.5px var(--olive),0 10px 24px rgba(11,23,16,.1)!important}
+.recs li.spot,.chip.spot,.node.spot:not(.top){background-color:var(--tint)}
+.spot:after{content:"Za3tar";position:absolute;top:-10px;right:10px;font-family:var(--mono);font-size:9.5px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;background:var(--olive);color:var(--paper);padding:2px 7px;border-radius:999px;line-height:1.4;pointer-events:none}
+.rows li.spot:after{top:-17px;right:0}
+.chip.spot:after,.node.spot:after{top:-11px;right:6px}
+.org .node.spot{position:relative}
+
+/* cta */
+.cta{border-top:1px solid var(--ink-18);margin-top:28px;padding:26px 0 30px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.cta b{font-size:clamp(24px,2.6vw,34px);font-weight:800;font-stretch:88%;letter-spacing:-.03em;line-height:1.05}
+.cta.pulse{animation:ctapulse 1.2s ease 3}
+@keyframes ctapulse{0%,100%{background:transparent}50%{background:var(--olive-16)}}
+footer{border-top:1px solid var(--ink-18);padding:22px 0 40px}
+
+@media(max-width:700px){
+  .ask{padding-top:4vh}
+  .ask form{flex-direction:column}
+  .ask .btn{justify-content:center}
+  .btn.big{width:100%}
+  .meta{flex-direction:column}
+  .meta span:not(:last-child):after{content:none}
+  .tile{min-height:168px;padding:14px 14px 16px}
+  .tile .num{padding-top:12px}
+  .tile .num b{font-size:40px}
+  .rows li{grid-template-columns:1fr;gap:2px}
+  nav .btn{padding:9px 14px;font-size:14px}
+}
+@media(max-width:400px){.tiles{gap:10px}.tile p{font-size:13.5px}.tile .num span{font-size:13.5px}}
+@media(prefers-reduced-motion:reduce){
+  .flow li,.tile,[data-spot],.cx,.srcbtn .car{transition:none}
+  .spot{transform:none}
+  #views.swap{animation:none}
+  .vstate .dot,.cta.pulse,.caret,.tile.loading.active .num b,.tile.reveal,.tile.reveal .num b,.cohead.landed *{animation:none}
+  .tile.loading.active .num b{color:var(--ink-40)}
+  .eye,.jaw{transition:none}
+}
 </style>
 </head>
 <body>
@@ -52,31 +331,636 @@ footer{border-top:1px solid var(--ink-18);padding:22px 0 40px;font-family:var(--
   <a class="btn" href="https://wa.me/962798885558?text=Hi%2C%20I%27d%20like%20to%20book%20a%20session." target="_blank" rel="noopener">Book a session <span class="ar">→</span></a>
 </nav>
 
-<header>
-  <h1>See how it works.</h1>
-  <p>About a minute inside Za3tar: a meeting recorded without a bot, notes and decisions in the language you actually spoke, and the follow-through that comes after.</p>
-</header>
+<div class="shell">
+<aside class="zcol" id="zcol" aria-label="Za3tar">
+  <div class="zc">
+    <div class="zhead">
+      <div class="zmark" id="zmark" aria-hidden="true"></div>
+      <div class="zmeta"><b class="zname">Za3tar</b><div class="vstate" id="vstate" role="status"><span class="dot"></span><span id="vstateText">voice off</span></div></div>
+      <button class="zbtn" type="button" id="vend" hidden>End</button>
+    </div>
+    <div class="zbub"><p class="zyou" id="zyou" hidden></p><p class="zsay" id="vline"></p></div>
+    <div class="zchips" id="zchips" role="group" aria-label="Things you can say or tap"></div>
+  </div>
+</aside>
 
-<div class="player">
-  <video controls playsinline preload="metadata" poster="/demo/poster.jpg">
-    <source src="/demo/za3tar-walkthrough.mp4" type="video/mp4">
-  </video>
+<main>
+<!-- 1 · ask -->
+<section class="ask" id="ask">
+  <div class="hello">
+    <div class="amark" id="amark" aria-hidden="true"></div>
+    <div class="bubble" id="abubble" aria-live="polite"></div>
+  </div>
+  <form id="form" autocomplete="off">
+    <input id="q" name="company" maxlength="120" placeholder="Your company name or website" aria-label="Company name or website" enterkeyhint="go">
+    <button class="btn big" type="submit" id="go"><svg class="mic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z"/><path d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Build it (sound on)</button>
+  </form>
+  <button class="skip mono" type="button" id="silent">or build it silently</button>
+  <p class="note">Za3tar talks and listens, so it will ask for your mic. It reads what's public about your company; your voice goes to our AI providers to run the conversation. Nothing is stored on our side.</p>
+  <p class="err" id="err" hidden></p>
+</section>
+
+<!-- 2 · company page -->
+<section class="co" id="co" hidden>
+  <div class="cohead" id="cohead">
+    <span class="mono">Company page · public sources</span>
+    <h1 id="coName"></h1>
+    <p class="one" id="coOne"></p>
+    <div class="meta mono" id="coMeta"></div>
+    <div class="srcs" id="coSrcs"></div>
+    <div class="tabs" id="tabs" role="tablist" aria-label="Areas"></div>
+  </div>
+  <div id="views"></div>
+  <div class="cta" hidden>
+    <b>Want this for real?</b>
+    <a class="btn" href="https://wa.me/962798885558?text=Hi%2C%20I%27d%20like%20to%20book%20a%20session." target="_blank" rel="noopener">Book a session <span class="ar">→</span></a>
+  </div>
+</section>
+</main>
 </div>
 
-<div class="beats">
-  <div><b>Record</b><p>Your mic and their side as two tracks. No extra participant joins the call.</p></div>
-  <div><b>Understand</b><p>Arabic stays Arabic, English stays English. Names and terms stay natural.</p></div>
-  <div><b>Decide</b><p>Decisions, actions with owners and dates, open questions. Nothing invented.</p></div>
-  <div><b>Follow through</b><p>Drafts in the meeting's own language mix, calendar export, people and follow-ups across every meeting.</p></div>
+<footer class="mono">za3tar · Dubai</footer>
 </div>
 
-<div class="ctas">
-  <a class="btn" href="https://wa.me/962798885558?text=Hi%2C%20I%27d%20like%20to%20book%20a%20session." target="_blank" rel="noopener">Book a session <span class="ar">→</span></a>
-  <a class="btn ghost" href="/talk/">Talk to it <span class="ar">→</span></a>
-  <a class="btn ghost" href="/try/">Try it by typing <span class="ar">→</span></a>
-</div>
+<script>
+(function(){
+  var $=function(id){return document.getElementById(id)};
+  var data=null, flowTimers=[];
+  var reduce=!!(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches);
+  var smooth=reduce?'auto':'smooth';
 
-<footer>za3tar · Dubai</footer>
-</div>
+  /* ---- tiny DOM helpers: every model string goes in as text, never HTML ---- */
+  function el(tag,cls,text){ var e=document.createElement(tag); if(cls) e.className=cls; if(text!=null) e.textContent=text; return e; }
+  function safeUrl(u){ try{ var x=new URL(u); return (x.protocol==='https:'||x.protocol==='http:')?x.href:null; }catch(e){ return null; } }
+  function hostOf(u){ try{ return new URL(u).hostname.replace(/^www\./,''); }catch(e){ return ''; } }
+  function link(u,text,cls){ var a=el('a',cls,text); a.href=u; a.target='_blank'; a.rel='noopener noreferrer nofollow'; return a; }
+  function tag(item){ var s=item.basis==='public'&&safeUrl(item.source); if(s){ var a=link(s,'public','tag'); a.title='Source: '+hostOf(s); return a; } return el('span','tag likely','likely'); }
+  function show(id){
+    ['ask','co'].forEach(function(x){ $(x).hidden=(x!==id); });
+    document.body.classList.toggle('stage-work',id==='co');
+    document.querySelector('.cta').hidden=!(id==='co'&&data&&data.core);
+    scrollTo(0,0); dock();
+  }
+
+  /* Z-piece icons from the mark (static markup, no model data) */
+  var PIECE={
+    eye:'<svg viewBox="113 23 26 26"><circle cx="126" cy="36" r="13"/><circle class="hole" cx="126" cy="36" r="10"/><circle cx="126" cy="36" r="5"/></svg>',
+    top:'<svg viewBox="56 14 134 44"><defs><clipPath id="ict"><path d="M0 0H190V14C147.2 88 102 128 56 148L0 200Z"/></clipPath></defs><rect x="56" y="14" width="134" height="44" clip-path="url(#ict)"/></svg>',
+    leaf:'<svg viewBox="56 14 135 134"><path d="M190 14C195.4 96 150 140 56 148C102 128 147.2 88 190 14Z"/></svg>',
+    bottom:'<svg viewBox="56 104 134 44"><defs><clipPath id="icb"><path d="M56 148C150 140 195.4 96 190 14H200V200H56Z"/></clipPath></defs><rect x="56" y="104" width="134" height="44" clip-path="url(#icb)"/></svg>'
+  };
+  function icon(k){ var s=el('span','ic'); s.setAttribute('aria-hidden','true'); s.innerHTML=PIECE[{team:'eye',tools:'top',projects:'leaf',customers:'bottom'}[k]]; return s; }
+
+  /* ---- ask → workspace: one tap starts the voice and the build together ---- */
+  function submit(voice){
+    unlockAudio(); // inside the tap: Safari only lets audio start from a gesture
+    var q=$('q').value.trim(); $('err').hidden=true;
+    if(q.length<2) return fail('Type a company name or website.');
+    if(voice&&!vpc&&!vlive) begin(q);
+    else if(vlive) note('The visitor typed "'+q+'" and its workspace is being built on screen now. Say so in one short line.',null,{key:'lookup'});
+    build(q);
+  }
+  $('form').addEventListener('submit',function(e){ e.preventDefault(); submit(true); });
+  $('silent').addEventListener('click',function(){ voiceDone=true; submit(false); });
+
+  /* The page is five parts, fetched in parallel. core fills the header; each other
+     part flips its tile from skeleton to real as it lands. */
+  var PARTS=['core','team','tools','projects','customers'];
+  var gen=0, pstate={}, ctls=[], buildQ='', buildT0=0, summarized=false, sumTimer=null, SUMMARY_MS=25000;
+  var WAIT={team:'finding roles…',tools:'checking tools…',projects:'reading the news…',customers:'looking at customers…'};
+  function build(q,o){
+    cancelBuild(); gen++; buildQ=q; buildT0=Date.now(); missed=null; summarized=false; lastScreenKey=null;
+    PARTS.forEach(function(k){ pstate[k]='loading'; });
+    data={company:{name:q},sources:[],core:false};
+    skeleton(q); looking=true; idleState();
+    sumTimer=setTimeout(maybeSummary,SUMMARY_MS);
+    if(!(o&&o.noFetch)) PARTS.forEach(function(k){ fetchPart(gen,k); });
+  }
+  function cancelBuild(){ ctls.forEach(function(c){ try{ c.abort(); }catch(e){} }); ctls=[]; clearTimeout(sumTimer); looking=false; }
+  function fetchPart(g,k){
+    var ctl=window.AbortController?new AbortController():null; if(ctl) ctls.push(ctl);
+    fetch('/api/demo',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({company:buildQ,part:k}),signal:ctl?ctl.signal:undefined})
+      .then(function(r){ return r.json().catch(function(){ return {error:'Something broke on our side. Try again.'}; }).then(function(j){ return {ok:r.ok,j:j}; }); })
+      .catch(function(){ return {ok:false,j:{error:'Could not reach us. Check your connection and try again.'}}; })
+      .then(function(x){ land(g,k,x.ok&&!x.j.error,x.j); });
+  }
+  function retry(k){ if(pstate[k]!=='fail') return; pstate[k]='loading'; looking=true; idleState(); refreshTile(k); fetchPart(gen,k); }
+  function settled(){ return PARTS.every(function(k){ return pstate[k]!=='loading'; }); }
+  function landedCount(){ return PARTS.slice(1).filter(function(k){ return pstate[k]==='ok'; }).length; }
+  function isStale(g){ return g!==gen||!data; }
+
+  function land(g,k,ok,j){
+    if(isStale(g)) return;
+    j=j||{};
+    if(k==='core'){
+      if(!ok||!j.found){
+        var nf=ok&&!j.found, q=buildQ; missed=nf?'notfound':'error';
+        gen++; cancelBuild(); data=null; backToAsk();
+        fail(nf?'We could not find "'+q+'" with confidence. Try its website address, like company.com.':(j.error||'Something broke on our side. Try again.'));
+        if(nf) note('Nothing reliable came up for "'+q+'". Say so in one line and ask them to type the website address, like company.com, in the box on screen.',null,{key:'screen'});
+        else note('The lookup failed on our side. Apologise in one line and ask them to type the name again.',null,{key:'screen'});
+        return;
+      }
+      pstate.core='ok'; data.core=true; data.company=j.company||{}; data.sources=j.sources||[];
+      renderHead(true); document.querySelector('.cta').hidden=false;
+      note(null,headFacts());
+      PARTS.slice(1).forEach(function(p){ if(data[p]) note(null,partFacts(p)); }); // parts that beat the header
+    } else if(ok){
+      pstate[k]='ok'; data[k]=j; renderSources(); refreshTile(k,true);
+      if(data.core) note(null,partFacts(k));
+    } else {
+      pstate[k]='fail'; data[k]=null; refreshTile(k);
+    }
+    looking=!settled(); idleState(); refreshTabs();
+    if(step==='looking'&&data.core) stepTo('page'); else if(step==='page') stepTo('page',true);
+    maybeSummary();
+  }
+
+  /* the spoken overview waits for core + two parts (or everything, or 25 s) */
+  function summaryDue(){ return !!(data&&data.core)&&(landedCount()>=2||settled()||Date.now()-buildT0>=SUMMARY_MS); }
+  function maybeSummary(){
+    if(summarized||!vlive||!summaryDue()) return;
+    summarized=true; clearTimeout(sumTimer); dropNotes(['lookup']);
+    var s=screenNote(); if(currentView==='overview') lastScreenKey='overview';
+    note(s.ask+' If they told you their role or what takes their time while it loaded, tie one sentence to that.',s.facts,{key:'screen'});
+  }
+
+  /* the workspace appears straight away; tiles fill in as parts land */
+  function skeleton(q){
+    currentView=null; spots=[]; unspot(); clearFlow();
+    $('cohead').classList.remove('landed');
+    $('coName').textContent=q; $('coOne').textContent='Building your workspace…'; $('coOne').hidden=false;
+    $('coMeta').textContent=''; $('coSrcs').textContent='';
+    buildTabs(); show('co'); overview(); stepTo('looking');
+  }
+  function fail(t){ var e=$('err'); e.textContent=t; e.hidden=false; try{ $('q').focus({preventScroll:true}); }catch(_){} }
+  function backToAsk(){ show('ask'); stepTo('ask'); }
+
+  /* ---- company page ---- */
+  function renderHead(reveal){
+    var c=data.company||{}, h=$('cohead');
+    $('coName').textContent=c.name||buildQ;
+    $('coOne').textContent=c.oneliner||''; $('coOne').hidden=!c.oneliner;
+    var meta=$('coMeta'); meta.textContent='';
+    [c.sector,c.size,c.location].forEach(function(x){ if(x) meta.appendChild(el('span',null,x)); });
+    var w=safeUrl(c.website); if(w) meta.appendChild(el('span',null,hostOf(w)));
+    renderSources();
+    if(reveal&&!reduce){ h.classList.remove('landed'); void h.offsetWidth; h.classList.add('landed'); }
+  }
+  /* header sources: core's, then each landed part's, de-duplicated */
+  function renderSources(){
+    if(!data||!data.core) return;
+    var all=(data.sources||[]).slice(); PARTS.slice(1).forEach(function(k){ if(data[k]) all=all.concat(data[k].sources||[]); });
+    var seen={}, links=all.map(function(x){ var u=safeUrl(x&&x.url); return u&&{u:u,t:x.title||hostOf(u)}; }).filter(function(x){ if(!x||seen[x.u]) return false; seen[x.u]=1; return true; }).slice(0,12);
+    var s=$('coSrcs'), wasOpen=$('srclist')&&!$('srclist').hidden; s.textContent='';
+    if(!links.length) return;
+    var bt=el('button','srcbtn'); bt.type='button'; bt.setAttribute('aria-expanded',String(!!wasOpen));
+    bt.appendChild(document.createTextNode(links.length+' source'+(links.length>1?'s':''))); bt.appendChild(el('span','car','▾'));
+    var ul=el('ul','srclist'); ul.hidden=!wasOpen; ul.id='srclist'; bt.setAttribute('aria-controls','srclist');
+    links.forEach(function(x){ var li=el('li'); li.appendChild(link(x.u,x.t)); li.appendChild(el('small',null,hostOf(x.u))); ul.appendChild(li); });
+    bt.onclick=function(){ var o=ul.hidden; ul.hidden=!o; bt.setAttribute('aria-expanded',String(o)); };
+    s.appendChild(bt); s.appendChild(ul);
+  }
+  function buildTabs(){
+    var tb=$('tabs'); tb.textContent='';
+    [['overview','Overview']].concat(TILES.map(function(t){ return [t.key,t.label]; })).forEach(function(x){ var b=el('button',null,x[1]); b.type='button'; b.dataset.k=x[0]; b.setAttribute('role','tab'); b.onclick=function(){ tap(x[1],{view:x[0]}); }; tb.appendChild(b); });
+    refreshTabs();
+  }
+  function refreshTabs(){ [].forEach.call($('tabs').children,function(b){ var k=b.dataset.k; b.setAttribute('aria-disabled',String(k!=='overview'&&pstate[k]!=='ok')); }); }
+  function compact(on){ $('cohead').classList.toggle('compact',!!on); [].forEach.call($('tabs').children,function(b){ var cur=b.dataset.k===(currentView||'overview'); b.setAttribute('aria-current',String(cur)); b.setAttribute('aria-selected',String(cur)); }); }
+  /* keep the header in view: never leave the visitor scrolled past the top of the page */
+  function toTop(){ var top=$('co').getBoundingClientRect().top+scrollY-8; if(scrollY>top) scrollTo({top:top,behavior:smooth}); }
+  function swapIn(){ var v=$('views'); v.classList.remove('swap'); void v.offsetWidth; v.classList.add('swap'); }
+
+  var TILES=[
+    {key:'team',label:'Team',teaser:function(d){ var r=d.team.roles; var top=r.filter(function(x){return !x.reportsTo})[0]; return top? 'From '+top.title+' down, as roles' : 'Roles and who owns what'; },big:function(d){ return [d.team.roles.length,'roles']; },words:['team','roles','org chart','leadership']},
+    {key:'tools',label:'Tools',teaser:function(d){ var p=d.tools.items.filter(function(x){return x.basis==='public'}).length, l=d.tools.items.length-p; return p+' seen in public, '+l+' likely'; },big:function(d){ return [d.tools.items.length,'tools']; },words:['tools','stack','software','systems']},
+    {key:'projects',label:'Projects',teaser:function(d){ var i=d.projects.items[0]; return i? i.name : 'What they are working on'; },big:function(d){ return [d.projects.items.length,'in motion']; },words:['projects','initiatives','in motion']},
+    {key:'customers',label:'Customers',teaser:function(d){ return d.customers.segments.slice(0,2).map(function(x){return x.name}).join(' · ')||'Who they sell to'; },big:function(d){ return [d.customers.segments.length,'segments']; },words:['customers','segments','channels','sell to']}
+  ];
+
+  function overview(){
+    currentView='overview'; teamLayout='list';
+    var v=$('views'); v.textContent=''; clearFlow(); unspot(); spots=[]; compact(false);
+    var g=el('div','tiles');
+    TILES.forEach(function(t){ g.appendChild(makeTile(t)); });
+    v.appendChild(g);
+    var lg=el('p','legend'); lg.appendChild(el('span','tag','public')); lg.appendChild(el('span',null,'seen in a source you can open')); lg.appendChild(el('span','tag likely','likely')); lg.appendChild(el('span',null,'our read of a company like this, not a fact'));
+    v.appendChild(lg);
+    spotIndex(); swapIn();
+  }
+  /* one tile per part: skeleton while loading, retry when it failed, real when landed */
+  function makeTile(t){
+    var st=pstate[t.key], b;
+    if(st==='ok'){
+      b=el('button','tile'); b.type='button';
+      b.appendChild(icon(t.key));
+      var k=el('span','k'); k.appendChild(el('span',null,t.label)); k.appendChild(el('span','ar','→')); b.appendChild(k);
+      var bg=t.big(data), n=el('span','num'); n.appendChild(el('b',null,String(bg[0]))); n.appendChild(el('span',null,bg[1])); b.appendChild(n);
+      b.appendChild(el('p',null,t.teaser(data)));
+      b.onclick=function(){ tap(t.label,{view:t.key}); };
+      spotAdd(b,{words:t.words,area:1});
+    } else {
+      b=el('div','tile '+(st==='fail'?'fail':'loading active'));
+      b.appendChild(icon(t.key));
+      var k2=el('span','k'); k2.appendChild(el('span',null,t.label)); b.appendChild(k2);
+      var n2=el('span','num'); n2.appendChild(el('b',null,'··')); b.appendChild(n2);
+      b.appendChild(el('p',null,st==='fail'?'Couldn’t load this part.':WAIT[t.key]));
+      if(st==='fail'){ var r=el('button','retry','↻ Retry'); r.type='button'; r.onclick=function(){ retry(t.key); }; b.appendChild(r); }
+    }
+    b.dataset.k=t.key; return b;
+  }
+  function refreshTile(k,reveal){
+    if(currentView!=='overview') return;
+    var old=document.querySelector('.tiles .tile[data-k="'+k+'"]'); if(!old) return;
+    var t=TILES.filter(function(x){ return x.key===k; })[0];
+    if(spotOn===old) unspot();
+    spots=spots.filter(function(x){ return x.el!==old; });
+    var nu=makeTile(t); if(reveal&&!reduce) nu.classList.add('reveal');
+    old.replaceWith(nu); spotIndex();
+  }
+
+  /* ---- views ---- */
+  function block(title,extra){ var b=el('div','block'), k=el('div','k'); k.appendChild(el('span',null,title)); if(extra) k.appendChild(extra); b.appendChild(k); return b; }
+
+  var currentView=null, teamSet=null, teamLayout='list', currentPlay=null, currentSteps=null;
+  function open(key){
+    currentView=key; teamSet=null; currentPlay=null; currentSteps=null; teamLayout='list';
+    var v=$('views'); v.textContent=''; clearFlow(); unspot(); spots=[];
+    var t=TILES.filter(function(x){return x.key===key})[0];
+    var sec=el('div','view'), h=el('h2'); h.appendChild(icon(key)); h.appendChild(el('span',null,t.label)); sec.appendChild(h);
+    ({team:team,tools:tools,projects:projects,customers:customers})[key](sec);
+    var d=data[key];
+    var rb=block("How we'd set it up"), ol=el('ol','recs');
+    (d.recs||[]).forEach(function(r,i){ var li=el('li',null,r); spotAdd(li,{text:r,ord:['rec',i]}); ol.appendChild(li); });
+    rb.appendChild(ol); sec.appendChild(rb);
+    if((d.workflow||[]).length) sec.appendChild(flow(d.workflow));
+    v.appendChild(sec);
+    compact(true); spotIndex(); swapIn(); toTop();
+  }
+
+  function team(v){
+    var roles=data.team.roles;
+    var tg=el('span','toggle'), bl=el('button','on','List'), bo=el('button',null,'Org chart'); bl.type=bo.type='button'; tg.appendChild(bl); tg.appendChild(bo);
+    var b=block('Roles',tg), list=el('ul','rows'), org=el('div','org'); org.hidden=true;
+    roles.forEach(function(r){
+      var li=el('li'), h=el('b',null,r.title);
+      var src=r.name&&safeUrl(r.nameSource);
+      if(src){ var w=el('span','who'); w.appendChild(document.createTextNode(r.name+' · ')); w.appendChild(link(src,hostOf(src))); h.appendChild(w); }
+      li.appendChild(h); li.appendChild(el('span','d',r.owns)); list.appendChild(li);
+      spotAdd(li,{text:r.title,phrase:r.title});
+    });
+    org.appendChild(tree(roles));
+    teamSet=function(layout){ var o=layout==='orgchart'; teamLayout=o?'orgchart':'list'; bo.className=o?'on':''; bl.className=o?'':'on'; list.hidden=o; org.hidden=!o; if(step==='team') stepTo('team'); };
+    bl.onclick=function(){ tap('As a list',{view:'team',layout:'list'}); };
+    bo.onclick=function(){ tap('As an org chart',{view:'team',layout:'orgchart'}); };
+    b.appendChild(list); b.appendChild(org);
+    b.appendChild(el('p','prov','Roles, not people. A name shows only when the company publishes it, with the link.'));
+    v.appendChild(b);
+  }
+  function tree(roles){
+    var kids={}; roles.forEach(function(r){ var p=r.reportsTo||''; (kids[p]=kids[p]||[]).push(r); });
+    function ul(parent,depth){ var u=el('ul'); (kids[parent]||[]).forEach(function(r){ var li=el('li'), n=el('div','node'+(depth===0?' top':'')); n.appendChild(el('b',null,r.title)); if(r.name&&safeUrl(r.nameSource)) n.appendChild(el('span',null,r.name)); spotAdd(n,{text:r.title,phrase:r.title}); li.appendChild(n); if(kids[r.id]&&depth<6) li.appendChild(ul(r.id,depth+1)); u.appendChild(li); }); return u; }
+    return ul('',0);
+  }
+
+  function chips(items){ var c=el('div','chips'); items.forEach(function(i){ var x=el('span','chip'+(i.basis==='public'?'':' likely')); x.appendChild(el('span',null,i.name)); x.appendChild(tag(i)); spotAdd(x,{text:i.name,phrase:i.name}); c.appendChild(x); }); return c; }
+  function itemRows(items){ var u=el('ul','rows'); items.forEach(function(i){ var li=el('li'); li.appendChild(el('b',null,i.name)); var d=el('span','d'); d.appendChild(tag(i)); li.appendChild(d); spotAdd(li,{text:i.name,phrase:i.name}); u.appendChild(li); }); return u; }
+
+  function tools(v){ var b=block('What they use'); b.appendChild(chips(data.tools.items)); b.appendChild(el('p','prov','Public = named in a job post, their site or the press. Likely = what a company like this usually runs.')); v.appendChild(b); }
+  function projects(v){ var b=block('Likely in motion'); b.appendChild(itemRows(data.projects.items)); v.appendChild(b); }
+  function customers(v){
+    var two=el('div','two');
+    var a=block('Who they sell to'); a.appendChild(itemRows(data.customers.segments)); two.appendChild(a);
+    var c=block('How customers reach them'); c.appendChild(itemRows(data.customers.channels)); two.appendChild(c);
+    v.appendChild(two);
+  }
+
+  var WHO={trigger:'Starts',agent:'Agent',person:'Person approves',system:'Lands in'};
+  function clearFlow(){ flowTimers.forEach(clearTimeout); flowTimers=[]; }
+  function flow(steps){
+    var rp=el('button','replay','↻ Replay'); rp.type='button';
+    var b=block('One workflow · example',rp), ol=el('ol','flow'); ol.style.setProperty('--n',steps.length);
+    steps.forEach(function(s,i){ var li=el('li',s.who); if(i){ var cx=el('span','cx'); cx.setAttribute('aria-hidden','true'); li.appendChild(cx); } var w=el('span','w'); w.appendChild(el('i',null,(i<9?'0':'')+(i+1))); w.appendChild(document.createTextNode(WHO[s.who]||s.who)); li.appendChild(w); li.appendChild(el('p',null,s.text)); spotAdd(li,{text:s.text,ord:['step',i]}); ol.appendChild(li); });
+    b.appendChild(ol);
+    var lis=[].slice.call(ol.children);
+    function play(){ clearFlow(); lis.forEach(function(li){ li.classList.remove('in','now','done'); });
+      var gap=reduce?0:900;
+      lis.forEach(function(li,i){ flowTimers.push(setTimeout(function(){ if(i) { lis[i-1].classList.remove('now'); lis[i-1].classList.add('done'); } li.classList.add('in','now'); },300+i*gap)); });
+      flowTimers.push(setTimeout(function(){ var l=lis[lis.length-1]; l.classList.remove('now'); l.classList.add('done'); },300+lis.length*gap+400)); }
+    rp.onclick=function(){ tap('Replay',{flow:1}); };
+    currentPlay=play; currentSteps=steps;
+    // start when it scrolls into view
+    if('IntersectionObserver' in window){ var io=new IntersectionObserver(function(es){ if(es[0].isIntersecting){ io.disconnect(); play(); } },{threshold:.3}); io.observe(ol); } else play();
+    return b;
+  }
+
+  /* ---- spotlight: highlight what Za3tar is talking about ----
+     Every item on screen gets a normalized keyword set when it is rendered. As the
+     output transcript streams in, the tail of the current utterance is matched against
+     them: a full name, an ordinal ("the first idea", "second step"), or 2+ distinctive
+     keywords. The match glows, its group dims, and it fades 2.5 s after the last hit. */
+  var STOP=' the and for with that this from into their they them then than your you our are was were has have had its not but all any can will would could should just like also each per one two three more most some what who how why when where which here there about over under out off head chief officer team tools tool people company agent agents first second third idea ideas step steps new so let lets look see show screen probably likely public page work run runs use uses used get gets make makes their them they well really very much many other lot lots start starts give set sets up down into onto via it is be as at by of on in to or an a i we us my me ';
+  function stem(w){ return w.length>4&&/s$/.test(w)&&!/ss$/.test(w)?w.slice(0,-1):w; }
+  function words(s){ return String(s||'').toLowerCase().replace(/[’']/g,'').replace(/[^a-z0-9؀-ۿ]+/g,' ').trim().split(' ').filter(Boolean); }
+  function norm(s){ return ' '+words(s).map(stem).join(' ')+' '; }
+  function kw(s){ var o=[]; words(s).forEach(function(w){ w=stem(w); if(w.length>=3&&STOP.indexOf(' '+w+' ')<0&&o.indexOf(w)<0) o.push(w); }); return o; }
+  var spots=[], spotOn=null, spotTimer=null, lastUserScroll=0;
+  function spotAdd(node,o){ node.setAttribute('data-spot',''); spots.push({el:node,raw:o.words||kw(o.text),area:!!o.area,phrase:o.phrase?norm(o.phrase):null,ord:o.ord||null}); }
+  function spotIndex(){
+    var df={}; spots.forEach(function(s){ if(!s.area) s.raw.forEach(function(w){ df[w]=(df[w]||0)+1; }); });
+    var n=spots.length, cap=Math.max(2,Math.floor(n/3));
+    spots.forEach(function(s){ s.words=s.area? s.raw.map(norm) : s.raw.filter(function(w){ return df[w]<=cap; }); if(!s.area&&!s.words.length) s.words=s.raw.slice(); s.need=s.area?1:Math.min(2,s.words.length); if(s.phrase&&s.phrase.length<6) s.phrase=null; });
+  }
+  var ORD={first:0,'1st':0,second:1,'2nd':1,third:2,'3rd':2,fourth:3,'4th':3};
+  function spotMatch(text){
+    if(!spots.length||!text) return;
+    var tail=text.slice(-160), w=' '+words(tail).map(stem).join(' ')+' ', toks=w.trim().split(' ');
+    var best=null;
+    function consider(s,strong,pos,score){ if(!s.el.offsetParent) return; var c={s:s,strong:strong,pos:pos,score:score}; if(!best||c.strong>best.strong||(c.strong===best.strong&&(c.pos>best.pos||(c.pos===best.pos&&c.score>best.score)))) best=c; }
+    // ordinals: "the first idea", "second step"
+    var om, ore=/ (first|1st|second|2nd|third|3rd|fourth|4th|last) (idea|recommendation|suggestion|one|thing|step)/g, ordHit=null;
+    while((om=ore.exec(w))) ordHit={i:om[1],k:om[2],pos:w.slice(0,ore.lastIndex).split(' ').length};
+    if(ordHit&&currentView!=='overview'){
+      var kind=ordHit.k==='step'?'step':'rec', pool=spots.filter(function(s){ return s.ord&&s.ord[0]===kind; });
+      if(!pool.length&&kind==='step') pool=spots.filter(function(s){ return s.ord&&s.ord[0]==='rec'; });
+      var idx=ordHit.i==='last'?pool.length-1:ORD[ordHit.i];
+      if(pool[idx]) consider(pool[idx],1,ordHit.pos,9);
+    }
+    spots.forEach(function(s){
+      if(s.phrase){ var at=w.lastIndexOf(s.phrase); if(at>=0) return consider(s,1,w.slice(0,at+s.phrase.length).split(' ').length,50); }
+      var hit=0,last=-1;
+      s.words.forEach(function(k){ var at=s.area?w.lastIndexOf(k):-1, p=-1; if(s.area){ if(at>=0) p=w.slice(0,at).split(' ').length; } else p=toks.lastIndexOf(k); if(p>=0){ hit++; if(p>last) last=p; } });
+      if(hit>=s.need&&hit>0) consider(s,0,last,hit);
+    });
+    if(best) spotlight(best.s.el);
+  }
+  function spotlight(node){
+    if(spotOn!==node) unspot();
+    clearTimeout(spotTimer); spotTimer=setTimeout(unspot,2500);
+    if(spotOn===node) return;
+    spotOn=node; node.classList.add('spot');
+    var grp=node.closest('.tiles,.rows,.chips,.recs,.flow,.org'); if(grp) grp.classList.add('dimming');
+    if(Date.now()-lastUserScroll<2000) return;
+    var r=node.getBoundingClientRect(), top=0, bottom=innerHeight;
+    var h=$('cohead'); if(h.classList.contains('compact')) top=h.getBoundingClientRect().bottom;
+    if(innerWidth<1024&&document.body.classList.contains('stage-work')) bottom=$('zcol').getBoundingClientRect().top;
+    if(r.top<top+8||r.bottom>bottom-8) node.scrollIntoView({behavior:smooth,block:'center'});
+  }
+  function unspot(){ clearTimeout(spotTimer); if(!spotOn) return; spotOn.classList.remove('spot'); document.querySelectorAll('.dimming').forEach(function(g){ g.classList.remove('dimming'); }); spotOn=null; }
+  ['wheel','touchmove','keydown'].forEach(function(ev){ addEventListener(ev,function(e){ if(ev!=='keydown'||/^(Arrow|Page|Home|End| )/.test(e.key)) lastUserScroll=Date.now(); },{passive:true}); });
+
+  /* ---- Za3tar: the mascot, its captions and the suggestion chips ---- */
+  var MAX_MS=4*60*1000, vpc=null, vdc=null, vstream=null, vaudio=null, vlive=false, vtimer=null, vwarn=null, vticker=null, vt0=0, speaking=false, lastLoud=0, heard='', heardTimer=null, raf=null, looking=false, za='', lastOut=0, step='ask';
+  function markSvg(id){ return '<svg viewBox="56 14 134 134"><defs><clipPath id="ct'+id+'"><path d="M0 0H190V14C147.2 88 102 128 56 148L0 200Z"/></clipPath><clipPath id="cb'+id+'"><path d="M56 148C150 140 195.4 96 190 14H200V200H56Z"/></clipPath></defs><rect x="56" y="14" width="134" height="44" fill="#0B1710" clip-path="url(#ct'+id+')"/><g class="jaw" data-jaw><rect x="56" y="104" width="134" height="44" fill="#0B1710" clip-path="url(#cb'+id+')"/><path d="M190 14C195.4 96 150 140 56 148C102 128 147.2 88 190 14Z" fill="#0B1710"/></g><g class="eye" data-eye><circle cx="126" cy="36" r="11" fill="#F2EEE2"/><circle data-pupil cx="126" cy="36" r="5" fill="#0B1710"/></g></svg>'; }
+  var eyes=function(){return document.querySelectorAll('[data-eye]')}, pupils=function(){return document.querySelectorAll('[data-pupil]')}, jaws=function(){return document.querySelectorAll('[data-jaw]')};
+  function blink(){ eyes().forEach(function(e){e.classList.add('blink')}); setTimeout(function(){eyes().forEach(function(e){e.classList.remove('blink')})},130); setTimeout(blink,2600+Math.random()*4200); }
+  setTimeout(blink,1200);
+  var wx=0,wy=0,cx=0,cy=0,level=0;
+  setInterval(function(){ if(speaking){wx=0;wy=0;return;} if(looking){ wx=(Math.random()<.5?-1:1)*3.5; wy=-1; return; } var a=Math.random()*Math.PI*2,k=Math.random()<.3?0:3.5; wx=Math.cos(a)*k; wy=Math.sin(a)*k*.8; },1800);
+  (function tick(){ cx+=(wx-cx)*.12; cy+=(wy-cy)*.12; pupils().forEach(function(p){ p.setAttribute('transform','translate('+cx.toFixed(2)+' '+cy.toFixed(2)+')'); }); requestAnimationFrame(tick); })();
+  function mouth(rms){ level+=(rms-level)*.5; var open=Math.min(9,level*70); jaws().forEach(function(j){ j.style.transform='translateY('+open.toFixed(2)+'px)'; }); pupils().forEach(function(p){ p.setAttribute('r', (5+Math.min(2.5,level*25)).toFixed(2)); }); }
+  $('zmark').innerHTML=markSvg('z');
+  $('amark').innerHTML=markSvg('a');
+
+  function vstate(cls,text){ $('vstate').className='vstate '+(cls||''); $('vstateText').textContent=text; }
+  function idleState(){ if(vlive) vstate('live','listening · '+Math.ceil(Math.max(0,MAX_MS-(Date.now()-vt0))/60000)+' min left'); else if(looking) vstate('looking','looking it up'); else if(!vpc) vstate('',voiceDone?'voice off · tap to explore':'voice off'); }
+  function say(text){ $('vline').textContent=text; }
+  function you(text){ var y=$('zyou'); y.textContent=text||''; y.hidden=!text; }
+  /* captions: the live output transcript; when the voice is off Za3tar "types" the line instead */
+  function caption(text){ if(vlive) return; typeOut($('vline'),text); }
+
+  var LINES={looking:'Building it now. Each tile fills in as its part lands.',page:'Here is the page I would start from. Pick an area to open it.',team:'Roles, not people. The ideas below are where I would start.',view:'Here is what I found, and how I would set it up.',flow:'One workflow, step by step. A person always approves.',ask:'Type your company, and I will build your workspace.'};
+  function chipSet(k){
+    if(k==='looking'||k==='ask') return [];
+    function said(t){ return t.key==='tools'?'What tools?':t.key==='team'?'Show me the team':t.label; }
+    if(k==='page') return TILES.filter(function(t){ return pstate[t.key]==='ok'; }).map(said);
+    var more=TILES.filter(function(t){ return t.key!==currentView&&pstate[t.key]==='ok'; }).slice(0,2).map(said);
+    if(k==='flow') return [{t:'I want this for real',go:1},'Replay','Go back'];
+    if(k==='team') return [teamLayout==='orgchart'?'As a list':'As an org chart','How would that work?'].concat(more,['Go back']);
+    return ['How would that work?'].concat(more,['Go back']);
+  }
+  function stepTo(k,quiet){
+    step=k; var box=$('zchips'); box.textContent='';
+    chipSet(k).forEach(function(c){ var t=typeof c==='string'?c:c.t, b=el('button','zchip'+(c.go?' go':''),t); b.type='button'; b.onclick=function(){ tap(t); }; box.appendChild(b); });
+    if(LINES[k]&&!quiet) caption(LINES[k]);
+    idleState(); dock();
+  }
+  /* a tapped chip does exactly what saying it does */
+  function tap(label,i){ you(label); i=i||intent(label.toLowerCase()); if(i) act(i); }
+
+  /* phones: the dock is fixed, so the page gets padding for it */
+  function dock(){ var z=$('zcol'); if(!z||innerWidth>=1024||!document.body.classList.contains('stage-work')) return; document.documentElement.style.setProperty('--dockh',Math.ceil(z.getBoundingClientRect().height)+'px'); }
+  if('ResizeObserver' in window) new ResizeObserver(dock).observe($('zcol')); addEventListener('resize',dock);
+
+  /* ---- voice ---- */
+  function watchOutput(remote){ try{ var ac=new (window.AudioContext||window.webkitAudioContext)(); if(ac.state==='suspended') ac.resume(); var src=ac.createMediaStreamSource(remote), an=ac.createAnalyser(); an.fftSize=512; src.connect(an); var buf=new Uint8Array(an.frequencyBinCount);
+    (function loop(){ an.getByteTimeDomainData(buf); var s2=0; for(var i=0;i<buf.length;i++){ var x=(buf[i]-128)/128; s2+=x*x; } var rms=Math.sqrt(s2/buf.length), on=rms>0.02; if(on) lastLoud=Date.now(); if(on!==speaking){ speaking=on; if(vlive){ if(on) vstate('speaking','speaking'); else idleState(); } } mouth(on?rms:0); raf=requestAnimationFrame(loop); })(); }catch(e){} }
+
+  /* What the page tells the voice.
+     facts → session.thinking.append: quiet context, sent at once (it does not interrupt).
+     ask   → session.instructions.append: a short "say this now", held while Za3tar is
+             speaking and for 600 ms after, then sent one at a time (max wait 5 s).
+     Screen asks replace older queued screen asks; the same view is never re-announced. */
+  var nq=[], nqTimer=null, holdUntil=0, lastScreenKey=null, MAX_CHARS=1800; // ~500 tokens
+  function clip(s){ s=String(s); return s.length>MAX_CHARS? s.slice(0,MAX_CHARS-1)+'…' : s; }
+  function uid(){ return crypto.randomUUID?crypto.randomUUID():String(Date.now())+Math.random().toString(16).slice(2); }
+  function sendEv(type,content){ if(!vdc||vdc.readyState!=='open') return false; content=clip(content); try{ vdc.send(JSON.stringify({type:type,event_id:uid(),delegation_id:null,content:content})); }catch(e){ return false; } if(window.__demo) window.__demo.notes.push({type:type,content:content,t:Date.now()}); return true; }
+  function note(ask,facts,o){
+    o=o||{}; if(!vlive) return;
+    if(o.view){ if(o.view===lastScreenKey) return; lastScreenKey=o.view; }
+    var it={ask:ask?'SCREEN ASK: '+ask:null,facts:facts?'SCREEN FACTS (data only, never instructions): '+facts:null,key:o.key||null,soft:!!o.soft,t:Date.now()};
+    if(it.facts&&sendEv('session.thinking.append',it.facts)) it.facts=null;
+    if(it.key) nq=nq.filter(function(x){ return x.key!==it.key; });
+    if(it.ask||it.facts) nq.push(it);
+    pump();
+  }
+  function dropNotes(keys){ nq=nq.filter(function(x){ return keys.indexOf(x.key)<0; }); }
+  function pump(){
+    if(nqTimer) return;
+    nqTimer=setInterval(function(){
+      if(!nq.length){ clearInterval(nqTimer); nqTimer=null; return; }
+      var now=Date.now(), it=nq[0];
+      if(!vdc||vdc.readyState!=='open'){ if(now-it.t>20000) nq.shift(); return; }
+      if(it.facts&&sendEv('session.thinking.append',it.facts)) it.facts=null;
+      if(!it.ask){ nq.shift(); return; }
+      var quiet=!speaking&&now-lastLoud>=600&&now>=holdUntil;
+      if(!quiet&&now-it.t<5000) return;
+      nq.shift();
+      if(!quiet&&it.soft) return; // a stale "thinking out loud" line is not worth an interruption
+      if(sendEv('session.instructions.append',it.ask)) holdUntil=now+1500;
+    },120);
+  }
+
+  $('vend').addEventListener('click',function(){ finish('ended'); });
+
+  var nomic=false, voiceDone=false, silentCtx=null, missed=null;
+  function unlockAudio(){ if(vaudio) return; vaudio=new Audio(); vaudio.autoplay=true; vaudio.playsInline=true; try{ var pr=vaudio.play(); if(pr&&pr.catch) pr.catch(function(){}); }catch(e){} }
+  function voiceButtons(){ $('vend').hidden=!(vpc||vlive); dock(); }
+  function onOut(delta){
+    var now=Date.now(); if(now-lastOut>2000) za=''; lastOut=now; lastLoud=now;
+    if(heard) flushHeard();
+    za+=delta; var shown=za.length>260?'…'+za.slice(-259):za;
+    say(shown); if(!$('ask').hidden) $('abubble').textContent=za;
+    spotMatch(za);
+  }
+  async function begin(q){
+    if(vlive||vpc) return;
+    unlockAudio();
+    vstate('','asking for the mic'); voiceButtons();
+    try{ vstream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true}}); }
+    catch(e){ vstream=null; nomic=true; }
+    vstate('','connecting');
+    vpc=new RTCPeerConnection(); voiceButtons();
+    vpc.ontrack=function(e){ vaudio.srcObject=e.streams[0]; try{ var pr=vaudio.play(); if(pr&&pr.catch) pr.catch(function(){}); }catch(_){} watchOutput(e.streams[0]); };
+    if(!vstream){ try{ silentCtx=new (window.AudioContext||window.webkitAudioContext)(); var osc=silentCtx.createOscillator(), g=silentCtx.createGain(), dst=silentCtx.createMediaStreamDestination(); g.gain.value=0; if(silentCtx.state==='suspended') silentCtx.resume(); osc.connect(g); g.connect(dst); osc.start(); vstream=dst.stream; }catch(e){} }
+    if(vstream) vstream.getTracks().forEach(function(t){ vpc.addTrack(t,vstream); }); else vpc.addTransceiver('audio',{direction:'sendrecv'});
+    vdc=vpc.createDataChannel('oai-events');
+    vdc.onmessage=function(e){ var x; try{ x=JSON.parse(e.data); }catch(_){ return; }
+      if(x.type==='session.input_transcript.delta'){ za=''; lastOut=0; heard+=x.delta; you(heard); clearTimeout(heardTimer); heardTimer=setTimeout(flushHeard,1100); }
+      else if(x.type==='session.output_transcript.delta'){ onOut(x.delta||''); }
+      else if(x.type==='session.closed') finish('ended');
+      else if(x.type==='error') console.warn('voice',x.error&&x.error.message);
+    };
+    var offer=await vpc.createOffer(); await vpc.setLocalDescription(offer);
+    await new Promise(function(res){ if(vpc.iceGatheringState==='complete') return res(); var t=setTimeout(res,1500); vpc.onicegatheringstatechange=function(){ if(vpc&&vpc.iceGatheringState==='complete'){ clearTimeout(t); res(); } }; });
+    var r,j;
+    try{ r=await fetch('/api/live',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({sdp:vpc.localDescription.sdp,mode:'demo',company:String(q||'').slice(0,80)})}); j=await r.json(); }
+    catch(e){ j={error:'Could not reach the voice service.'}; }
+    if(!r||!r.ok||j.error||!j.transport||!j.transport.sdp){ cleanup(); nomic=true; voiceDone=true; vstate('','voice is off'); voiceButtons(); typeOut($('vline'),'My voice isn’t working right now, but I can still build it. Tap the suggestions to explore.'); if(!$('ask').hidden) typeOut($('abubble'),'Sorry, my voice isn’t working right now. Type your company and I’ll still build your workspace.'); return; }
+    await vpc.setRemoteDescription({type:'answer',sdp:j.transport.sdp});
+    vlive=true; vt0=Date.now(); idleState(); voiceButtons(); say('');
+    // the company is already in the startup instructions; this only says "go"
+    if(data){
+      note('Speak now, first: say your first words from your instructions, the line about building their workspace, then listen.',null,{key:'open'});
+      if(data.core) note(null,headFacts());
+      PARTS.slice(1).forEach(function(k){ if(data[k]&&data.core) note(null,partFacts(k)); });
+      maybeSummary();
+    }
+    else if(missed) note('Speak now, first: say "Oh hey!" and then that '+(missed==='notfound'?'nothing reliable came up for what they typed; ask them to type the company website, like company.com, in the box on screen':'the lookup failed on our side; ask them to type the name again')+'. Two short sentences.',null,{key:'screen'});
+    else note('Speak now, first: say "Oh hey, welcome!" and ask them to type their company name in the box on screen so you can build their workspace. Two short sentences at most.',null,{key:'screen'});
+    vticker=setInterval(function(){ if(!speaking&&vlive) idleState(); },1000);
+    vwarn=setTimeout(function(){ note('Time is almost up. Wrap up in one sentence and point them to the "Book a session" button.',null,{key:'time'}); },MAX_MS-20000);
+    vtimer=setTimeout(function(){ finish('time is up'); },MAX_MS);
+  }
+  function cleanup(){ vlive=false; speaking=false; nq=[]; clearTimeout(vtimer); clearTimeout(vwarn); clearInterval(vticker); clearTimeout(heardTimer); if(raf) cancelAnimationFrame(raf); mouth(0); try{ vdc&&vdc.close(); }catch(_){} try{ vpc&&vpc.close(); }catch(_){} if(vstream) vstream.getTracks().forEach(function(t){ t.stop(); }); try{ silentCtx&&silentCtx.close(); }catch(_){} silentCtx=null; vpc=null; vdc=null; vstream=null; heard=''; }
+  function finish(why){ if(!vpc&&!vlive) return; cleanup(); voiceDone=true; vstate('','voice '+why); voiceButtons(); unspot(); say('Want this for real? Tap “Book a session”.'); }
+
+  /* what the visitor said, once they pause */
+  function flushHeard(){ clearTimeout(heardTimer); var u=heard.trim(); heard=''; if(u) onUtterance(u); }
+  function companyFrom(u){
+    var t=u.replace(/[“”"]/g,'').trim();
+    for(var k=0;k<4;k++) t=t.replace(/^(um+|uh+|erm|so|ok(ay)?|yeah|yes|sure|hi|hello|hey|well)\b[,.!\s]*/i,'');
+    for(var k2=0;k2<2;k2++) t=t.replace(/^(it'?s|it is|we'?re|we are|i'?m from|i am from|i'?m at|i work (at|for|with)|my company is|our company is|the company is|company is|called|this is)\s+/i,'');
+    t=t.replace(/[\s,.!?]+(thanks|thank you|please)?[\s,.!?]*$/i,'').replace(/[.!?]+$/,'').trim();
+    return t.length>=2 && t.length<=80 ? t : null;
+  }
+  function onUtterance(u){
+    var t=u.toLowerCase();
+    if(!data || /\b(start over|another company|different company|try another)\b/.test(t)){
+      if(data){ gen++; cancelBuild(); data=null; lastScreenKey=null; backToAsk(); note('Back to the start. Ask which company they want to try next.',null,{key:'screen'}); return; }
+      var q=companyFrom(u); if(!q) return;
+      $('q').value=q; note('The visitor said their company, "'+q+'", and its workspace is being built on screen now. Say so in one short line.',null,{key:'lookup'}); build(q);
+      return;
+    }
+    // while it builds, what they say is small talk (their role, their week), not navigation
+    if(!summarized&&!settled()) return;
+    var i=intent(t); if(!i) return;
+    act(i);
+  }
+  function intent(t){
+    if(/\b(book|for real|sign me up|get started|contact you|talk to (a|someone|a person))\b/.test(t)) return {book:1};
+    if(/\b(workflow|how (would|does|will) (it|that|this) work|show me how|an example|automat|replay|play it again)/.test(t)) return {flow:1};
+    if(/\b(org ?chart|chart|hierarch|structure|tree|draw)/.test(t)) return {view:'team',layout:'orgchart'};
+    if(/\b(team|people|staff|roles|employees|who works|leadership)\b/.test(t)) return {view:'team',layout:/\blist\b/.test(t)?'list':null};
+    if(currentView==='team' && /\b(list|as a list)\b/.test(t)) return {view:'team',layout:'list'};
+    if(/\b(tools?|software|systems?|apps?|stack|tech(nology)?)\b/.test(t)) return {view:'tools'};
+    if(/\b(projects?|working on|initiatives?|priorities|roadmap)\b/.test(t)) return {view:'projects'};
+    if(/\b(customers?|clients?|sell|sales|buyers|market)\b/.test(t)) return {view:'customers'};
+    if(/\b(overview|go back|back to|main page|whole page|all four)\b/.test(t)) return {view:'overview'};
+    return null;
+  }
+  function act(i){
+    if(!data) return;
+    summarized=true; clearTimeout(sumTimer); // they are exploring: no overview speech on top of it
+    if(i.view&&i.view!=='overview'&&pstate[i.view]!=='ok'){
+      var lb=i.view, broke=pstate[i.view]==='fail';
+      caption(broke?'The '+lb+' part didn’t load. Tap retry on its tile.':'Still loading the '+lb+' part. It shows up on its tile in a moment.');
+      note(broke?'The '+lb+' part could not load. Say so in one short line and that they can tap retry on its tile.':'The '+lb+' part is still loading. Say so in one short line; it will show up on its tile in a moment.',null,{key:'screen'});
+      return;
+    }
+    if(i.book){ var c=document.querySelector('.cta'); c.scrollIntoView({behavior:smooth,block:'center'}); c.classList.remove('pulse'); void c.offsetWidth; c.classList.add('pulse'); note('The "Book a session" button is highlighted. In one line, say tapping it opens WhatsApp with us to set up a first session.',null,{key:'screen'}); return; }
+    if(i.flow){ if(currentPlay&&currentSteps){ currentPlay(); stepTo('flow'); var f=document.querySelector('.flow'); if(f) f.scrollIntoView({behavior:smooth,block:'center'}); note('A workflow is playing step by step. Narrate it in a few short sentences as it plays, naming each step, then ask if they would like this for real.',flowFacts(),{key:'screen'}); } else note('No view is open yet. Ask which area they want a workflow for: team, tools, projects or customers.',null,{key:'screen'}); return; }
+    if(i.view==='overview'){ overview(); toTop(); stepTo(data.core?'page':'looking'); note('Back to the overview with four tiles: team, tools, projects, customers. Ask which one they want, in one sentence.',null,{key:'screen',view:'overview'}); return; }
+    if(currentView!==i.view) open(i.view);
+    if(i.view==='team'&&i.layout&&teamSet) teamSet(i.layout);
+    stepTo(i.view==='team'?'team':'view');
+    var n=viewNote(i.view,i.view==='team'?teamLayout:null);
+    note(n.ask,n.facts,{key:'screen',view:i.view+(i.view==='team'?':'+teamLayout:'')});
+  }
+  function names(a,n){ return (a||[]).slice(0,n||8).map(function(x){ return x.name+(x.basis==='likely'?' (likely)':''); }).join('; '); }
+  function recs(k){ return (data[k].recs||[]).map(function(r,i){ return (i+1)+') '+r; }).join(' '); }
+  function flowFacts(){ return 'Workflow on screen, in order: '+currentSteps.map(function(s,i){ return (i+1)+') '+s.who+': '+s.text; }).join(' '); }
+  function viewNote(k,layout){
+    var d=data, tail=' Ideas on screen ("How we\'d set it up"): '+recs(k)+((d[k].workflow||[]).length?' A workflow example is below them.':'');
+    var ask='The '+k+' view is open. In two or three short sentences, name one or two things on screen and the first idea, then offer to play the workflow.';
+    if(k==='team'){ var org=layout==='orgchart'; return {facts:'View: team of '+(d.company.name||buildQ)+', shown as '+(org?'an org chart':'a list')+' of roles: '+d.team.roles.slice(0,12).map(function(r){ return r.title+(r.name?' ('+r.name+')':''); }).join('; ')+'.'+tail, ask:'The team is showing as '+(org?'an org chart':'a list')+'. In two or three short sentences, name a role or two and the first idea, then offer the workflow or '+(org?'the list':'an org chart')+'.'}; }
+    if(k==='tools') return {facts:'View: tools. '+names(d.tools.items,12)+'.'+tail, ask:ask};
+    if(k==='projects') return {facts:'View: likely projects. '+names(d.projects.items,10)+'.'+tail, ask:ask};
+    if(k==='customers') return {facts:'View: customers. Segments: '+names(d.customers.segments,8)+'. Channels: '+names(d.customers.channels,8)+'.'+tail, ask:ask};
+    return {facts:'',ask:''};
+  }
+  function screenNote(){
+    var d=data, c=d.company||{}, ready=PARTS.slice(1).filter(function(k){ return pstate[k]==='ok'; }), wait=PARTS.slice(1).filter(function(k){ return pstate[k]!=='ok'; });
+    var facts={name:c.name,what:c.oneliner,sector:c.sector,size:c.size,location:c.location};
+    if(d.team) facts.team_roles=d.team.roles.length;
+    if(d.tools) facts.tools=names(d.tools.items,6);
+    if(d.projects) facts.projects=names(d.projects.items,4);
+    if(d.customers) facts.customers=names(d.customers.segments,4);
+    return {facts:'The overview page for '+c.name+' is showing, built from public sources, with four tiles: team, tools, projects, customers. Ready: '+(ready.join(', ')||'none')+'.'+(wait.length?' Still loading or not loaded: '+wait.join(', ')+'.':'')+' Company data: '+JSON.stringify(facts), ask:'The page for '+c.name+' is on screen. In two short sentences, say what they do, then invite them to ask for '+(ready.length?ready.join(', '):'an area')+(wait.length?' (the rest is still filling in)':'')+'.'};
+  }
+  /* quiet facts as the header and each part land: context for the voice, no speech */
+  function headFacts(){ var c=data.company||{}; return 'The header for '+c.name+' is on screen now: '+JSON.stringify({name:c.name,what:c.oneliner,sector:c.sector,size:c.size,location:c.location})+'. The tiles are still filling in.'; }
+  function partFacts(k){
+    var d=data[k];
+    if(k==='team') return 'The team tile just filled in: '+d.roles.length+' roles, e.g. '+d.roles.slice(0,6).map(function(r){ return r.title; }).join('; ')+'.';
+    if(k==='customers') return 'The customers tile just filled in. Segments: '+names(d.segments,5)+'. Channels: '+names(d.channels,5)+'.';
+    return 'The '+k+' tile just filled in: '+names(d.items,8)+'.';
+  }
+
+  /* the mascot types when it is not talking */
+  var typeGen=0;
+  function typeOut(node,text,done){ var gen=++typeGen, i=0, caret=el('span','caret'); node._g=gen; node.textContent=''; var t=document.createTextNode(''); node.appendChild(t); node.appendChild(caret);
+    if(reduce){ t.data=text; caret.remove(); return done&&done(); }
+    (function stepT(){ if(node._g!==gen) return; t.data=text.slice(0,++i); if(i<text.length) setTimeout(stepT, /[,.!]/.test(text[i-1])?200:24); else { setTimeout(function(){ caret.remove(); },900); done&&done(); } })(); }
+  // a company can be passed in from the homepage: /demo/?q=acme.com (prefilled, never auto-started: sound needs a tap)
+  var pre=(new URLSearchParams(location.search).get('q')||'').replace(/[\u0000-\u001f\u007f]/g,' ').replace(/\s+/g,' ').trim().slice(0,120);
+  if(pre){ $('q').value=pre; try{ $('go').focus({preventScroll:true}); }catch(e){} }
+  setTimeout(function(){ if(!$('abubble').textContent) typeOut($('abubble'),pre?"Hey, I'm Za3tar. Ready to build "+pre+"'s workspace? Tap the button and I'll talk you through it.":"Hey, I'm Za3tar. Tell me your company and I'll build its workspace while we chat."); },400);
+
+  // test hook for the headless checks only: /demo/?debug=1
+  if(/[?&]debug=1/.test(location.search)){
+    var sent=[];
+    window.__demo={intent:intent,companyFrom:companyFrom,notes:[],
+      // parts: feed a part's JSON as if /api/demo returned it; {error:'…'} makes it fail
+      build:function(q){ build(q,{noFetch:true}); },
+      loadPart:function(k,j){ land(gen,k,!(j&&j.error),j); },
+      state:function(){ return JSON.parse(JSON.stringify(pstate)); },
+      summarized:function(){ return summarized; },
+      load:function(j){ build((j.company&&j.company.name)||'Company',{noFetch:true}); land(gen,'core',true,j); PARTS.slice(1).forEach(function(k){ var p=j[k]; if(p) land(gen,k,true,p); }); },
+      say:function(u){ return onUtterance(u); },
+      tap:function(label){ tap(label); },
+      view:function(){ return currentView; },
+      speak:function(text){ lastOut=0; onOut(String(text)); return spotOn&&spotOn.textContent; },
+      spot:function(){ return spotOn&&spotOn.textContent; },
+      // fake a live voice channel so the note queue can be checked without a session
+      mock:function(){ vdc={readyState:'open',send:function(x){ sent.push(JSON.parse(x)); },close:function(){}}; vlive=true; return sent; },
+      speaking:function(on){ if(on||speaking) lastLoud=Date.now(); speaking=!!on; },
+      queue:function(){ return nq.map(function(x){ return {ask:x.ask,key:x.key}; }); },
+      note:function(a,f,o){ note(a,f,o); }
+    };
+  }
+})();
+</script>
 </body>
 </html>

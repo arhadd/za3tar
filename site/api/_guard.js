@@ -1,4 +1,4 @@
-// Shared request guard for /api/try and /api/live. Files starting with "_" are
+// Shared request guard for /api/demo, /api/try and /api/live. Files starting with "_" are
 // not deployed as endpoints. Order: method -> origin -> rate limit, then the
 // handler validates the body and only then calls a model.
 //
