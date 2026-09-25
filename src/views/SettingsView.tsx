@@ -14,8 +14,14 @@ export function SettingsView({
   onSignIn,
   onSignOut,
   onRerunSetup,
+  routeStatus,
+  onOpenRoute,
 }: {
   onRerunSetup: () => void;
+  /** live status per assistant (route) id */
+  routeStatus: Record<string, string>;
+  /** open the assistant's panel to talk to it directly */
+  onOpenRoute: (id: string) => void;
   hosted: boolean;
   onSignIn: (code: string, name: string) => Promise<void>;
   onSignOut: () => Promise<void>;
@@ -33,7 +39,6 @@ export function SettingsView({
   return (
     <div className="flex max-w-xl flex-col gap-4">
       <div className="flex items-baseline gap-2 px-1">
-        <Eyebrow>Settings</Eyebrow>
         <span className="text-[12px] text-olive">
           stored on this Mac, applied immediately
         </span>
@@ -102,7 +107,7 @@ export function SettingsView({
           onChange={onChange}
         />
         <SecretField
-          label="OpenAI API key (Talk — voice)"
+          label="OpenAI API key (talking out loud)"
           field="openai_api_key"
           form={form}
           onChange={onChange}
@@ -123,38 +128,25 @@ export function SettingsView({
 
       <Card className="flex flex-col gap-3">
         <div className="flex flex-col gap-1">
-          <Eyebrow>Za3tar runtime</Eyebrow>
+          <Eyebrow>Assistants</Eyebrow>
           <p className="text-[12px] leading-relaxed text-olive">
-            Optional. A command Za3tar uses to do work outside this Mac: put
-            dated items on your calendar, deliver a follow-up, and report back
-            on what moved. Any command that takes the message as its final
-            argument and prints the reply works. Nothing runs without a click in
-            the app. See docs/AGENT-PROTOCOL.md.
+            Other AI assistants Za3tar can pass work to, for things outside
+            this Mac: your calendar, WhatsApp, checking on people. Za3tar asks
+            before it sends anything.
+          </p>
+          <p className="text-[11px] leading-relaxed text-olive/80">
+            Technical: an <span className="font-mono">acp</span> assistant is a
+            command that speaks the Agent Client Protocol on stdin/stdout (for
+            example Hermes with <code className="font-mono">acp</code>); a{" "}
+            <span className="font-mono">oneshot</span> one takes the message as
+            its last argument and prints the reply.
           </p>
         </div>
-        <label className="flex flex-col gap-1 text-[12px] text-olive">
-          runtime command
-          <Field
-            mono
-            value={form.agent_command}
-            onChange={(e) =>
-              onChange({ ...form, agent_command: e.target.value })
-            }
-            placeholder="e.g. ~/bin/za3tar-runtime"
-          />
-        </label>
-      </Card>
-
-      <Card className="flex flex-col gap-3">
-        <div className="flex flex-col gap-1">
-          <Eyebrow>Hands</Eyebrow>
-          <p className="text-[12px] leading-relaxed text-olive">
-            Other agents Za3tar can hand work to. An ACP route is a command that
-            speaks the Agent Client Protocol on stdin/stdout (for example
-            Hermes with <code className="font-mono">acp</code>); a oneshot route
-            takes the message as its last argument and prints the reply.
+        {routes.length === 0 && (
+          <p className="rounded-lg border border-dashed border-line px-3 py-3 text-[12px] text-olive">
+            No assistants yet. Za3tar works fine on its own.
           </p>
-        </div>
+        )}
         {routes.map((r, i) => (
           <div key={r.id} className="flex flex-col gap-2 rounded-lg border border-line p-3">
             <div className="flex items-center gap-2">
@@ -178,20 +170,44 @@ export function SettingsView({
                 <option value="acp">acp</option>
                 <option value="oneshot">oneshot</option>
               </select>
-              <span className="text-[11px] text-olive">id {r.id}</span>
-              <Button
-                tone="ghost"
-                size="sm"
-                className="ml-auto"
-                onClick={() => onRoutes(routes.filter((_, j) => j !== i))}
-              >
-                remove
-              </Button>
+              <span className="flex items-center gap-1.5 text-[11px] text-olive">
+                <span
+                  className={`h-1.5 w-1.5 rounded-full ${
+                    routeStatus[r.id] === "ready" || routeStatus[r.id] === "working"
+                      ? "bg-thyme"
+                      : "bg-olive/30"
+                  }`}
+                />
+                {routeStatus[r.id] === "ready" || routeStatus[r.id] === "working"
+                  ? "connected"
+                  : r.enabled
+                    ? "on"
+                    : "off"}
+              </span>
+              <div className="ml-auto flex gap-1">
+                {r.enabled && r.command.trim() && (
+                  <Button
+                    tone="quiet"
+                    size="sm"
+                    onClick={() => onOpenRoute(r.id)}
+                    title="talk to this assistant directly"
+                  >
+                    open
+                  </Button>
+                )}
+                <Button
+                  tone="ghost"
+                  size="sm"
+                  onClick={() => onRoutes(routes.filter((_, j) => j !== i))}
+                >
+                  remove
+                </Button>
+              </div>
             </div>
             <Field
               value={r.description}
               onChange={(e) => setRoute(i, { description: e.target.value })}
-              placeholder="one line: when should Za3tar hand work to this?"
+              placeholder="one line: when should Za3tar pass work to this assistant?"
             />
             <Field
               mono
@@ -218,7 +234,7 @@ export function SettingsView({
               ...routes,
               {
                 id: `route-${routes.length + 1}`,
-                label: "New route",
+                label: "New assistant",
                 description: "",
                 kind: "oneshot",
                 command: "",
@@ -228,8 +244,32 @@ export function SettingsView({
             ])
           }
         >
-          + route
+          + assistant
         </Button>
+      </Card>
+
+      <Card className="flex flex-col gap-3">
+        <div className="flex flex-col gap-1">
+          <Eyebrow>Work outside this Mac (advanced)</Eyebrow>
+          <p className="text-[12px] leading-relaxed text-olive">
+            Optional. A command Za3tar uses to do work outside this Mac: put
+            dated to-dos on your calendar, send a reminder, and report back on
+            what moved. Any command that takes the message as its final
+            argument and prints the reply works. Nothing runs without a click in
+            the app. See docs/AGENT-PROTOCOL.md.
+          </p>
+        </div>
+        <label className="flex flex-col gap-1 text-[12px] text-olive">
+          runtime command
+          <Field
+            mono
+            value={form.agent_command}
+            onChange={(e) =>
+              onChange({ ...form, agent_command: e.target.value })
+            }
+            placeholder="e.g. ~/bin/za3tar-runtime"
+          />
+        </label>
       </Card>
 
       <div className="flex items-center gap-3">

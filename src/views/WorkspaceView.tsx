@@ -1,11 +1,13 @@
-// The workspace's front page: what it is, where its information comes from,
-// the files and links behind it, who is in it, and what is open. Everything
-// here is editable in place, because a workspace nobody describes is just a
-// filter.
-import { useState } from "react";
+// A workspace's Overview: its projects first, then the to-dos, the latest
+// notes and the people. Where it gets its information and the files behind
+// it sit in a closed "Sources & links" at the foot: useful, not the point.
+// The name and the one-line description live in the page header; "edit"
+// there opens the form below.
+import type { ReactNode } from "react";
 import { Button, Card, Chip, Empty, Eyebrow, Field } from "../ui";
 import { relDate } from "../format";
 import { ThreadCard, statsFor } from "./ThreadsView";
+import { TodoLine, byUrgency } from "./FollowUpsView";
 import type {
   DecisionRef,
   Link,
@@ -36,12 +38,15 @@ export function WorkspaceView({
   open,
   decisions,
   threads,
-  runtimeReady,
+  ask,
+  edit,
+  setEdit,
   onSave,
   onOpenLink,
   onGo,
   onOpenMeeting,
   onOpenThread,
+  onDone,
 }: {
   ws: Workspace;
   threads: Thread[];
@@ -50,21 +55,19 @@ export function WorkspaceView({
   people: PersonRow[];
   open: OpenAction[];
   decisions: DecisionRef[];
-  runtimeReady: boolean;
+  /** the ask box, scoped to this workspace */
+  ask: ReactNode;
+  /** the workspace being edited, or null (the header's "edit" sets it) */
+  edit: Workspace | null;
+  setEdit: (w: Workspace | null) => void;
   onSave: (w: Workspace) => Promise<void>;
   onOpenLink: (l: Link) => void;
   onGo: (v: View) => void;
   onOpenMeeting: (dir: string) => void;
+  onDone: (oa: OpenAction) => void;
 }) {
-  const [edit, setEdit] = useState<Workspace | null>(null);
-  const today = new Date().toISOString().slice(0, 10);
-  const live = open.filter((o) => !o.action.parked);
-  const overdue = live.filter(
-    (o) => o.action.due_date && o.action.due_date < today,
-  ).length;
-  const proposed = decisions.filter(
-    (d) => d.decision.status === "proposed",
-  ).length;
+  const live = byUrgency(open.filter((o) => !o.action.parked));
+  const active = threads.filter((t) => t.status === "active");
   const sources = ws.links.filter((l) => l.kind === "source");
   const rest = ws.links.filter((l) => l.kind !== "source");
 
@@ -122,7 +125,7 @@ export function WorkspaceView({
         </Card>
         <Card className="flex flex-col gap-2">
           <div className="flex items-baseline gap-2">
-            <Eyebrow>Sources, files, links</Eyebrow>
+            <Eyebrow>Sources & links</Eyebrow>
             <span className="text-[12px] text-olive">
               where it gets its information, and what sits behind it
             </span>
@@ -187,11 +190,11 @@ export function WorkspaceView({
           </Button>
         </Card>
         <Card className="flex flex-col gap-2">
-          <Eyebrow>Runtime for this workspace</Eyebrow>
+          <Eyebrow>Assistant for this workspace (advanced)</Eyebrow>
           <p className="text-[12px] leading-relaxed text-olive">
-            Optional. When this workspace's work should go to a different agent
-            than the default (a client's own agent, for instance), put its
-            command here. Empty means the runtime in Settings.
+            Optional. When this workspace's work should go to a different
+            assistant than the default (a client's own, for instance), put its
+            command here. Empty means the one in Settings.
           </p>
           <Field
             mono
@@ -206,102 +209,69 @@ export function WorkspaceView({
     );
   }
 
-  return (
-    <div className="flex flex-col gap-6">
-      <div className="flex flex-col gap-2">
-        <div className="flex items-start gap-3">
-          <p
-            dir="auto"
-            className={`arabic max-w-2xl text-start text-[15px] leading-relaxed ${
-              ws.description ? "" : "text-olive"
-            }`}
-          >
-            {ws.description ||
-              "Say what this workspace is: who is in it, what it is for, what done looks like."}
-          </p>
-          <Button
-            tone="ghost"
-            size="sm"
-            className="ml-auto shrink-0"
-            onClick={() =>
-              setEdit({ ...ws, links: ws.links.map((l) => ({ ...l })) })
-            }
-          >
-            edit
-          </Button>
-        </div>
-        <div className="flex flex-wrap items-center gap-2 text-[12px] text-olive">
-          <span>
-            {runtimeReady
-              ? ws.runtime_command
-                ? "Za3tar runs this workspace's work on its own runtime"
-                : "Za3tar can do work for you here"
-              : "Za3tar works locally here"}
-          </span>
-        </div>
-      </div>
 
-      <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-        <Stat
-          label="threads in motion"
-          n={threads.filter((t) => t.status === "active").length}
-          onClick={() => onGo("threads")}
-        />
-        <Stat label="people" n={people.length} onClick={() => onGo("people")} />
-        <Stat
-          label="waiting for a yes"
-          n={proposed}
-          onClick={() => onGo("decisions")}
-        />
-        <Stat
-          label={overdue ? `open · ${overdue} overdue` : "open"}
-          n={live.length}
-          accent={overdue > 0}
-          onClick={() => onGo("followups")}
-        />
-      </div>
+  return (
+    <div className="flex flex-col gap-8">
+      {ask}
 
       <section className="flex flex-col gap-2">
         <div className="flex items-baseline gap-2 px-1">
-          <Eyebrow>In motion</Eyebrow>
-          <span className="text-[12px] text-olive">the threads that are moving</span>
+          <Eyebrow>Projects</Eyebrow>
           <button
             onClick={() => onGo("threads")}
             className="ml-auto text-[12px] text-olive hover:text-ink"
           >
-            all threads →
+            {threads.length > active.length
+              ? `all ${threads.length} projects →`
+              : "+ add a project"}
           </button>
         </div>
-        {threads.filter((t) => t.status === "active").length === 0 ? (
-          <Empty>Nothing in motion. Add a thread for each initiative or project here.</Empty>
+        {active.length === 0 ? (
+          <Empty>
+            No active projects. Add one for each thing that moves over weeks
+            here.
+          </Empty>
         ) : (
           <div className="flex flex-col gap-1.5">
-            {threads
-              .filter((t) => t.status === "active")
-              .map((t) => (
-                <ThreadCard
-                  key={t.id}
-                  t={t}
-                  stats={statsFor(t, library, open, decisions)}
-                  onOpen={onOpenThread}
-                />
-              ))}
+            {active.map((t) => (
+              <ThreadCard
+                key={t.id}
+                t={t}
+                stats={statsFor(t, library, open, decisions)}
+                onOpen={onOpenThread}
+              />
+            ))}
           </div>
         )}
       </section>
 
       <section className="flex flex-col gap-2">
         <div className="flex items-baseline gap-2 px-1">
-          <Eyebrow>Where it gets its information</Eyebrow>
+          <Eyebrow>To-dos</Eyebrow>
+          {live.length > 5 && (
+            <span className="text-[12px] text-olive">
+              {live.length} open, most urgent first
+            </span>
+          )}
+          <button
+            onClick={() => onGo("followups")}
+            className="ml-auto text-[12px] text-olive hover:text-ink"
+          >
+            all to-dos →
+          </button>
         </div>
-        {sources.length === 0 ? (
-          <Empty>
-            No sources yet. A thread file, a chat group, a sheet, a dashboard.
-          </Empty>
+        {live.length === 0 ? (
+          <Empty>No open to-dos here.</Empty>
         ) : (
           <Card pad={false} className="p-2">
-            {sources.map((l, i) => (
-              <LinkRow key={i} l={l} onOpen={onOpenLink} />
+            {live.slice(0, 5).map((oa) => (
+              <TodoLine
+                key={`${oa.dir}-${oa.action.id}`}
+                oa={oa}
+                where={oa.meeting_title || "untitled note"}
+                onDone={onDone}
+                onOpen={(x) => onOpenMeeting(x.dir)}
+              />
             ))}
           </Card>
         )}
@@ -309,17 +279,35 @@ export function WorkspaceView({
 
       <section className="flex flex-col gap-2">
         <div className="flex items-baseline gap-2 px-1">
-          <Eyebrow>Files & links</Eyebrow>
-          <span className="text-[12px] text-olive">
-            repos, folders, docs, sites, channels
-          </span>
+          <Eyebrow>Recent notes</Eyebrow>
+          <button
+            onClick={() => onGo("meetings")}
+            className="ml-auto text-[12px] text-olive hover:text-ink"
+          >
+            all notes →
+          </button>
         </div>
-        {rest.length === 0 ? (
-          <Empty>Nothing attached yet.</Empty>
+        {library.length === 0 ? (
+          <Empty>No notes yet. Record a meeting or paste notes.</Empty>
         ) : (
           <Card pad={false} className="p-2">
-            {rest.map((l, i) => (
-              <LinkRow key={i} l={l} onOpen={onOpenLink} />
+            {library.slice(0, 5).map((s) => (
+              <button
+                key={s.id}
+                onClick={() => onOpenMeeting(s.dir)}
+                className="flex w-full items-center gap-3 rounded-lg px-2 py-1.5 text-left hover:bg-ink/5"
+              >
+                <span
+                  dir="auto"
+                  className="arabic min-w-0 flex-1 truncate text-start text-[13px]"
+                >
+                  {s.title || "Untitled note"}
+                </span>
+                {s.person && <Chip tone="outline">{s.person}</Chip>}
+                <span className="w-24 shrink-0 text-right text-[12px] text-olive">
+                  {relDate(s.created)}
+                </span>
+              </button>
             ))}
           </Card>
         )}
@@ -327,10 +315,10 @@ export function WorkspaceView({
 
       <section className="flex flex-col gap-2">
         <div className="flex items-baseline gap-2 px-1">
-          <Eyebrow>People here</Eyebrow>
+          <Eyebrow>People</Eyebrow>
         </div>
         {people.length === 0 ? (
-          <Empty>Nobody yet. Tag a meeting with a person.</Empty>
+          <Empty>Nobody yet. Tag a note with a person.</Empty>
         ) : (
           <div className="flex flex-wrap gap-1.5">
             {people.map((p) => (
@@ -356,60 +344,56 @@ export function WorkspaceView({
         )}
       </section>
 
-      <section className="flex flex-col gap-2">
-        <div className="flex items-baseline gap-2 px-1">
-          <Eyebrow>Latest</Eyebrow>
+      <details className="group rounded-xl border border-line bg-paper">
+        <summary className="flex cursor-pointer list-none items-center gap-2 px-4 py-3 text-[13px] text-olive hover:text-ink">
+          <span className="inline-block transition-transform group-open:rotate-90">
+            ›
+          </span>
+          Sources & links
+          <span className="text-[12px] text-olive">
+            {ws.links.length
+              ? `${ws.links.length} attached`
+              : "where Za3tar gets its information"}
+          </span>
+        </summary>
+        <div className="flex flex-col gap-4 border-t border-line px-3 py-3">
+          <div className="flex flex-col gap-1">
+            <span className="px-1 text-[12px] font-medium text-olive">
+              Where it gets its information
+            </span>
+            {sources.length === 0 ? (
+              <p className="px-1 text-[12px] text-olive">
+                None yet: a chat group, a sheet, a notes file.
+              </p>
+            ) : (
+              sources.map((l, i) => (
+                <LinkRow key={i} l={l} onOpen={onOpenLink} />
+              ))
+            )}
+          </div>
+          <div className="flex flex-col gap-1">
+            <span className="px-1 text-[12px] font-medium text-olive">
+              Files & links
+            </span>
+            {rest.length === 0 ? (
+              <p className="px-1 text-[12px] text-olive">Nothing attached yet.</p>
+            ) : (
+              rest.map((l, i) => <LinkRow key={i} l={l} onOpen={onOpenLink} />)
+            )}
+          </div>
+          <Button
+            tone="quiet"
+            size="sm"
+            className="self-start"
+            onClick={() =>
+              setEdit({ ...ws, links: ws.links.map((l) => ({ ...l })) })
+            }
+          >
+            edit sources & links
+          </Button>
         </div>
-        {library.length === 0 ? (
-          <Empty>Nothing here yet. Record a meeting or add a brief.</Empty>
-        ) : (
-          <Card pad={false} className="p-2">
-            {library.slice(0, 5).map((s) => (
-              <button
-                key={s.id}
-                onClick={() => onOpenMeeting(s.dir)}
-                className="flex w-full items-center gap-3 rounded-lg px-2 py-1.5 text-left hover:bg-ink/5"
-              >
-                <span
-                  dir="auto"
-                  className="arabic min-w-0 flex-1 truncate text-start text-[13px]"
-                >
-                  {s.title || "Untitled meeting"}
-                </span>
-                {s.person && <Chip tone="outline">{s.person}</Chip>}
-                <span className="shrink-0 text-[12px] text-olive">
-                  {relDate(s.created)}
-                </span>
-              </button>
-            ))}
-          </Card>
-        )}
-      </section>
+      </details>
     </div>
-  );
-}
-
-function Stat({
-  label,
-  n,
-  onClick,
-  accent,
-}: {
-  label: string;
-  n: number;
-  onClick: () => void;
-  accent?: boolean;
-}) {
-  return (
-    <button
-      onClick={onClick}
-      className={`flex flex-col items-start gap-0.5 rounded-xl border px-4 py-3 text-left transition-colors hover:border-ink/40 ${
-        accent ? "border-thyme bg-thyme/15" : "border-line bg-paper"
-      }`}
-    >
-      <span className="display text-[24px] leading-none tabular-nums">{n}</span>
-      <span className="text-[12px] text-olive">{label}</span>
-    </button>
   );
 }
 
