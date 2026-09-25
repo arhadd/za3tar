@@ -148,8 +148,8 @@ function Welcome({ onNext }: { onNext: () => void }) {
           Za3tar keeps up with the work you are already doing.
         </h1>
         <p className="max-w-xl text-[16px] leading-relaxed text-olive">
-          Record a meeting or paste a thread. Za3tar writes the notes, pulls out
-          what was decided and who owes what, and files it against the thing it
+          Record a meeting or paste a chat. Za3tar writes the notes, pulls out
+          what was decided and the to-dos, and files it under the project it
           belongs to. Then it helps you act on it: draft the message, chase the
           person, tell you where something stands.
         </p>
@@ -370,8 +370,7 @@ function Tell({
         </Button>
         {threads.length > 0 && (
           <span className="text-[12px] text-olive">
-            {threads.length} thing{threads.length === 1 ? "" : "s"} set up so
-            far
+            {threads.length} project{threads.length === 1 ? "" : "s"} so far
           </span>
         )}
       </div>
@@ -407,9 +406,9 @@ function Review({
         This is what I understood.
       </h1>
       <p className="text-[14px] leading-relaxed text-olive">
-        Each of these is something in motion, with a line on where it stands.
-        Fix anything that is off — meetings and messages will file themselves
-        against these.
+        Each of these is a project, with a line on where it stands. Fix
+        anything that is off — notes and messages will file themselves under
+        these.
       </p>
 
       {used.length === 0 && (
@@ -545,7 +544,7 @@ function First({
       <div className="flex flex-col gap-4">
         <h1 className="display text-[26px] leading-tight">That's the loop.</h1>
         <p className="text-[14px] leading-relaxed text-olive">
-          Za3tar read it and pulled this out. It is filed, and anything owed is
+          Za3tar read it and pulled this out. It is filed, and your to-dos are
           now on your Home. A recorded meeting does the same thing, without the
           pasting.
         </p>
@@ -565,7 +564,7 @@ function First({
         )}
         {open.length > 0 && (
           <Card pad={false} className="p-3">
-            <Eyebrow className="px-1 pb-1">Who owes what</Eyebrow>
+            <Eyebrow className="px-1 pb-1">To-dos</Eyebrow>
             {open.map((a) => (
               <div key={a.id} className="flex items-center gap-2 px-1 py-1">
                 <span
@@ -617,7 +616,7 @@ function First({
         Now give it one real thing.
       </h1>
       <p className="text-[14px] leading-relaxed text-olive">
-        Paste a WhatsApp thread, an email, or your own notes from a recent
+        Paste a WhatsApp chat, an email, or your own notes from a recent
         conversation. Za3tar will read it and show you what it found.
       </p>
 
@@ -702,7 +701,7 @@ function Done({
         You're set{userName ? `, ${userName.split(" ")[0]}` : ""}.
       </h1>
       <p className="max-w-xl text-[15px] leading-relaxed text-olive">
-        Home shows what is in motion and what needs you. Ask it anything in the
+        Home shows your workspaces and what needs you. Ask it anything in the
         box at the top — where something stands, what is on you, or to write a
         message. Record a meeting and it lands in the right place on its own.
       </p>

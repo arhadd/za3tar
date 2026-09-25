@@ -42,7 +42,7 @@ export function PeopleView({
       </div>
       {people.length === 0 && (
         <Empty>
-          Tag a meeting with a person and they show up here with a real contact
+          Tag a note with a person and they show up here with a real contact
           card.
         </Empty>
       )}
@@ -126,7 +126,7 @@ export function PeopleView({
                   </span>
                 </div>
                 {p.open_actions > 0 && (
-                  <Chip tone="accent">{p.open_actions} open</Chip>
+                  <Chip tone="accent">{p.open_actions} to-do{p.open_actions === 1 ? "" : "s"}</Chip>
                 )}
               </div>
               <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[12px] text-olive">

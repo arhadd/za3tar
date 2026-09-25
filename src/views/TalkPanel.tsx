@@ -73,7 +73,7 @@ export function TalkPanel({
       )}
       {!you && !za && (
         <p className="text-[13px] text-olive">
-          Ask where something stands, what is on you, park a thing, file a brief,
+          Ask where something stands, what is on you, park a thing, dictate a note,
           or say record.
         </p>
       )}

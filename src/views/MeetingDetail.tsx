@@ -96,7 +96,7 @@ export function MeetingDetail(p: MeetingDetailProps) {
           onClick={p.onBack}
           className="self-start text-[12px] text-olive hover:text-ink"
         >
-          ← {p.backLabel ?? "all meetings"}
+          ← {p.backLabel ?? "all notes"}
         </button>
         <div className="flex flex-wrap gap-2">
           <Field
@@ -105,7 +105,7 @@ export function MeetingDetail(p: MeetingDetailProps) {
             onChange={(e) => p.setTitle(e.target.value)}
             onBlur={p.onMetaBlur}
             placeholder={
-              recording ? "what's this meeting?" : "Untitled meeting"
+              recording ? "what's this meeting?" : "Untitled note"
             }
             className="arabic flex-[2] text-[16px] font-medium"
           />
@@ -145,13 +145,13 @@ export function MeetingDetail(p: MeetingDetailProps) {
           )}
           {dir && (
             <label className="flex items-center gap-1.5">
-              thread
+              project
               <select
                 value={p.meetingThread}
                 onChange={(e) => p.onMoveThread(e.target.value)}
                 className="max-w-[260px] rounded-md border border-line bg-white px-1.5 py-0.5 text-[12px] text-ink outline-none focus:border-ink"
               >
-                <option value="">unfiled</option>
+                <option value="">no project</option>
                 {p.threads
                   .filter((t) => t.workspace === p.meetingWs)
                   .map((t) => (
@@ -237,7 +237,7 @@ export function MeetingDetail(p: MeetingDetailProps) {
           )}
           {!actions && (
             <Button tone="primary" onClick={p.onExtract}>
-              pull out decisions & actions
+              pull out decisions & to-dos
             </Button>
           )}
         </div>
@@ -275,7 +275,7 @@ export function MeetingDetail(p: MeetingDetailProps) {
 
           {actions.actions.length > 0 && (
             <Card pad={false} className="p-2">
-              <Eyebrow className="px-2 pt-1 pb-1">Action items</Eyebrow>
+              <Eyebrow className="px-2 pt-1 pb-1">To-dos</Eyebrow>
               {actions.actions.map((a) => (
                 <div
                   key={a.id}
@@ -336,7 +336,7 @@ export function MeetingDetail(p: MeetingDetailProps) {
             actions.actions.length === 0 &&
             actions.questions.length === 0 && (
               <Card className="text-[13px] text-olive">
-                No clear decisions or actions in this one. Just a good conversation.
+                No clear decisions or to-dos in this one. Just a good conversation.
               </Card>
             )}
 
