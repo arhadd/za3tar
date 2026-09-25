@@ -71,10 +71,7 @@ pub fn start_recording(
         .duration_since(UNIX_EPOCH)
         .map(|d| d.as_secs())
         .unwrap_or(0);
-    let base = app
-        .path()
-        .app_data_dir()
-        .map_err(|e| e.to_string())?
+    let base = crate::paths::data_dir(&app)?
         .join("recordings")
         .join(stamp.to_string());
     std::fs::create_dir_all(&base).map_err(|e| e.to_string())?;
@@ -137,9 +134,4 @@ pub fn stop_recording(state: State<'_, CaptureState>) -> Result<String, String> 
         let _ = child.wait();
     }
     Ok(rec.dir.to_string_lossy().to_string())
-}
-
-#[tauri::command]
-pub fn is_recording(state: State<'_, CaptureState>) -> bool {
-    state.0.lock().map(|g| g.is_some()).unwrap_or(false)
 }

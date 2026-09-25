@@ -37,7 +37,7 @@ npm run app
 
 ## Optional agent bridge
 
-za3tar works without an agent. To connect one, set an agent name and command in Settings, then implement the envelopes in [`AGENT-PROTOCOL.md`](AGENT-PROTOCOL.md). Agent features stay hidden when no command is configured.
+Za3tar works fully on its own. To let it do work outside the Mac (calendar, WhatsApp delivery, follow-up tracking), set a runtime command under Settings → Za3tar runtime, then implement the envelopes in [`AGENT-PROTOCOL.md`](AGENT-PROTOCOL.md). The runtime is never named in the app: the user talks to Za3tar, and Za3tar does the work. Runtime-backed controls stay hidden when no command is configured.
 
 ## Before using real meetings
 

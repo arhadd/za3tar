@@ -1,19 +1,27 @@
 @import "tailwindcss";
+@import "@fontsource-variable/archivo/wdth.css";
 
-/* za3tar — the arabeezy granola alternative.
-   warm, herby palette: za'atar olive + sumac + sesame cream. */
+/* za3tar — the v11 brand, ported from za3tar.ai.
+   ink on limestone, fresh thyme as the only accent, dry olive for the quiet
+   parts. The app stays calmer than the site: no motion beyond a pulse. */
 @theme {
-  --color-olive: #6b7b3a;
-  --color-olive-deep: #3f4a25;
-  --color-sumac: #b5432e;
-  --color-cream: #f7f2e7;
-  --color-sesame: #e8dcc0;
-  --color-ink: #20241a;
-  --color-ink-soft: #4a4f3d;
+  --color-ink: #0b1710; /* thyme black — text, dark ground */
+  --color-limestone: #f2eee2; /* light ground */
+  --color-paper: #faf8f1; /* raised surfaces on limestone */
+  --color-olive: #6f7f5a; /* dry olive — secondary text, muted marks */
+  --color-thyme: #c6de3e; /* fresh thyme — accent, recording, the leaf */
+  --color-thyme-deep: #8fa828; /* shaded leaf end — hover on thyme */
+  --color-panel: #101e17; /* deep panel — sidebar */
+  --color-hairline: #1e3327; /* lines on dark */
+  --color-line: rgba(11, 23, 16, 0.12); /* lines on light */
+  --color-alert: #b5432e; /* errors, overdue */
 
   --font-sans:
-    ui-sans-serif, system-ui, -apple-system, "SF Pro Text", "Segoe UI",
-    sans-serif;
+    "Archivo Variable", ui-sans-serif, system-ui, -apple-system, "SF Pro Text",
+    "Segoe UI", sans-serif;
+  --font-arabic:
+    "SF Arabic", "Geeza Pro", "Noto Naskh Arabic", "Archivo Variable",
+    system-ui, sans-serif;
 }
 
 html,
@@ -24,14 +32,77 @@ body,
 
 body {
   margin: 0;
-  background: var(--color-cream);
+  background: var(--color-limestone);
   color: var(--color-ink);
   font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 1.45;
   -webkit-font-smoothing: antialiased;
+  overscroll-behavior: none;
+  user-select: none;
 }
 
-/* arabic / rtl text renders with a system arabic face */
-[dir="rtl"],
+/* text that people copy stays selectable */
+input,
+textarea,
+.selectable,
 .arabic {
-  font-family: "SF Arabic", "Geeza Pro", var(--font-sans);
+  user-select: text;
+}
+
+/* arabic / mixed text renders with a system arabic face; english names and
+   terms inside it fall back to Archivo through the stack */
+[dir="rtl"],
+[dir="auto"],
+.arabic {
+  font-family: var(--font-arabic);
+}
+
+/* the wordmark until a custom one is drawn: condensed grotesk at cap height */
+.wordmark {
+  font-family: var(--font-sans);
+  font-stretch: 82%;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+}
+
+.display {
+  font-stretch: 90%;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+}
+
+.eyebrow {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* the one animation: something is live */
+@keyframes za-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
+}
+.pulse {
+  animation: za-pulse 1.4s ease-in-out infinite;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(11, 23, 16, 0.18);
+  border-radius: 8px;
+  border: 3px solid transparent;
+  background-clip: content-box;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
 }

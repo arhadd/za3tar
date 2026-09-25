@@ -9,7 +9,7 @@ use std::collections::BTreeMap;
 use std::path::{Path, PathBuf};
 
 use serde::{Deserialize, Serialize};
-use tauri::{AppHandle, Manager};
+use tauri::AppHandle;
 
 #[derive(Serialize, Deserialize, Clone, Default)]
 pub struct Contact {
@@ -17,6 +17,15 @@ pub struct Contact {
     pub phone: String,
     #[serde(default)]
     pub email: String,
+    /// company / team they belong to
+    #[serde(default)]
+    pub org: String,
+    /// what they do there
+    #[serde(default)]
+    pub role: String,
+    /// other spellings the transcriber produces ("كريم" for Karim)
+    #[serde(default)]
+    pub aliases: Vec<String>,
 }
 
 /// One row of the directory: a person plus everything the library knows about
@@ -26,17 +35,18 @@ pub struct PersonRow {
     pub name: String,
     pub phone: String,
     pub email: String,
+    pub org: String,
+    pub role: String,
+    pub aliases: Vec<String>,
     pub meetings: u32,
     pub last_met: u64,
     pub open_actions: u32,
+    /// workspaces this person has met in (derived from their meetings)
+    pub workspaces: Vec<String>,
 }
 
 fn people_path(app: &AppHandle) -> Result<PathBuf, String> {
-    Ok(app
-        .path()
-        .app_data_dir()
-        .map_err(|e| e.to_string())?
-        .join("people.json"))
+    Ok(crate::paths::data_dir(app)?.join("people.json"))
 }
 
 fn read_contacts(app: &AppHandle) -> BTreeMap<String, Contact> {
@@ -60,9 +70,13 @@ pub fn list_people(app: AppHandle) -> Result<Vec<PersonRow>, String> {
                 name: name.clone(),
                 phone: c.phone.clone(),
                 email: c.email.clone(),
+                org: c.org.clone(),
+                role: c.role.clone(),
+                aliases: c.aliases.clone(),
                 meetings: 0,
                 last_met: 0,
                 open_actions: 0,
+                workspaces: Vec::new(),
             },
         );
     }
@@ -71,16 +85,29 @@ pub fn list_people(app: AppHandle) -> Result<Vec<PersonRow>, String> {
         if rec.person.is_empty() {
             continue;
         }
-        let row = rows.entry(rec.person.clone()).or_insert_with(|| PersonRow {
-            name: rec.person.clone(),
+        // an alias on a contact card folds that spelling into the real person
+        let canonical = contacts
+            .iter()
+            .find(|(_, c)| c.aliases.iter().any(|a| a == &rec.person))
+            .map(|(n, _)| n.clone())
+            .unwrap_or_else(|| rec.person.clone());
+        let row = rows.entry(canonical.clone()).or_insert_with(|| PersonRow {
+            name: canonical.clone(),
             phone: String::new(),
             email: String::new(),
+            org: String::new(),
+            role: String::new(),
+            aliases: Vec::new(),
             meetings: 0,
             last_met: 0,
             open_actions: 0,
+            workspaces: Vec::new(),
         });
         row.meetings += 1;
         row.last_met = row.last_met.max(rec.created);
+        if !row.workspaces.contains(&rec.workspace) {
+            row.workspaces.push(rec.workspace.clone());
+        }
         if let Some(acts) = crate::actions::load(Path::new(&rec.dir)) {
             row.open_actions += acts.actions.iter().filter(|a| !a.done).count() as u32;
         }
@@ -98,17 +125,31 @@ pub fn save_person(
     name: String,
     phone: String,
     email: String,
+    org: Option<String>,
+    role: Option<String>,
+    aliases: Option<Vec<String>>,
 ) -> Result<(), String> {
     let name = name.trim().to_string();
     if name.is_empty() {
         return Err("person needs a name".into());
     }
     let mut contacts = read_contacts(&app);
+    let prev = contacts.get(&name).cloned().unwrap_or_default();
     contacts.insert(
-        name,
+        name.clone(),
         Contact {
             phone: phone.trim().to_string(),
             email: email.trim().to_string(),
+            org: org.map(|s| s.trim().to_string()).unwrap_or(prev.org),
+            role: role.map(|s| s.trim().to_string()).unwrap_or(prev.role),
+            aliases: aliases
+                .map(|v| {
+                    v.into_iter()
+                        .map(|a| a.trim().to_string())
+                        .filter(|a| !a.is_empty() && a != &name)
+                        .collect()
+                })
+                .unwrap_or(prev.aliases),
         },
     );
     let path = people_path(&app)?;
