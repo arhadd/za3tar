@@ -377,8 +377,8 @@ footer a:hover{color:var(--ink)}
     // stage 2: slots -> reassembled mark, paced by the steps
     // paced by the steps, not the (sticky) mark box, so the end point stays put
     var secTop=howSec.getBoundingClientRect().top+y;
-    var btn=howSec.querySelector('.ctacopy .btn').getBoundingClientRect();
-    var start2=secTop-vh*.72, end2=(btn.top+y)-vh*.52;
+    // finish just before the closing section settles in view (the form sits lower now)
+    var start2=secTop-vh*.95, end2=secTop-vh*.12;
     // the page may end before that point: never pace past the last scrollable pixel
     var maxY=document.documentElement.scrollHeight-vh-4;
     if(end2>maxY) end2=maxY;

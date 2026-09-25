@@ -10,7 +10,7 @@ taps once; that tap starts the voice (`api/live.js`, told the company up front)
 and five parallel `api/demo.js` calls, one per part of the company page (`core`
 header, then team, tools, projects, customers, each with three recommendations
 and one example workflow). Each part renders as it lands. `/demo/?q=<company>`
-prefills the box.
+(the homepage hand-off) starts the build on load; the voice is one tap away.
 
 ## Licence
 
