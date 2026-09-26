@@ -24,9 +24,10 @@ AGPL-3.0 or Apache-2.0 licences. See [`../LICENSES/README.md`](../LICENSES/READM
 
 ## Deploy
 
-Linked Vercel project: `za3tar`. Until that project's root directory points at
-`site/`, deploys run from the design folder (`~/za3tar-design/landing-v11`), which
-this directory mirrors. `.vercelignore` keeps tooling and docs out of the deploy.
+Linked Vercel project: `za3tar`. Deploys run from this directory with the Vercel
+CLI (`vercel` for a preview, `vercel --prod` for za3tar.ai) after the change is
+merged to main. The old design folder (`~/za3tar-design/landing-v11`) is retired.
+`.vercelignore` keeps tooling and docs out of the deploy.
 
 Functions need `ANTHROPIC_API_KEY` (`/api/demo`, `/api/try`) and
 `OPENAI_API_KEY` (`/api/live`) in the Vercel project environment. Optional:
