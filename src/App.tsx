@@ -2363,9 +2363,14 @@ function App() {
               />
             ) : view === "meetings" || view === "overview" || view === "threads" ? (
               <MeetingsView
-                library={wsLibrary}
+                library={library}
+                workspaces={workspaces}
+                currentWs={wsId}
                 currentDir={dir}
-                onOpen={openPast}
+                onOpen={(d, ws) => {
+                  setWsId(ws);
+                  openPast(d);
+                }}
                 runtimeReady={runtimeReady}
                 schedule={schedule}
                 onFetchToday={fetchToday}
