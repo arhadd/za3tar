@@ -363,11 +363,14 @@ pub async fn transcribe_dir(dir: &Path) -> Result<Vec<Segment>, String> {
     let (mic_words, system_words) = tokio::join!(mic_fut, system_fut);
 
     let mut mic_words = mic_words?;
-    let system_words = system_words?;
+    let mut system_words = system_words?;
 
     // Call mode (voices on the system track) → the track *is* the speaker and
-    // mic diarization is ignored. Silent system track → in-person mode.
-    if system_words.is_empty() {
+    // mic diarization is ignored. Silent system track → in-person mode. A
+    // notification sound ("[outro jingle]") on an otherwise silent track isn't
+    // a call — it used to flip an 85-minute in-person meeting to all "me".
+    if !is_call(&system_words) {
+        system_words.clear();
         relabel_in_person(&mut mic_words);
     }
 
@@ -378,6 +381,16 @@ pub async fn transcribe_dir(dir: &Path) -> Result<Vec<Segment>, String> {
         return Err("no speech found in either track".into());
     }
     Ok(coalesce(all))
+}
+
+/// Enough real speech on the system track to call it a call: sound-event tags
+/// like "[music]" don't count, and a handful of words is a video or a ping.
+fn is_call(system_words: &[TaggedWord]) -> bool {
+    system_words
+        .iter()
+        .filter(|w| !w.text.contains(['[', ']']))
+        .count()
+        >= 20
 }
 
 /// Render a transcript as plain lines for the notes model / display.
@@ -468,5 +481,21 @@ mod tests {
 
         assert!(prepare_upload(&p).await.unwrap().is_none());
         std::fs::remove_dir_all(&dir).unwrap();
+    }
+
+    fn word(text: &str) -> TaggedWord {
+        TaggedWord {
+            speaker: "them".into(),
+            start: 0.0,
+            text: text.into(),
+            diarized_id: None,
+        }
+    }
+
+    #[test]
+    fn a_stray_sound_is_not_a_call() {
+        assert!(!is_call(&[word("[outro"), word("jingle]")]));
+        assert!(!is_call(&(0..5).map(|_| word("hello")).collect::<Vec<_>>()));
+        assert!(is_call(&(0..40).map(|_| word("hello")).collect::<Vec<_>>()));
     }
 }
