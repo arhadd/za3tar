@@ -59,6 +59,110 @@ struct TaggedWord {
     diarized_id: Option<String>,
 }
 
+/// What actually goes over the wire for one track.
+struct Upload {
+    bytes: Vec<u8>,
+    file_name: &'static str,
+    mime: &'static str,
+}
+
+/// Get a track ready to send: repair its WAV header, skip it if it holds no
+/// sound, and compress it to AAC. Raw 16 kHz WAV is ~115 MB an hour per track,
+/// and two of those uploading at once is what dropped mid-send on long
+/// meetings; AAC at 32 kbps is ~8x smaller and Scribe reads it the same.
+/// Falls back to the WAV if afconvert isn't there or fails.
+async fn prepare_upload(path: &Path) -> Result<Option<Upload>, String> {
+    let _ = repair_wav_header(path);
+    let wav = std::fs::read(path).map_err(|e| format!("read {path:?}: {e}"))?;
+    let data_start = wav_data_offset(&wav).unwrap_or(44.min(wav.len()));
+    if wav.len() < 1024 || wav[data_start..].iter().all(|&b| b == 0) {
+        return Ok(None);
+    }
+
+    let m4a = path.with_extension("upload.m4a");
+    let converted = tokio::process::Command::new("/usr/bin/afconvert")
+        .args(["-f", "m4af", "-d", "aac", "-b", "32000"])
+        .arg(path)
+        .arg(&m4a)
+        .status()
+        .await
+        .map(|s| s.success())
+        .unwrap_or(false);
+    let compressed = if converted {
+        std::fs::read(&m4a).ok()
+    } else {
+        None
+    };
+    let _ = std::fs::remove_file(&m4a);
+
+    Ok(Some(match compressed {
+        Some(bytes) if bytes.len() > 1024 => Upload {
+            bytes,
+            file_name: "audio.m4a",
+            mime: "audio/mp4",
+        },
+        _ => Upload {
+            bytes: wav,
+            file_name: "audio.wav",
+            mime: "audio/wav",
+        },
+    }))
+}
+
+/// Byte offset where the `data` chunk's samples begin, walking the chunks
+/// (AVAudioFile puts a ~4 KB padding chunk before `data`, so it isn't 44).
+fn wav_data_offset(wav: &[u8]) -> Option<usize> {
+    let mut off = 12;
+    while off + 8 <= wav.len() {
+        let size = u32::from_le_bytes(wav[off + 4..off + 8].try_into().ok()?) as usize;
+        if &wav[off..off + 4] == b"data" {
+            return Some(off + 8);
+        }
+        off += 8 + size + (size & 1);
+    }
+    None
+}
+
+/// Rewrite the RIFF and data sizes from the real file length. The capture
+/// helper does this on a clean stop, but if it dies mid-recording (e.g. the
+/// mic device changes) the header still claims ~0 bytes of audio, and
+/// afconvert would then produce an empty file.
+fn repair_wav_header(path: &Path) -> std::io::Result<()> {
+    use std::io::{Read, Seek, SeekFrom, Write};
+    let mut f = std::fs::OpenOptions::new()
+        .read(true)
+        .write(true)
+        .open(path)?;
+    let len = f.metadata()?.len();
+    let mut head = vec![0u8; len.min(64 * 1024) as usize];
+    f.read_exact(&mut head)?;
+    if len < 12 || &head[0..4] != b"RIFF" || &head[8..12] != b"WAVE" {
+        return Ok(());
+    }
+    let Some(data_start) = wav_data_offset(&head) else {
+        return Ok(());
+    };
+    let data_len = (len - data_start as u64) as u32;
+    f.seek(SeekFrom::Start(data_start as u64 - 4))?;
+    f.write_all(&data_len.to_le_bytes())?;
+    f.seek(SeekFrom::Start(4))?;
+    f.write_all(&((len - 8) as u32).to_le_bytes())?;
+    Ok(())
+}
+
+/// reqwest's Display stops at "error sending request for url"; the cause
+/// (timeout, reset, DNS, TLS) is in the source chain.
+fn error_chain(e: &dyn std::error::Error) -> String {
+    let mut out = e.to_string();
+    let mut src = e.source();
+    while let Some(s) = src {
+        out.push_str(": ");
+        out.push_str(&s.to_string());
+        src = s.source();
+    }
+    out
+}
+
 fn read_key() -> Result<String, String> {
     std::env::var("ELEVENLABS_API_KEY")
         .map_err(|_| "ELEVENLABS_API_KEY not set (add it to .env)".to_string())
@@ -71,35 +175,49 @@ async fn transcribe_track(
     speaker: &str,
     diarize: bool,
 ) -> Result<Vec<TaggedWord>, String> {
-    let bytes = std::fs::read(path).map_err(|e| format!("read {path:?}: {e}"))?;
-    // an essentially-empty file (e.g. a silent/failed track) → no words, not an error
-    if bytes.len() < 1024 {
+    let Some(upload) = prepare_upload(path).await? else {
+        // empty or all-zero track (e.g. nothing played through the speakers) → no words
         return Ok(vec![]);
-    }
-
-    let part = reqwest::multipart::Part::bytes(bytes)
-        .file_name("audio.wav")
-        .mime_str("audio/wav")
-        .map_err(|e| e.to_string())?;
-    let mut form = reqwest::multipart::Form::new()
-        .text("model_id", MODEL)
-        .part("file", part);
-    if diarize {
-        form = form.text("diarize", "true");
-    }
-
-    let req = if let Some((base, token)) = crate::hosted::hosted() {
-        client
-            .post(format!("{base}/v1/elevenlabs/speech-to-text"))
-            .bearer_auth(token)
-    } else {
-        client.post(ELEVENLABS_URL).header("xi-api-key", api_key)
     };
-    let resp = req
-        .multipart(form)
-        .send()
-        .await
-        .map_err(|e| format!("elevenlabs request failed: {e}"))?;
+
+    // One retry on a transport failure: a long upload can drop mid-send on a
+    // flaky connection, and the recording is still on disk to resend.
+    let mut attempt = 0;
+    let resp = loop {
+        attempt += 1;
+        let part = reqwest::multipart::Part::bytes(upload.bytes.clone())
+            .file_name(upload.file_name)
+            .mime_str(upload.mime)
+            .map_err(|e| e.to_string())?;
+        let mut form = reqwest::multipart::Form::new()
+            .text("model_id", MODEL)
+            .part("file", part);
+        if diarize {
+            form = form.text("diarize", "true");
+        }
+
+        let req = if let Some((base, token)) = crate::hosted::hosted() {
+            client
+                .post(format!("{base}/v1/elevenlabs/speech-to-text"))
+                .bearer_auth(token)
+        } else {
+            client.post(ELEVENLABS_URL).header("xi-api-key", api_key)
+        };
+        match req.multipart(form).send().await {
+            Ok(resp) => break resp,
+            Err(e) if attempt < 2 => {
+                eprintln!("[asr] {speaker} upload failed, retrying: {}", error_chain(&e));
+                tokio::time::sleep(std::time::Duration::from_secs(3)).await;
+            }
+            Err(e) => {
+                return Err(format!(
+                    "elevenlabs request failed ({speaker} track, {:.1} MB): {} — the recording is saved; transcribe again once the connection is steady",
+                    upload.bytes.len() as f64 / 1_000_000.0,
+                    error_chain(&e)
+                ))
+            }
+        }
+    };
 
     let status = resp.status();
     let body = resp.text().await.map_err(|e| e.to_string())?;
@@ -214,7 +332,13 @@ pub async fn transcribe_dir(dir: &Path) -> Result<Vec<Segment>, String> {
     } else {
         read_key()?
     };
-    let client = reqwest::Client::new();
+    // No timeout used to mean a stalled upload hung forever; the overall limit
+    // is generous because Scribe on an hour of audio takes a while to answer.
+    let client = reqwest::Client::builder()
+        .connect_timeout(std::time::Duration::from_secs(20))
+        .timeout(std::time::Duration::from_secs(15 * 60))
+        .build()
+        .map_err(|e| e.to_string())?;
 
     let mic = dir.join("mic.wav");
     let system = dir.join("system.wav");
@@ -239,11 +363,14 @@ pub async fn transcribe_dir(dir: &Path) -> Result<Vec<Segment>, String> {
     let (mic_words, system_words) = tokio::join!(mic_fut, system_fut);
 
     let mut mic_words = mic_words?;
-    let system_words = system_words?;
+    let mut system_words = system_words?;
 
     // Call mode (voices on the system track) → the track *is* the speaker and
-    // mic diarization is ignored. Silent system track → in-person mode.
-    if system_words.is_empty() {
+    // mic diarization is ignored. Silent system track → in-person mode. A
+    // notification sound ("[outro jingle]") on an otherwise silent track isn't
+    // a call — it used to flip an 85-minute in-person meeting to all "me".
+    if !is_call(&system_words) {
+        system_words.clear();
         relabel_in_person(&mut mic_words);
     }
 
@@ -254,6 +381,16 @@ pub async fn transcribe_dir(dir: &Path) -> Result<Vec<Segment>, String> {
         return Err("no speech found in either track".into());
     }
     Ok(coalesce(all))
+}
+
+/// Enough real speech on the system track to call it a call: sound-event tags
+/// like "[music]" don't count, and a handful of words is a video or a ping.
+fn is_call(system_words: &[TaggedWord]) -> bool {
+    system_words
+        .iter()
+        .filter(|w| !w.text.contains(['[', ']']))
+        .count()
+        >= 20
 }
 
 /// Render a transcript as plain lines for the notes model / display.
@@ -290,4 +427,75 @@ pub async fn transcribe(dir: String) -> Result<Vec<Segment>, String> {
         let _ = std::fs::write(path.join("transcript.json"), json);
     }
     Ok(segments)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// RIFF/WAVE with a FLLR padding chunk (like AVAudioFile) and a data chunk
+    /// whose declared size is stale, followed by `samples`.
+    fn wav_with_stale_header(samples: &[u8]) -> Vec<u8> {
+        let mut w = Vec::new();
+        w.extend_from_slice(b"RIFF");
+        w.extend_from_slice(&4088u32.to_le_bytes());
+        w.extend_from_slice(b"WAVE");
+        w.extend_from_slice(b"FLLR");
+        w.extend_from_slice(&6u32.to_le_bytes());
+        w.extend_from_slice(&[0; 6]);
+        w.extend_from_slice(b"data");
+        w.extend_from_slice(&0u32.to_le_bytes());
+        w.extend_from_slice(samples);
+        w
+    }
+
+    #[test]
+    fn finds_data_after_padding_chunk() {
+        let w = wav_with_stale_header(&[1, 2, 3, 4]);
+        assert_eq!(wav_data_offset(&w), Some(34));
+    }
+
+    #[test]
+    fn repairs_stale_sizes_from_file_length() {
+        let dir = std::env::temp_dir().join(format!("za3tar-asr-{}", std::process::id()));
+        std::fs::create_dir_all(&dir).unwrap();
+        let p = dir.join("mic.wav");
+        std::fs::write(&p, wav_with_stale_header(&[7; 2000])).unwrap();
+
+        repair_wav_header(&p).unwrap();
+        let w = std::fs::read(&p).unwrap();
+        assert_eq!(
+            u32::from_le_bytes(w[4..8].try_into().unwrap()),
+            w.len() as u32 - 8
+        );
+        assert_eq!(u32::from_le_bytes(w[30..34].try_into().unwrap()), 2000);
+        std::fs::remove_dir_all(&dir).unwrap();
+    }
+
+    #[tokio::test]
+    async fn all_zero_track_is_skipped() {
+        let dir = std::env::temp_dir().join(format!("za3tar-asr-z-{}", std::process::id()));
+        std::fs::create_dir_all(&dir).unwrap();
+        let p = dir.join("system.wav");
+        std::fs::write(&p, wav_with_stale_header(&[0; 4000])).unwrap();
+
+        assert!(prepare_upload(&p).await.unwrap().is_none());
+        std::fs::remove_dir_all(&dir).unwrap();
+    }
+
+    fn word(text: &str) -> TaggedWord {
+        TaggedWord {
+            speaker: "them".into(),
+            start: 0.0,
+            text: text.into(),
+            diarized_id: None,
+        }
+    }
+
+    #[test]
+    fn a_stray_sound_is_not_a_call() {
+        assert!(!is_call(&[word("[outro"), word("jingle]")]));
+        assert!(!is_call(&(0..5).map(|_| word("hello")).collect::<Vec<_>>()));
+        assert!(is_call(&(0..40).map(|_| word("hello")).collect::<Vec<_>>()));
+    }
 }
