@@ -1,10 +1,14 @@
 import { useEffect, useState } from "react";
 import { Button, Card, Chip, Empty, Eyebrow, Field } from "../ui";
 import { fmtDur, hhmmToMin, relDate } from "../format";
-import type { RuntimeSchedule, Summary } from "../types";
+import type { RuntimeSchedule, Summary, Workspace } from "../types";
+
+const SCOPE_KEY = "za3tar.meetings.scope";
 
 export function MeetingsView({
   library,
+  workspaces,
+  currentWs,
   currentDir,
   onOpen,
   runtimeReady,
@@ -16,9 +20,12 @@ export function MeetingsView({
   onBriefShown,
   busy,
 }: {
+  /** every meeting, across all workspaces */
   library: Summary[];
+  workspaces: Workspace[];
+  currentWs: string;
   currentDir: string | null;
-  onOpen: (dir: string) => void;
+  onOpen: (dir: string, workspace: string) => void;
   runtimeReady: boolean;
   schedule: RuntimeSchedule | null;
   onFetchToday: () => void;
@@ -34,6 +41,29 @@ export function MeetingsView({
 }) {
   const nowMin = new Date().getHours() * 60 + new Date().getMinutes();
   const [q, setQ] = useState("");
+  // Meetings used to be visible only inside their own workspace, so a meeting
+  // filed elsewhere (or recorded while another workspace was open) looked lost.
+  // Default to everything; "this workspace" narrows it back down.
+  const [scope, setScope] = useState<"all" | "here">(() => {
+    try {
+      return localStorage.getItem(SCOPE_KEY) === "here" ? "here" : "all";
+    } catch {
+      return "all";
+    }
+  });
+  useEffect(() => {
+    try {
+      localStorage.setItem(SCOPE_KEY, scope);
+    } catch {
+      /* fine */
+    }
+  }, [scope]);
+  const wsName = (id: string) =>
+    workspaces.find((w) => w.id === id)?.name ?? id;
+  const scoped =
+    scope === "all"
+      ? library
+      : library.filter((s) => s.workspace === currentWs);
   const [brief, setBrief] = useState<{
     title: string;
     person: string;
@@ -48,12 +78,12 @@ export function MeetingsView({
   }, [briefRequested]);
   const needle = q.trim().toLowerCase();
   const shown = needle
-    ? library.filter(
+    ? scoped.filter(
         (s) =>
           s.title.toLowerCase().includes(needle) ||
           s.person.toLowerCase().includes(needle),
       )
-    : library;
+    : scoped;
 
   return (
     <div className="flex flex-col gap-6">
@@ -182,14 +212,35 @@ export function MeetingsView({
             No notes yet. Hit Record when a meeting starts, or paste notes.
           </Empty>
         )}
+        {library.length > 0 && (
+          <div className="flex items-center gap-1 px-1 text-[12px]">
+            {(["all", "here"] as const).map((v) => (
+              <button
+                key={v}
+                onClick={() => setScope(v)}
+                className={`rounded-full px-2.5 py-1 ${
+                  scope === v
+                    ? "bg-ink text-paper"
+                    : "text-olive hover:text-ink"
+                }`}
+              >
+                {v === "all" ? "all workspaces" : wsName(currentWs)}
+              </button>
+            ))}
+          </div>
+        )}
         {library.length > 0 && shown.length === 0 && (
-          <Empty>Nothing matches "{q}".</Empty>
+          <Empty>
+            {needle
+              ? `Nothing matches "${q}".`
+              : `No meetings in ${wsName(currentWs)} yet.`}
+          </Empty>
         )}
         <div className="flex flex-col gap-1">
           {shown.map((s) => (
             <button
               key={s.id}
-              onClick={() => onOpen(s.dir)}
+              onClick={() => onOpen(s.dir, s.workspace)}
               className={`flex items-center gap-4 rounded-xl border px-4 py-3 text-left transition-colors ${
                 currentDir === s.dir
                   ? "border-ink/40 bg-paper"
@@ -206,6 +257,9 @@ export function MeetingsView({
                 <span className="text-[12px] text-olive">
                   {s.person ? `${s.person} · ` : ""}
                   {relDate(s.created)}
+                  {scope === "all" && s.workspace !== currentWs
+                    ? ` · ${wsName(s.workspace)}`
+                    : ""}
                   {s.has_audio ? ` · ${fmtDur(s.duration_secs)}` : ""}
                 </span>
               </div>
