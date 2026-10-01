@@ -141,8 +141,10 @@ final class TrackWriter {
         // peak-track the Int16 output for a cheap non-silence signal
         if let ch = out.int16ChannelData {
             let n = Int(out.frameLength)
-            var localPeak: Int16 = 0
-            for i in 0..<n { localPeak = max(localPeak, abs(ch[0][i])) }
+            // .magnitude, not abs(): abs(Int16.min) overflows and traps, which
+            // killed the helper mid-call whenever audio clipped at full scale.
+            var localPeak: UInt16 = 0
+            for i in 0..<n { localPeak = max(localPeak, ch[0][i].magnitude) }
             let p = Float(localPeak) / 32768.0
             peak = max(peak, p)
             peakEver = max(peakEver, p)
