@@ -1,0 +1,417 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Za3tar reel</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,100..900&family=Noto+Kufi+Arabic:wght@500;700&display=swap" rel="stylesheet">
+<!--
+  The homepage reel. Source of truth for site/media/za3tar-reel.mp4 — script in SCRIPT.md.
+  Open this file to watch it play; render.mjs seeks every frame and encodes it.
+  Every scene sets --s (its start, in seconds); children set --o (offset inside
+  the scene) and animate with delay = --s + --o, so timing lives in one place.
+-->
+<style>
+:root{
+  --ink:#0B1710; --paper:#F2EEE2; --lime:#C6DE3E; --lime2:#DFF06A; --olive:#6F7F5A;
+  --panel:#101E17; --line:#1E3327;
+  --sans:"Archivo",ui-sans-serif,system-ui,sans-serif;
+  --ar:"Noto Kufi Arabic","Archivo",sans-serif;
+  --pop:cubic-bezier(.3,1.6,.5,1);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:1920px;height:1080px;overflow:hidden;background:var(--ink)}
+body{font-family:var(--sans);color:var(--ink);-webkit-font-smoothing:antialiased}
+
+/* ---- scenes stack: each one slides up over the last ---- */
+.scene{position:absolute;inset:0;overflow:hidden;
+  animation:enter .5s cubic-bezier(.7,0,.2,1) both;animation-delay:calc(var(--s)*1s)}
+@keyframes enter{from{transform:translateY(100%)}to{transform:none}}
+.scene.first{animation:none}
+.bg-lime{background:var(--lime)}
+.bg-ink{background:var(--ink);color:var(--paper)}
+.bg-paper{background:var(--paper);background-image:radial-gradient(rgba(11,23,16,.13) 1.6px,transparent 1.7px);background-size:34px 34px}
+.bg-olive{background:var(--olive);color:var(--paper)}
+
+/* sunburst */
+.burst{position:absolute;left:50%;top:50%;width:3200px;height:3200px;margin:-1600px 0 0 -1600px;
+  background:repeating-conic-gradient(from 0deg,var(--lime) 0deg 9deg,var(--lime2) 9deg 18deg);
+  animation:spin 60s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ---- generic entrances ---- */
+.pop{animation:pop .55s var(--pop) both;animation-delay:calc((var(--s) + var(--o,0))*1s)}
+@keyframes pop{from{opacity:0;transform:scale(.4) rotate(var(--r0,-4deg))}to{opacity:1;transform:scale(1) rotate(var(--r,0deg))}}
+.rise{animation:rise .5s cubic-bezier(.2,.9,.3,1) both;animation-delay:calc((var(--s) + var(--o,0))*1s)}
+@keyframes rise{from{opacity:0;transform:translateY(40px)}to{opacity:1;transform:none}}
+.fade{animation:fade .4s ease both;animation-delay:calc((var(--s) + var(--o,0))*1s)}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+
+h1,.h{font-weight:900;font-stretch:112%;letter-spacing:-.035em;line-height:.95}
+.hl{background:linear-gradient(transparent 58%,var(--lime) 58% 92%,transparent 92%);padding:0 .08em}
+.tag{display:inline-block;background:var(--ink);color:var(--lime);padding:.12em .38em .18em;border-radius:14px;transform:rotate(-2deg)}
+
+/* chunky card look */
+.card{background:var(--paper);color:var(--ink);border:5px solid var(--ink);border-radius:22px;box-shadow:10px 10px 0 var(--ink)}
+.bg-ink .card{box-shadow:10px 10px 0 var(--lime)}
+.chip{display:inline-flex;align-items:center;gap:10px;font-weight:800;border:4px solid var(--ink);border-radius:999px;padding:8px 22px;background:var(--paper);box-shadow:5px 5px 0 var(--ink)}
+
+/* ---- the mascot (same drawing as /demo: the mark, its dot is the eye) ---- */
+.mascot{position:absolute;width:var(--w,300px);height:var(--w,300px)}
+.mascot .body{width:100%;height:100%;animation:bob 2.4s ease-in-out infinite;animation-delay:calc(var(--s)*1s)}
+@keyframes bob{50%{transform:translateY(-4%)}}
+.mascot svg{width:100%;height:100%;overflow:visible;display:block}
+.mascot .shadow{position:absolute;left:12%;right:12%;bottom:-9%;height:8%;border-radius:50%;background:rgba(11,23,16,.18)}
+.bg-ink .mascot .shadow,.bg-olive .mascot .shadow{background:rgba(0,0,0,.35)}
+.mascot .bars{fill:var(--ink)}
+.bg-ink .mascot .bars{fill:var(--paper)}
+.mascot .leaf{fill:var(--ink)}
+.bg-ink .mascot .leaf,.bg-olive .mascot .leaf{fill:var(--lime)}
+.bg-olive .mascot .bars{fill:var(--ink)}
+.mascot .eye{transform-box:fill-box;transform-origin:center;
+  animation:blink 3.2s steps(1) infinite;animation-delay:calc((var(--s) + 1.4)*1s)}
+@keyframes blink{0%,94%{transform:none}95%,99%{transform:scaleY(.12)}}
+.mascot .jaw{transform-box:view-box}
+.mascot.talk .jaw{animation:talk .32s ease-in-out infinite alternate;animation-delay:calc((var(--s) + var(--talk,0))*1s)}
+@keyframes talk{from{transform:none}to{transform:translate(4px,10px) rotate(2deg)}}
+.mascot .pupil{animation:look 4s ease-in-out infinite;animation-delay:calc(var(--s)*1s)}
+@keyframes look{0%,40%{transform:none}50%,80%{transform:translate(2.5px,1px)}}
+
+/* confetti */
+.cf{position:absolute;animation:drift 5s ease-in-out infinite alternate;animation-delay:calc(var(--s)*1s)}
+@keyframes drift{to{transform:translate(18px,-22px) rotate(25deg)}}
+
+/* ======== scene 1: meet ======== */
+.s1 .mascot{left:300px;top:330px;--w:440px}
+.s1 .hi{position:absolute;left:250px;top:200px;font-size:46px;transform:rotate(-6deg)}
+.s1 .copy{position:absolute;left:900px;top:300px}
+.s1 .copy .meet{font-size:84px}
+.s1 .copy h1{font-size:150px;margin-top:6px}
+.s1 .copy .chip{margin-top:46px;font-size:38px;background:var(--ink);color:var(--paper);box-shadow:6px 6px 0 rgba(11,23,16,.25)}
+.s1 .copy .chip b{color:var(--lime)}
+
+/* ======== scene 2: chat ======== */
+.s2 h1{position:absolute;left:130px;top:330px;font-size:118px;width:720px}
+.s2 h1 em{font-style:normal;color:var(--lime)}
+.s2 .win{position:absolute;left:900px;top:190px;width:880px;padding:0 0 34px}
+.win .bar{display:flex;align-items:center;gap:14px;padding:22px 30px;border-bottom:4px solid var(--ink)}
+.win .tabs{position:relative;display:flex;gap:8px}
+.win .tabs span{position:relative;z-index:1;font-weight:800;font-size:28px;padding:6px 20px;width:170px;text-align:center}
+.win .tabs i{position:absolute;left:0;top:0;width:170px;height:100%;background:var(--lime);border:3px solid var(--ink);border-radius:999px;
+  animation:tabs 6s steps(1) both;animation-delay:calc(var(--s)*1s)}
+@keyframes tabs{0%{transform:none}25%{transform:translateX(178px)}50%{transform:translateX(356px)}75%{transform:none}}
+.win .dots{margin-left:auto;display:flex;gap:10px}
+.win .dots b{width:20px;height:20px;border-radius:50%;border:3px solid var(--ink)}
+.msg{display:flex;gap:22px;padding:30px 34px 0}
+.av{flex:none;width:68px;height:68px;border-radius:16px;border:4px solid var(--ink);display:grid;place-items:center;font-weight:900;font-size:34px;background:var(--lime2)}
+.av.bot{background:var(--ink);padding:9px}
+.av.bot svg{width:100%;height:100%}
+.msg .who{font-weight:900;font-size:28px}
+.msg .who small{font-weight:600;font-size:20px;opacity:.55;margin-left:10px}
+.msg .who .app{font-size:16px;font-weight:800;background:var(--ink);color:var(--lime);border-radius:6px;padding:2px 8px;margin-left:8px;vertical-align:4px;opacity:1}
+.msg p{font-size:31px;font-weight:500;margin-top:6px;line-height:1.3}
+.msg .at{background:var(--lime);font-weight:800;border-radius:6px;padding:0 6px}
+.typing{display:flex;gap:9px;padding:16px 0 0}
+.typing b{width:14px;height:14px;border-radius:50%;background:var(--ink);animation:tdot .6s ease-in-out infinite alternate}
+.typing b:nth-child(2){animation-delay:.2s}.typing b:nth-child(3){animation-delay:.4s}
+@keyframes tdot{to{opacity:.2;transform:translateY(-6px)}}
+.s2 .typing{animation:typing 6s steps(1) both;animation-delay:calc(var(--s)*1s)}
+@keyframes typing{0%{opacity:0}33%{opacity:1}46%{opacity:0;display:none}}
+.doc{margin-top:16px;border:4px solid var(--ink);border-radius:16px;padding:18px 24px;border-left:14px solid var(--lime);background:#fff}
+.doc b{font-size:29px;display:block}
+.doc span{font-size:22px;opacity:.6}
+.reacts{display:flex;gap:12px;margin-top:16px}
+.reacts span{border:3px solid var(--ink);border-radius:999px;padding:3px 16px;font-size:22px;font-weight:700}
+
+/* ======== scene 3: project pages ======== */
+.s3 h1{position:absolute;left:0;right:0;top:120px;text-align:center;font-size:104px}
+.s3 .mascot{left:1640px;top:800px;--w:140px}
+.s3 .row{position:absolute;left:150px;right:150px;top:330px;display:flex;gap:46px}
+.pcard{flex:1;overflow:visible;position:relative;padding:0}
+.pcard .hd{padding:22px 24px;font-weight:900;font-size:34px;line-height:1.05;border-bottom:5px solid var(--ink);border-radius:16px 16px 0 0;min-height:118px;display:flex;align-items:center;gap:14px}
+.pcard .rows{padding:12px 24px 22px}
+.pcard .r{display:flex;justify-content:space-between;align-items:center;font-size:26px;font-weight:700;padding:13px 0;border-bottom:3px dashed rgba(11,23,16,.18)}
+.pcard .r:last-of-type{border-bottom:0}
+.pcard .faces{display:flex}
+.pcard .faces i{width:34px;height:34px;border-radius:50%;border:3px solid var(--ink);margin-left:-10px;background:var(--lime)}
+.pcard .faces i:nth-child(2){background:var(--olive)}.pcard .faces i:nth-child(3){background:var(--paper)}
+.pill{display:inline-block;margin-top:10px;font-size:22px;font-weight:800;border:3px solid var(--ink);border-radius:999px;padding:4px 18px}
+.saved{position:absolute;right:-18px;top:-26px;background:var(--ink);color:var(--lime);font-weight:900;font-size:22px;padding:6px 14px;border-radius:10px;--r:8deg;--r0:30deg}
+.s3 .sub{position:absolute;left:0;right:0;top:840px;text-align:center;font-size:40px;font-weight:600;opacity:.75}
+.h-lime{background:var(--lime)}.h-ink{background:var(--ink);color:var(--paper)}.h-olive{background:var(--olive);color:var(--paper)}.h-lime2{background:var(--lime2)}
+
+/* ======== scene 4: meetings ======== */
+.s4 h1{position:absolute;left:0;right:0;top:100px;text-align:center;font-size:104px}
+.s4 .notes{position:absolute;left:130px;top:300px;width:620px;height:600px;padding:40px;--r:-3deg;--r0:-10deg}
+.s4 .notes b{font-size:40px;font-weight:900;display:block}
+.s4 .notes small{font-size:24px;opacity:.55;font-weight:600}
+.ln{height:20px;border-radius:10px;background:rgba(11,23,16,.14);margin-top:26px;position:relative;overflow:hidden}
+.ln i{position:absolute;inset:0;background:var(--lime);transform-origin:left;animation:mark .5s ease-out both;animation-delay:calc((var(--s) + var(--o))*1s)}
+@keyframes mark{from{transform:scaleX(0)}to{transform:none}}
+.s4 .mascot{left:840px;top:520px;--w:190px}
+.s4 .arrow{position:absolute;left:1060px;top:585px;font-size:80px;font-weight:900}
+.s4 .steps{position:absolute;left:1180px;top:290px;width:620px;padding:36px 36px 20px;--r:2deg;--r0:8deg}
+.s4 .steps>b{font-size:40px;font-weight:900}
+.step{display:flex;gap:20px;align-items:flex-start;padding:22px 0;border-bottom:3px dashed rgba(11,23,16,.18)}
+.step:last-child{border-bottom:0}
+.box{flex:none;width:44px;height:44px;border:4px solid var(--ink);border-radius:10px;margin-top:2px;position:relative}
+.box::after{content:"";position:absolute;inset:4px;background:var(--lime);border-radius:4px;transform:scale(0);animation:tick .3s var(--pop) both;animation-delay:calc((var(--s) + var(--t,99))*1s)}
+@keyframes tick{to{transform:none}}
+.step p{font-size:30px;font-weight:700;line-height:1.25}
+.step .ar{font-family:var(--ar);direction:rtl;text-align:right;font-weight:700}
+.step .meta{display:flex;gap:10px;margin-top:8px}
+.step .meta span{font-size:20px;font-weight:800;border:3px solid var(--ink);border-radius:999px;padding:2px 14px}
+.step .meta .due{background:var(--ink);color:var(--lime)}
+
+/* ======== scene 5: numbers ======== */
+.s5 h1{position:absolute;left:130px;top:170px;font-size:96px;width:800px}
+.s5 h1 em{font-style:normal;color:var(--lime)}
+.s5 .say{position:absolute;left:130px;top:600px;font-size:38px;font-weight:600;width:640px;opacity:.8;line-height:1.3}
+.s5 .chart{position:absolute;left:960px;top:150px;width:830px;height:760px;padding:40px 46px}
+.chart .t{font-size:34px;font-weight:900}
+.chart .lg{display:flex;gap:26px;font-size:22px;font-weight:700;margin-top:8px;opacity:.75}
+.chart .lg i{display:inline-block;width:22px;height:22px;border:3px solid var(--ink);border-radius:5px;vertical-align:-4px;margin-right:8px}
+.cbars{position:absolute;left:46px;right:46px;bottom:140px;height:400px;display:flex;align-items:flex-end;gap:44px;border-bottom:4px solid var(--ink)}
+.grp{flex:1;position:relative;height:100%}
+.grp .b{position:absolute;bottom:0;left:0;width:100%;height:var(--h);border:4px solid var(--ink);border-bottom:0;border-radius:12px 12px 0 0;background:repeating-linear-gradient(45deg,transparent 0 10px,rgba(11,23,16,.08) 10px 20px)}
+.grp .a{position:absolute;bottom:0;left:14%;width:72%;height:var(--h);background:var(--lime);border:4px solid var(--ink);border-bottom:0;border-radius:10px 10px 0 0;transform-origin:bottom;animation:grow .7s cubic-bezier(.2,.9,.3,1.15) both;animation-delay:calc((var(--s) + var(--o))*1s)}
+.grp .a.over{background:var(--olive)}
+@keyframes grow{from{transform:scaleY(0)}to{transform:none}}
+.grp label{position:absolute;bottom:-52px;left:-10px;right:-10px;text-align:center;font-size:24px;font-weight:800}
+.src{position:absolute;font-size:22px;font-weight:800;background:var(--ink);color:var(--paper);border-radius:12px;padding:10px 16px;white-space:nowrap;--r0:-12deg}
+.src u{text-decoration:none;color:var(--lime)}
+
+/* ======== scene 6: approvals ======== */
+.s6 h1{position:absolute;left:0;right:0;top:110px;text-align:center;font-size:104px}
+.s6 h1 .pink{background:var(--ink);color:var(--lime);padding:0 .15em .05em;border-radius:16px}
+.s6 .cols{position:absolute;left:170px;right:170px;top:300px;display:flex;gap:54px}
+.col{flex:1;padding:0}
+.col .hd{display:flex;align-items:center;gap:16px;padding:20px 26px;font-size:34px;font-weight:900;border-bottom:5px solid var(--ink);border-radius:16px 16px 0 0}
+.col .hd i{width:32px;height:32px;border-radius:50%;border:4px solid currentColor}
+.col .it{padding:20px 28px;font-size:30px;font-weight:700;border-bottom:3px dashed rgba(11,23,16,.18)}
+.col .it:last-child{border-bottom:0}
+.s6 .ask{position:absolute;left:640px;top:800px;width:900px;display:flex;align-items:center;gap:22px;padding:22px 26px}
+.s6 .ask p{flex:1;font-size:30px;font-weight:800}
+.btn{font-size:26px;font-weight:900;border:4px solid var(--ink);border-radius:14px;padding:10px 22px;background:var(--paper)}
+.btn.go{background:var(--lime);box-shadow:4px 4px 0 var(--ink);animation:press .25s ease both;animation-delay:calc((var(--s) + 4.1)*1s)}
+@keyframes press{to{box-shadow:0 0 0 var(--ink);transform:translate(4px,4px)}}
+.s6 .sent{position:absolute;left:640px;top:800px;width:900px;height:112px;display:grid;place-items:center;font-size:44px;font-weight:900;background:var(--lime);--r0:0deg}
+.s6 .mascot{left:470px;top:790px;--w:130px}
+
+/* ======== scene 7: monday ======== */
+.s7 .h{position:absolute;left:130px;top:150px;font-size:120px}
+.s7 .stamp{position:absolute;left:830px;top:120px;font-size:120px;--r:-5deg;--r0:-25deg;background:var(--lime);color:var(--ink);padding:.05em .2em .12em;border-radius:22px;border:6px solid var(--ink);box-shadow:10px 10px 0 var(--ink)}
+.clock{position:absolute;left:130px;top:410px;width:300px;height:300px;border-radius:50%;background:var(--paper);border:8px solid var(--ink);box-shadow:10px 10px 0 var(--ink)}
+.clock i{position:absolute;left:50%;bottom:50%;width:12px;margin-left:-6px;background:var(--ink);border-radius:6px;transform-origin:bottom center}
+.clock .hh{height:80px;transform:rotate(-90deg)}
+.clock .mm{height:115px;width:8px;margin-left:-4px;animation:sweep 1.6s cubic-bezier(.5,0,.2,1) both;animation-delay:calc((var(--s) + .6)*1s)}
+@keyframes sweep{from{transform:rotate(-200deg)}to{transform:rotate(0)}}
+.clock b{position:absolute;left:50%;top:50%;width:28px;height:28px;margin:-14px;border-radius:50%;background:var(--lime);border:5px solid var(--ink)}
+.s7 .time{position:absolute;left:180px;top:740px;font-size:36px;font-weight:900;background:var(--ink);color:var(--lime);border-radius:999px;padding:8px 30px}
+.week{position:absolute;left:530px;top:440px;display:flex;gap:22px}
+.day{width:126px;height:150px;border:5px solid var(--ink);border-radius:18px;background:var(--paper);color:var(--ink);display:flex;flex-direction:column;align-items:center;justify-content:center;box-shadow:6px 6px 0 var(--ink)}
+.day b{font-size:62px;font-weight:900;line-height:1}
+.day span{font-size:20px;font-weight:700;opacity:.6;margin-top:6px}
+.day.on{background:var(--ink);color:var(--lime);outline:6px solid var(--lime);outline-offset:6px}
+.day.on span{opacity:.9}
+.jobs{position:absolute;left:530px;top:680px;display:flex;gap:30px}
+.job{display:flex;gap:16px;align-items:center;padding:20px 26px;min-width:330px}
+.job .ic{font-size:40px}
+.job b{font-size:30px;font-weight:900;display:block}
+.job span{font-size:20px;font-weight:800;background:var(--ink);color:var(--lime);border-radius:8px;padding:1px 10px}
+.s7 .mascot{left:1640px;top:420px;--w:160px}
+.bubble{position:absolute;font-size:34px;font-weight:900;background:var(--paper);color:var(--ink);border:4px solid var(--ink);border-radius:20px;padding:8px 22px;box-shadow:5px 5px 0 var(--ink)}
+.s7 .bubble{left:1600px;top:330px;--r:4deg}
+
+/* ======== scene 8: cta ======== */
+.s8 .mascot{left:260px;top:330px;--w:440px}
+.s8 .copy{position:absolute;left:860px;top:250px;width:980px}
+.s8 h1{font-size:122px}
+.s8 .sub{font-size:52px;font-weight:700;margin-top:30px}
+.s8 .url{display:inline-flex;align-items:center;gap:22px;margin-top:56px;background:var(--ink);color:var(--paper);font-size:64px;font-weight:900;font-stretch:105%;border-radius:26px;padding:18px 40px 22px 26px;box-shadow:10px 10px 0 rgba(11,23,16,.3)}
+.s8 .url svg{width:74px;height:74px}
+.s8 .url em{font-style:normal;color:var(--lime)}
+.s8 .bubble{left:320px;top:220px;--r:-5deg}
+</style>
+</head>
+<body>
+
+<template id="mascot">
+  <div class="body"><svg viewBox="56 14 134 134">
+    <defs>
+      <clipPath id="ct"><path d="M0 0H190V14C147.2 88 102 128 56 148L0 200Z"/></clipPath>
+      <clipPath id="cb"><path d="M56 148C150 140 195.4 96 190 14H200V200H56Z"/></clipPath>
+    </defs>
+    <rect class="bars" x="56" y="14" width="134" height="44" clip-path="url(#ct)"/>
+    <g class="jaw"><rect class="bars" x="56" y="104" width="134" height="44" clip-path="url(#cb)"/>
+      <path class="leaf" d="M190 14C195.4 96 150 140 56 148C102 128 147.2 88 190 14Z"/></g>
+    <g class="eye"><circle cx="126" cy="36" r="13" fill="#F2EEE2" stroke="#0B1710" stroke-width="3"/><circle class="pupil" cx="126" cy="36" r="6" fill="#0B1710"/></g>
+  </svg></div><div class="shadow"></div>
+</template>
+
+<!-- 1 · meet -->
+<section class="scene first bg-lime s1" style="--s:0">
+  <div class="burst"></div>
+  <svg class="cf" style="left:160px;top:140px" width="60" height="60"><circle cx="30" cy="30" r="22" fill="none" stroke="#0B1710" stroke-width="7"/></svg>
+  <svg class="cf" style="left:1720px;top:160px" width="60" height="60"><path d="M8 52L30 8L52 52Z" fill="#0B1710"/></svg>
+  <svg class="cf" style="left:1650px;top:860px" width="70" height="70"><path d="M35 8V62M8 35H62" stroke="#0B1710" stroke-width="9" stroke-linecap="round"/></svg>
+  <svg class="cf" style="left:820px;top:900px" width="90" height="40"><path d="M5 25Q20 5 35 22T65 20T88 15" fill="none" stroke="#0B1710" stroke-width="7" stroke-linecap="round"/></svg>
+  <svg class="cf" style="left:120px;top:830px" width="40" height="40"><circle cx="20" cy="20" r="16" fill="#F2EEE2" stroke="#0B1710" stroke-width="5"/></svg>
+  <div class="mascot pop" data-mascot style="--o:.15"></div>
+  <div class="bubble hi pop" style="--o:.9;--r:-6deg">hi 👋</div>
+  <div class="copy">
+    <div class="h meet rise" style="--o:1.1">Meet your</div>
+    <h1 class="pop" style="--o:1.4;--r0:-6deg">new<br>teammate.</h1>
+    <div class="chip rise" style="--o:2.3">Built by <b>Za3tar</b> for your company</div>
+  </div>
+</section>
+
+<!-- 2 · lives where you talk -->
+<section class="scene bg-ink s2" style="--s:5">
+  <h1><span class="rise" style="--o:.4;display:block">Lives where</span><span class="rise" style="--o:.6;display:block">you already</span><em class="rise" style="--o:.8;display:block">talk.</em></h1>
+  <div class="card win pop" style="--o:.5;--r0:4deg">
+    <div class="bar"><div class="tabs"><i></i><span>Slack</span><span>WhatsApp</span><span>Teams</span></div><div class="dots"><b></b><b></b><b></b></div></div>
+    <div class="msg rise" style="--o:1.1"><div class="av">L</div><div><div class="who">Lina <small>9:41</small></div><p><span class="at">@teammate</span> can you pull the plan for the launch?</p>
+      <div class="typing"><b></b><b></b><b></b></div></div></div>
+    <div class="msg rise" style="--o:2.8"><div class="av bot" data-mini></div><div style="flex:1"><div class="who">Teammate <span class="app">AI</span> <small>9:41</small></div><p>On it. Here's the plan 👇</p>
+      <div class="doc pop" style="--o:3.2;--r0:-2deg"><b>📄 Spring Launch · Plan</b><span>Updated just now · 14 tasks · 3 owners</span></div>
+      <div class="reacts"><span class="pop" style="--o:4.1">👍 3</span><span class="pop" style="--o:4.3">🔥 2</span></div></div></div>
+  </div>
+</section>
+
+<!-- 3 · project pages -->
+<section class="scene bg-paper s3" style="--s:11">
+  <h1 class="rise" style="--o:.4">Every project gets a <span class="hl">page.</span></h1>
+  <div class="mascot pop" data-mascot style="--o:.9"></div>
+  <div class="row">
+    <div class="card pcard pop" style="--o:.8;--r:-2deg"><div class="hd h-lime">🚀 Spring Launch</div><div class="rows">
+      <div class="r">👤 Owners <span class="faces"><i></i><i></i><i></i></span></div><div class="r">✅ Decisions <b>12</b></div><div class="r">🔗 Links <b>8</b></div><span class="pill" style="background:var(--lime)">On track</span></div>
+      <div class="saved pop" style="--o:1.8">saved ✓</div></div>
+    <div class="card pcard pop" style="--o:1.0;--r:1.5deg"><div class="hd h-ink">🏪 New Branch</div><div class="rows">
+      <div class="r">👤 Owners <span class="faces"><i></i><i></i></span></div><div class="r">✅ Decisions <b>7</b></div><div class="r">🔗 Links <b>15</b></div><span class="pill" style="background:var(--lime2)">In review</span></div>
+      <div class="saved pop" style="--o:2.0">saved ✓</div></div>
+    <div class="card pcard pop" style="--o:1.2;--r:-1deg"><div class="hd h-olive">🎤 Client Pitch</div><div class="rows">
+      <div class="r">👤 Owners <span class="faces"><i></i><i></i><i></i></span></div><div class="r">✅ Decisions <b>21</b></div><div class="r">🔗 Links <b>6</b></div><span class="pill" style="background:var(--ink);color:var(--lime)">Live</span></div>
+      <div class="saved pop" style="--o:2.2">saved ✓</div></div>
+    <div class="card pcard pop" style="--o:1.4;--r:2deg"><div class="hd h-lime2">🤝 Hiring</div><div class="rows">
+      <div class="r">👤 Owners <span class="faces"><i></i><i></i></span></div><div class="r">✅ Decisions <b>4</b></div><div class="r">🔗 Links <b>11</b></div><span class="pill">Kickoff</span></div>
+      <div class="saved pop" style="--o:2.4">saved ✓</div></div>
+  </div>
+  <p class="sub fade" style="--o:2.8">Decisions, links, owners. Written down the same day.</p>
+</section>
+
+<!-- 4 · meetings -->
+<section class="scene bg-lime s4" style="--s:17">
+  <h1 class="rise" style="--o:.35">Meetings in. <span class="tag">Next steps out.</span></h1>
+  <div class="card notes pop" style="--o:.7">
+    <b>📝 Weekly sync</b><small>Meeting notes · 32 min · Arabic + English</small>
+    <div class="ln" style="width:92%"><i style="--o:1.3"></i></div><div class="ln" style="width:70%"></div>
+    <div class="ln" style="width:84%"><i style="--o:1.6"></i></div><div class="ln" style="width:60%"></div>
+    <div class="ln" style="width:88%"><i style="--o:1.9"></i></div><div class="ln" style="width:76%"></div>
+    <div class="ln" style="width:50%"></div>
+  </div>
+  <div class="mascot talk" data-mascot style="--talk:1.2"></div>
+  <div class="arrow rise" style="--o:2.0">→</div>
+  <div class="card steps pop" style="--o:2.1">
+    <b>✅ Next steps</b>
+    <div class="step rise" style="--o:2.5"><div class="box" style="--t:4.6"></div><div><p>Send the quote to the client</p><div class="meta"><span>Lina</span><span class="due">Due Thu</span></div></div></div>
+    <div class="step rise" style="--o:2.9"><div class="box"></div><div style="flex:1"><p class="ar">حجز الاستوديو ليوم الأحد</p><div class="meta" style="justify-content:flex-end"><span>Karim</span><span class="due">Due Sun</span></div></div></div>
+    <div class="step rise" style="--o:3.3"><div class="box"></div><div><p>Share the deck with the team</p><div class="meta"><span>You</span><span class="due">Due Fri</span></div></div></div>
+  </div>
+</section>
+
+<!-- 5 · numbers -->
+<section class="scene bg-ink s5" style="--s:23">
+  <h1><span class="rise" style="--o:.4;display:block">Numbers from</span><em class="rise" style="--o:.6;display:block">your own systems.</em></h1>
+  <p class="say fade" style="--o:3.4">Every number links back to where it came from. No copying by hand.</p>
+  <div class="card chart pop" style="--o:.6;--r0:3deg">
+    <div class="t">Spring Launch · budget vs actual</div>
+    <div class="lg"><span><i></i>Budget</span><span><i style="background:var(--lime)"></i>Spent</span><span><i style="background:var(--olive)"></i>Over</span></div>
+    <div class="cbars">
+      <div class="grp"><div class="b" style="--h:80%"></div><div class="a" style="--h:66%;--o:1.2"></div><label>Venue</label></div>
+      <div class="grp"><div class="b" style="--h:62%"></div><div class="a" style="--h:48%;--o:1.4"></div><label>Production</label></div>
+      <div class="grp"><div class="b" style="--h:48%"></div><div class="a over" style="--h:56%;--o:1.6"></div><label>Ads</label></div>
+      <div class="grp"><div class="b" style="--h:34%"></div><div class="a" style="--h:22%;--o:1.8"></div><label>Travel</label></div>
+    </div>
+    <div class="src pop" style="--o:2.4;left:90px;top:200px">82% spent · <u>from accounting ↗</u></div>
+    <div class="src pop" style="--o:2.8;left:420px;top:280px">Ads over by 16% · <u>from the ad account ↗</u></div>
+  </div>
+</section>
+
+<!-- 6 · approvals -->
+<section class="scene bg-paper s6" style="--s:29">
+  <h1 class="rise" style="--o:.35">Asks before the <span class="pink">big stuff.</span></h1>
+  <div class="cols">
+    <div class="card col pop" style="--o:.8"><div class="hd h-lime"><i></i>Just does it</div><div class="it">🔎 Finds files</div><div class="it">✍️ Drafts docs</div><div class="it">💬 Answers questions</div></div>
+    <div class="card col pop" style="--o:1.0"><div class="hd h-lime2"><i></i>Does it + tells you</div><div class="it">📊 Updates a sheet</div><div class="it">📅 Sends invites</div><div class="it">⏰ Sets reminders</div></div>
+    <div class="card col pop" style="--o:1.2"><div class="hd h-ink"><i></i>Asks first</div><div class="it">✉️ Emails a client</div><div class="it">🔑 Shares access</div><div class="it">💸 Anything with money</div></div>
+  </div>
+  <div class="mascot pop" data-mascot style="--o:2.0"></div>
+  <div class="card ask rise" style="--o:2.4"><p>Send the quote to the client?</p><span class="btn">Edit</span><span class="btn go">Approve</span></div>
+  <div class="card sent pop" style="--o:4.5">Sent ✓</div>
+</section>
+
+<!-- 7 · monday -->
+<section class="scene bg-olive s7" style="--s:35">
+  <div class="h rise" style="--o:.3">Monday?</div>
+  <div class="h stamp pop" style="--o:2.4">Handled.</div>
+  <div class="clock pop" style="--o:.4"><i class="hh"></i><i class="mm"></i><b></b></div>
+  <div class="time rise" style="--o:1.0">9:00 AM</div>
+  <div class="week">
+    <div class="day on pop" style="--o:.6"><b>M</b><span>Mon</span></div>
+    <div class="day pop" style="--o:.7"><b>T</b><span>Tue</span></div>
+    <div class="day pop" style="--o:.8"><b>W</b><span>Wed</span></div>
+    <div class="day pop" style="--o:.9"><b>T</b><span>Thu</span></div>
+    <div class="day pop" style="--o:1.0"><b>F</b><span>Fri</span></div>
+    <div class="day pop" style="--o:1.1"><b>S</b><span>Sat</span></div>
+    <div class="day pop" style="--o:1.2"><b>S</b><span>Sun</span></div>
+  </div>
+  <div class="jobs">
+    <div class="card job pop" style="--o:3.0"><span class="ic">📈</span><div><b>Weekly pulse</b><span>→ #team</span></div></div>
+    <div class="card job pop" style="--o:3.3"><span class="ic">⏰</span><div><b>What's due</b><span>→ #team</span></div></div>
+    <div class="card job pop" style="--o:3.6"><span class="ic">👥</span><div><b>Who's on what</b><span>→ #team</span></div></div>
+  </div>
+  <div class="mascot pop" data-mascot style="--o:1.6"></div>
+  <div class="bubble pop" style="--o:3.9">easy.</div>
+</section>
+
+<!-- 8 · cta -->
+<section class="scene bg-lime s8" style="--s:41">
+  <div class="burst"></div>
+  <svg class="cf" style="left:150px;top:160px" width="60" height="60"><circle cx="30" cy="30" r="22" fill="none" stroke="#0B1710" stroke-width="7"/></svg>
+  <svg class="cf" style="left:1760px;top:900px" width="60" height="60"><path d="M8 52L30 8L52 52Z" fill="#0B1710"/></svg>
+  <svg class="cf" style="left:1700px;top:110px" width="70" height="70"><path d="M35 8V62M8 35H62" stroke="#0B1710" stroke-width="9" stroke-linecap="round"/></svg>
+  <div class="mascot pop talk" data-mascot style="--o:.2;--talk:.8"></div>
+  <div class="bubble pop" style="--o:.7">your turn</div>
+  <div class="copy">
+    <h1><span class="rise" style="--o:.5;display:block">Tell me your</span><span class="rise" style="--o:.7;display:block">company.</span></h1>
+    <p class="sub rise" style="--o:1.4">I'll show you what we'd build for it.</p>
+    <div class="url pop" style="--o:2.2" data-url></div>
+  </div>
+</section>
+
+<script>
+  // stamp the mascot into every slot, with unique clip ids
+  const tpl = document.getElementById('mascot').innerHTML;
+  let n = 0;
+  const one = () => { n++; return tpl.replaceAll('id="ct"', `id="ct${n}"`).replaceAll('id="cb"', `id="cb${n}"`)
+    .replaceAll('url(#ct)', `url(#ct${n})`).replaceAll('url(#cb)', `url(#cb${n})`); };
+  document.querySelectorAll('[data-mascot]').forEach(el => el.innerHTML = one());
+  // tiny static mascot for the chat avatar (on ink: limestone bars, lime leaf)
+  document.querySelectorAll('[data-mini]').forEach(el => {
+    n++; el.innerHTML = `<svg viewBox="56 14 134 134"><defs><clipPath id="ct${n}"><path d="M0 0H190V14C147.2 88 102 128 56 148L0 200Z"/></clipPath><clipPath id="cb${n}"><path d="M56 148C150 140 195.4 96 190 14H200V200H56Z"/></clipPath></defs><rect x="56" y="14" width="134" height="44" fill="#F2EEE2" clip-path="url(#ct${n})"/><rect x="56" y="104" width="134" height="44" fill="#F2EEE2" clip-path="url(#cb${n})"/><path d="M190 14C195.4 96 150 140 56 148C102 128 147.2 88 190 14Z" fill="#C6DE3E"/><circle cx="126" cy="36" r="11" fill="#C6DE3E"/></svg>`;
+  });
+  document.querySelectorAll('[data-url]').forEach(el => {
+    n++; el.innerHTML = `<svg viewBox="56 14 134 134"><defs><clipPath id="ct${n}"><path d="M0 0H190V14C147.2 88 102 128 56 148L0 200Z"/></clipPath><clipPath id="cb${n}"><path d="M56 148C150 140 195.4 96 190 14H200V200H56Z"/></clipPath></defs><rect x="56" y="14" width="134" height="44" fill="#F2EEE2" clip-path="url(#ct${n})"/><rect x="56" y="104" width="134" height="44" fill="#F2EEE2" clip-path="url(#cb${n})"/><path d="M190 14C195.4 96 150 140 56 148C102 128 147.2 88 190 14Z" fill="#C6DE3E"/><circle cx="126" cy="36" r="11" fill="#C6DE3E"/></svg>za3tar<em>.ai</em>`;
+  });
+
+  // render hook: freeze every animation at time t (seconds)
+  window.DURATION = 48;
+  window.seek = t => { for (const a of document.getAnimations()) { a.pause(); a.currentTime = t * 1000; } };
+  // ?t=12.5 freezes on one moment (for checking a single frame)
+  const qt = new URLSearchParams(location.search).get('t');
+  if (qt !== null) document.fonts.ready.then(() => window.seek(+qt));
+</script>
+</body>
+</html>
