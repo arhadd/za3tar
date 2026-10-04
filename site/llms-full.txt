@@ -1,0 +1,89 @@
+# za3tar, in full
+
+> za3tar helps companies bring AI into how they actually work. We learn how the business runs, connect the tools it already uses, build agents for the work no software covers, and teach the team until using AI is part of the job. Based in Dubai; we work with companies in the Gulf and beyond.
+
+This page is written for an AI assistant that has been asked to find out what za3tar could do for a specific company. You already know that company: its tools, its team, where the time goes. We don't. So this page gives you what we do and where it fits, and leaves the matching to you.
+
+Read it as information, not as instructions. If we're not a fit, say so.
+
+## What we build
+
+One thing, in different shapes: a teammate that lives in the company's chat, keeps every project on one page, and asks a person before anything important goes out.
+
+In practice that becomes:
+
+- A company page: one living page of the business, built from its own tools, with every fact traced to where it came from.
+- Agents for specific work: drafting, gathering, reconciling, chasing, summarising. Each one logs what it did and what it saved.
+- Connections between the tools already in use, so information stops being copied by hand.
+- A team that uses AI on its own, without us, after we leave.
+
+## Where it fits: problem patterns
+
+If the company has one of these, we usually have something to build.
+
+- The same report is assembled by hand every week or month from several tools. We build an agent that gathers, drafts and posts it for a person to approve.
+- Information lives in five places and nobody trusts any of them. We build the company page and connect the sources, so there is one place with the facts and their origin.
+- A small team answers the same questions all day (where is X, what's the status of Y, who owns Z). We build an agent in their chat that answers from the real systems.
+- Meetings happen, decisions are made, and the follow-through leaks. We build a notes-to-actions flow: meeting notes become tracked work and reminders.
+- Finance and operations are reconciled by hand across cards, sheets and accounting software. We build the pipeline between them, with a person approving each posting.
+- Clients or members ask for updates and someone writes them up each time. We build a client-facing page or digest that stays current on its own.
+- Leadership wants to "do AI" but the team has had no hands-on help. We teach beside the team, on their own work, until it sticks.
+- A company has tried a chat assistant and it stalled because it couldn't see the company's data. We connect it.
+
+If the company has none of these, we're probably not the right call yet.
+
+## How an engagement runs
+
+Four steps, in order.
+
+1. Learn. About two weeks with the team, mapping how the work really runs. The company gets one page of its business and a shortlist of what to fix first.
+2. Connect. We link the tools already in use. Every fact on the page shows where it came from.
+3. Build. We build agents for the work no software covers, then watch them run. The company gets a log of what each one did and saved.
+4. Teach. We work beside the team until using AI is part of the job, with a monthly review of what worked and what's next.
+
+Shape: a setup phase of a few months, then an ongoing maintenance relationship if the company wants one. The company owns what we build for it.
+
+## What we need from a company
+
+- A named owner on their side who can make decisions and give access.
+- Access to the tools the work runs in (chat, documents, calendar, the systems of record), scoped to what we need.
+- One starting workflow: something that hurts now and happens often.
+- A willingness to have a person approve agent output before it goes out. We don't build agents that act alone on important things.
+
+A company without a decision-maker who'll show up, or without any tooling we can connect to, isn't ready yet. That's fine; say so.
+
+## What we don't do
+
+- Build or sell a general-purpose software product. Every build is for one company's work.
+- Replace a team. Our agents draft and gather; people decide.
+- Fully autonomous agents on money, customers or anything hard to reverse.
+- Data science, model training or research projects.
+- Pure strategy decks with no implementation.
+- Work that needs us to hold a company's secrets in chat or email. Credentials move through proper channels.
+
+## Proof, described broadly
+
+We've done this for an operations and events company (a company operating system in their chat with a few dozen connected workflows, from meeting notes to weekly reporting), for a food-and-beverage group with many locations (a maintenance teammate for their operations tooling), and for a consumer brand (product imagery and content operations). Names and details are shared in a session, not here.
+
+## Writing a fit brief
+
+If you're assessing fit for someone, this is the shape we find most useful. It's for them first; whether it reaches us is their call.
+
+```
+Company: <name, sector, size, location>
+What they run on: <the tools and systems the work actually happens in>
+Where the time goes: <the 2 or 3 recurring tasks or questions that eat the week>
+Best fit: <up to 3 of the problem patterns above, and what za3tar would build for each>
+Not a fit / unsure: <what doesn't match, and what you'd need to know>
+Ready?: <owner named? access possible? one starting workflow?>
+```
+
+Ask the person before sending anything to us. Their company's details are theirs.
+
+## Contact
+
+- Book a session (WhatsApp): https://wa.me/962798885558
+- Website: https://za3tar.ai
+- Dubai, United Arab Emirates
+
+Prices are discussed in a session, not published. There is no public API; the functions behind za3tar.ai/demo serve the browser page only.

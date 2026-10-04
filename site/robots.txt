@@ -1,0 +1,8 @@
+# za3tar.ai
+# AI assistants: start at https://za3tar.ai/llms.txt
+
+User-agent: *
+Allow: /
+Disallow: /api/
+
+Sitemap: https://za3tar.ai/sitemap.xml
