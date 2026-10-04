@@ -1,0 +1,345 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Za3tar story v2</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,100..900&family=Noto+Kufi+Arabic:wght@500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#0B1710; --paper:#F2EEE2; --lime:#C6DE3E; --lime2:#DFF06A; --olive:#6F7F5A;
+  --panel:#101E17; --line:#1E3327;
+  --sans:"Archivo",ui-sans-serif,system-ui,sans-serif;
+  --ar:"Noto Kufi Arabic","Archivo",sans-serif;
+  --pop:cubic-bezier(.3,1.6,.5,1);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:1920px;height:1080px;overflow:hidden;background:var(--ink)}
+body{font-family:var(--sans);color:var(--ink);-webkit-font-smoothing:antialiased}
+
+/* ---- scenes stack: each one slides up over the last ---- */
+.scene{position:absolute;inset:0;overflow:hidden;
+  animation:enter .5s cubic-bezier(.7,0,.2,1) both;animation-delay:calc(var(--s)*1s)}
+@keyframes enter{from{transform:translateY(100%)}to{transform:none}}
+.scene.first{animation:none}
+.bg-lime{background:var(--lime)}
+.bg-ink{background:var(--ink);color:var(--paper)}
+.bg-paper{background:var(--paper);background-image:radial-gradient(rgba(11,23,16,.13) 1.6px,transparent 1.7px);background-size:34px 34px}
+.bg-olive{background:var(--olive);color:var(--paper)}
+
+/* sunburst */
+.burst{position:absolute;left:50%;top:50%;width:3200px;height:3200px;margin:-1600px 0 0 -1600px;
+  background:repeating-conic-gradient(from 0deg,var(--lime) 0deg 9deg,var(--lime2) 9deg 18deg);
+  animation:spin 60s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ---- generic entrances ---- */
+.pop{animation:pop .55s var(--pop) both;animation-delay:calc((var(--s) + var(--o,0))*1s)}
+@keyframes pop{from{opacity:0;transform:scale(.4) rotate(var(--r0,-4deg))}to{opacity:1;transform:scale(1) rotate(var(--r,0deg))}}
+.rise{animation:rise .5s cubic-bezier(.2,.9,.3,1) both;animation-delay:calc((var(--s) + var(--o,0))*1s)}
+@keyframes rise{from{opacity:0;transform:translateY(40px)}to{opacity:1;transform:none}}
+.fade{animation:fade .4s ease both;animation-delay:calc((var(--s) + var(--o,0))*1s)}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+
+h1,.h{font-weight:900;font-stretch:112%;letter-spacing:-.035em;line-height:.95}
+.hl{background:linear-gradient(transparent 58%,var(--lime) 58% 92%,transparent 92%);padding:0 .08em}
+.tag{display:inline-block;background:var(--ink);color:var(--lime);padding:.12em .38em .18em;border-radius:14px;transform:rotate(-2deg)}
+
+/* chunky card look */
+.card{background:var(--paper);color:var(--ink);border:5px solid var(--ink);border-radius:22px;box-shadow:10px 10px 0 var(--ink)}
+.bg-ink .card{box-shadow:10px 10px 0 var(--lime)}
+.chip{display:inline-flex;align-items:center;gap:10px;font-weight:800;border:4px solid var(--ink);border-radius:999px;padding:8px 22px;background:var(--paper);box-shadow:5px 5px 0 var(--ink)}
+
+/* ---- the mascot (same drawing as /demo: the mark, its dot is the eye) ---- */
+.mascot{position:absolute;width:var(--w,300px);height:var(--w,300px)}
+.mascot .body{width:100%;height:100%;animation:bob 2.4s ease-in-out infinite;animation-delay:calc(var(--s)*1s)}
+@keyframes bob{50%{transform:translateY(-4%)}}
+.mascot svg{width:100%;height:100%;overflow:visible;display:block}
+.mascot .shadow{position:absolute;left:12%;right:12%;bottom:-9%;height:8%;border-radius:50%;background:rgba(11,23,16,.18)}
+.bg-ink .mascot .shadow,.bg-olive .mascot .shadow{background:rgba(0,0,0,.35)}
+.mascot .bars{fill:var(--ink)}
+.bg-ink .mascot .bars{fill:var(--paper)}
+.mascot .leaf{fill:var(--ink)}
+.bg-ink .mascot .leaf,.bg-olive .mascot .leaf{fill:var(--lime)}
+.bg-olive .mascot .bars{fill:var(--ink)}
+.mascot .eye{transform-box:fill-box;transform-origin:center;
+  animation:blink 3.2s steps(1) infinite;animation-delay:calc((var(--s) + 1.4)*1s)}
+@keyframes blink{0%,94%{transform:none}95%,99%{transform:scaleY(.12)}}
+.mascot .jaw{transform-box:view-box}
+.mascot.talk .jaw{animation:talk .32s ease-in-out infinite alternate;animation-delay:calc((var(--s) + var(--talk,0))*1s)}
+@keyframes talk{from{transform:none}to{transform:translate(4px,10px) rotate(2deg)}}
+.mascot .pupil{animation:look 4s ease-in-out infinite;animation-delay:calc(var(--s)*1s)}
+@keyframes look{0%,40%{transform:none}50%,80%{transform:translate(2.5px,1px)}}
+
+/* confetti */
+.cf{position:absolute;animation:drift 5s ease-in-out infinite alternate;animation-delay:calc(var(--s)*1s)}
+@keyframes drift{to{transform:translate(18px,-22px) rotate(25deg)}}
+.bubble{position:absolute;font-size:34px;font-weight:900;background:var(--paper);color:var(--ink);border:4px solid var(--ink);border-radius:20px;padding:8px 22px;box-shadow:5px 5px 0 var(--ink)}
+.s7 .bubble{left:1600px;top:330px;--r:4deg}
+
+/* ======== scene 8: cta ======== */
+.s8 .mascot{left:260px;top:330px;--w:440px}
+.s8 .copy{position:absolute;left:860px;top:250px;width:980px}
+.s8 h1{font-size:122px}
+.s8 .sub{font-size:52px;font-weight:700;margin-top:30px}
+.s8 .url{display:inline-flex;align-items:center;gap:22px;margin-top:56px;background:var(--ink);color:var(--paper);font-size:64px;font-weight:900;font-stretch:105%;border-radius:26px;padding:18px 40px 22px 26px;box-shadow:10px 10px 0 rgba(11,23,16,.3)}
+.s8 .url svg{width:74px;height:74px}
+.s8 .url em{font-style:normal;color:var(--lime)}
+
+</style>
+<style>
+/* ===== story v2: one room, one continuous scene ===== */
+.scene{isolation:isolate}
+.office{position:absolute;inset:0}
+.desk{position:absolute;bottom:0;left:0;right:0;height:250px;background:var(--olive);border-top:8px solid var(--ink)}
+.laptop{position:absolute;bottom:250px;width:300px;height:170px;background:var(--ink);border-radius:18px 18px 4px 4px;border:6px solid var(--ink)}
+.laptop:after{content:"";position:absolute;left:50%;top:50%;width:26px;height:26px;margin:-13px;border-radius:50%;background:var(--paper);opacity:.35}
+.laptop.l{left:330px}.laptop.r{left:1290px}
+.laptop .glow{position:absolute;inset:-6px;border-radius:18px 18px 4px 4px;box-shadow:0 0 0 6px var(--lime),0 0 40px 10px rgba(198,222,62,.7);opacity:0;animation:glow 1.2s ease both;animation-delay:calc((var(--s) + var(--o))*1s)}
+@keyframes glow{0%{opacity:0}30%{opacity:1}100%{opacity:.0}}
+.person{position:absolute;bottom:300px;width:300px;height:360px}
+.person.l{left:330px}.person.r{left:1290px}
+.person svg{width:100%;height:100%;overflow:visible}
+.person .eye{transform-box:fill-box;transform-origin:center;animation:blink 3.4s steps(1) infinite}
+.person.r .eye{animation-delay:1.3s}
+.arm{transform-box:fill-box}
+.arm.al{transform-origin:top right}.arm.ar{transform-origin:top left}
+.shrug .arm.al{animation:shrugL 2.2s ease-in-out both;animation-delay:calc((var(--s) + var(--sh))*1s)}
+.shrug .arm.ar{animation:shrugR 2.2s ease-in-out both;animation-delay:calc((var(--s) + var(--sh))*1s)}
+.shrug .head{transform-box:fill-box;transform-origin:bottom center;animation:tilt 2.2s ease-in-out both;animation-delay:calc((var(--s) + var(--sh))*1s)}
+@keyframes shrugL{0%,100%{transform:none}25%,75%{transform:rotate(55deg) translateY(-14px)}}
+@keyframes shrugR{0%,100%{transform:none}25%,75%{transform:rotate(-55deg) translateY(-14px)}}
+@keyframes tilt{0%,100%{transform:none}25%,75%{transform:rotate(-7deg)}}
+.name{position:absolute;bottom:120px;font-size:36px;font-weight:900;background:var(--paper);color:var(--ink);border:5px solid var(--ink);border-radius:999px;padding:6px 26px;box-shadow:6px 6px 0 var(--ink)}
+.name small{font-weight:700;opacity:.55;font-size:26px;margin-left:8px}
+.name.l{left:380px}.name.r{left:1330px}
+.when{position:absolute;left:60px;top:50px;font-size:30px;font-weight:900;background:var(--ink);color:var(--lime);border-radius:14px;padding:8px 22px}
+
+/* things that leave the room */
+.out{position:absolute;inset:0;animation:out .7s ease both;animation-delay:calc((var(--s) + var(--x))*1s)}
+@keyframes out{to{opacity:0;transform:translateY(-14px)}}
+.dim{position:absolute;inset:0;animation:dim .6s ease both;animation-delay:calc((var(--s) + var(--o))*1s)}
+@keyframes dim{to{opacity:.28;filter:grayscale(1)}}
+
+/* their screens */
+.screen{position:absolute;top:110px;width:640px;padding:0;overflow:hidden}
+.screen.l{left:90px}.screen.r{left:1190px}
+.screen .hd{display:flex;align-items:center;gap:12px;padding:16px 24px;border-bottom:4px solid var(--ink);font-size:26px;font-weight:900;background:#fff}
+.screen .hd i{width:14px;height:14px;border-radius:50%;border:3px solid var(--ink)}
+.screen .bd{padding:20px 24px 24px}
+.chatq{font-size:27px;font-weight:700;background:#E7E5DD;border-radius:14px;padding:12px 18px;display:inline-block;white-space:nowrap;overflow:hidden;max-width:0;animation:typew 1.1s steps(28) both;animation-delay:calc((var(--s) + var(--o))*1s)}
+@keyframes typew{to{max-width:600px}}
+.gl{height:16px;border-radius:8px;background:rgba(11,23,16,.14);margin-top:16px}
+.mail{display:flex;gap:14px;align-items:center;padding:12px 0;border-bottom:3px dashed rgba(11,23,16,.15);font-size:25px;font-weight:700}
+.mail b{font-weight:900}
+.mail .who{flex:none;width:44px;height:44px;border-radius:12px;border:4px solid var(--ink);display:grid;place-items:center;font-weight:900;font-size:22px;background:var(--lime2)}
+.badge{position:absolute;right:20px;top:12px;background:var(--ink);color:var(--lime);font-weight:900;font-size:24px;border-radius:999px;padding:4px 16px}
+.fly{position:absolute;left:560px;top:420px;font-size:28px;font-weight:900;padding:14px 22px;display:flex;gap:12px;align-items:center;
+  animation:fly 1.3s cubic-bezier(.5,0,.3,1) both;animation-delay:calc((var(--s) + var(--o))*1s)}
+@keyframes fly{0%{opacity:0;transform:translate(0,0) scale(.6) rotate(-6deg)}15%{opacity:1;transform:translate(0,-20px) scale(1) rotate(-4deg)}85%{opacity:1;transform:translate(640px,-40px) scale(1) rotate(5deg)}100%{opacity:0;transform:translate(700px,-20px) scale(.6) rotate(8deg)}}
+.file{position:absolute;font-size:23px;font-weight:800;background:#fff;border:4px solid var(--ink);border-radius:12px;padding:8px 16px;box-shadow:5px 5px 0 var(--ink);white-space:nowrap}
+
+/* the client who waits */
+.client{position:absolute;left:720px;top:150px;width:480px;padding:22px 26px;font-size:28px;font-weight:800;z-index:2;
+  animation:sink 1.4s cubic-bezier(.5,0,.3,1) both;animation-delay:calc((var(--s) + var(--o))*1s)}
+.client small{display:block;font-size:20px;font-weight:800;opacity:.55;margin-bottom:6px;text-transform:uppercase;letter-spacing:.06em}
+@keyframes sink{0%{opacity:0;transform:translateY(-120px) rotate(-3deg)}25%{opacity:1;transform:translateY(0) rotate(-3deg)}100%{opacity:1;transform:translateY(200px) rotate(2deg)}}
+.pile{position:absolute;left:700px;width:520px;padding:20px 24px;font-size:24px;font-weight:800;z-index:3}
+.stamp{position:absolute;left:790px;top:450px;z-index:4;font-size:58px;font-weight:900;color:#B3261E;border:8px solid #B3261E;border-radius:14px;padding:2px 20px;letter-spacing:.04em;--r:-12deg;--r0:-30deg;background:rgba(242,238,226,.85)}
+.stamp.ok{color:var(--ink);border-color:var(--ink);background:var(--lime);left:870px;top:445px;--r:-6deg}
+.say{position:absolute;z-index:5;font-size:34px;font-weight:900;background:var(--paper);border:5px solid var(--ink);border-radius:24px;padding:14px 26px;box-shadow:6px 6px 0 var(--ink);max-width:560px;line-height:1.2}
+.say:after{content:"";position:absolute;bottom:-22px;width:30px;height:30px;background:var(--paper);border-right:5px solid var(--ink);border-bottom:5px solid var(--ink);transform:rotate(45deg)}
+.say.l{left:150px;top:300px}.say.l:after{left:300px}
+.say.r{left:1270px;top:300px}.say.r:after{left:110px}
+.say.z{left:640px;top:490px;font-size:30px}.say.z:after{left:280px}
+.say.ly{left:330px;top:360px}.say.ly:after{left:120px}
+.say.ky{left:1360px;top:330px;font-size:48px;padding:6px 22px}.say.ky:after{left:60px}
+.q{position:absolute;font-size:80px;font-weight:900;z-index:5}
+
+/* Za3tar arrives on the desk */
+.za .mascot{left:860px;top:610px;--w:200px}
+.za .hi{left:1030px;top:600px;--r:6deg}
+.wires{position:absolute;inset:0;width:1920px;height:1080px;overflow:visible}
+.wires path{fill:none;stroke:var(--lime);stroke-width:8;stroke-linecap:round;stroke-dasharray:500;stroke-dashoffset:500;animation:wire .8s ease-out both;animation-delay:calc((var(--s) + var(--o))*1s)}
+.wires .halo{stroke:var(--ink);stroke-width:16}
+@keyframes wire{to{stroke-dashoffset:0}}
+.tool{position:absolute;font-size:22px;font-weight:900;background:var(--paper);border:4px solid var(--ink);border-radius:999px;padding:6px 16px;box-shadow:4px 4px 0 var(--ink);white-space:nowrap}
+.pulse{position:absolute;width:30px;height:30px;margin:-15px;border-radius:50%;background:var(--lime);border:5px solid var(--ink);opacity:0;z-index:6;
+  animation:pulse 1.4s cubic-bezier(.5,0,.4,1) both;animation-delay:calc((var(--s) + var(--o))*1s)}
+@keyframes pulse{0%{opacity:0;transform:none}8%{opacity:1}92%{opacity:1;transform:translateX(var(--dx))}100%{opacity:0;transform:translateX(var(--dx))}}
+
+/* the connected screens */
+.sheet .row{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:3px dashed rgba(11,23,16,.15);font-size:25px;font-weight:700}
+.sheet .row:last-child{border-bottom:0}
+.sheet .st{font-size:20px;font-weight:900;border:3px solid var(--ink);border-radius:999px;padding:2px 14px}
+.flip{position:relative;display:inline-block}
+.flip>span{display:inline-block}
+.flip .a{animation:fa .2s ease both;animation-delay:calc((var(--s) + var(--o))*1s)}
+.flip .b{position:absolute;right:0;top:0;opacity:0;background:var(--lime);animation:fb .3s var(--pop) both;animation-delay:calc((var(--s) + var(--o))*1s)}
+@keyframes fa{to{opacity:0}}
+@keyframes fb{from{opacity:0;transform:scale(.5)}to{opacity:1;transform:none}}
+.note{display:flex;gap:16px;align-items:center;font-size:26px;font-weight:800;line-height:1.25}
+.note .av{flex:none;width:58px;height:58px;border-radius:14px;background:var(--ink);padding:7px}
+.note .av svg{width:100%;height:100%}
+.note small{display:block;font-size:20px;opacity:.55;font-weight:700;margin-top:4px}
+
+/* the quiet ending */
+.endline{position:absolute;left:0;right:0;top:300px;text-align:center;font-size:96px;line-height:1.05;font-weight:900;letter-spacing:-.03em;font-stretch:108%;z-index:8}
+.sign{position:absolute;left:50%;top:600px;transform:translateX(-50%);display:flex;align-items:center;gap:16px;font-size:34px;font-weight:900;background:var(--ink);color:var(--paper);border-radius:999px;padding:10px 28px 12px 16px;z-index:8;white-space:nowrap}
+.sign svg{width:46px;height:46px}
+.sign em{font-style:normal;color:var(--lime);font-weight:700;opacity:.9}
+.veil{position:absolute;inset:0;background:rgba(242,238,226,.86);z-index:7;opacity:0;animation:fade .8s ease both;animation-delay:calc((var(--s) + var(--o))*1s)}
+</style>
+</head>
+<body>
+
+<template id="mascot">
+  <div class="body"><svg viewBox="56 14 134 134">
+    <defs>
+      <clipPath id="ct"><path d="M0 0H190V14C147.2 88 102 128 56 148L0 200Z"/></clipPath>
+      <clipPath id="cb"><path d="M56 148C150 140 195.4 96 190 14H200V200H56Z"/></clipPath>
+    </defs>
+    <rect class="bars" x="56" y="14" width="134" height="44" clip-path="url(#ct)"/>
+    <g class="jaw"><rect class="bars" x="56" y="104" width="134" height="44" clip-path="url(#cb)"/>
+      <path class="leaf" d="M190 14C195.4 96 150 140 56 148C102 128 147.2 88 190 14Z"/></g>
+    <g class="eye"><circle cx="126" cy="36" r="13" fill="#F2EEE2" stroke="#0B1710" stroke-width="3"/><circle class="pupil" cx="126" cy="36" r="6" fill="#0B1710"/></g>
+  </svg></div><div class="shadow"></div>
+</template>
+
+<section class="scene first bg-paper za" style="--s:0">
+  <!-- the room -->
+  <div class="office">
+    <div class="when rise" style="--o:.3">Monday · 9:12</div>
+    <div class="person l pop" data-person="lina" style="--o:.4;--sh:16.4"></div>
+    <div class="person r pop" data-person="karim" style="--o:.7;--sh:16.5"></div>
+  </div>
+
+  <!-- the old way: 4–18 s, then it leaves the room -->
+  <div class="out" style="--x:18.2">
+    <div class="dim" style="--o:12.0">
+      <div class="screen l card pop" style="--o:4.6;--r0:-4deg">
+        <div class="hd"><i></i>Chat <span style="margin-left:auto;font-size:20px;opacity:.5">new chat</span></div>
+        <div class="bd"><div class="chatq" style="--o:5.2">summarise the client order</div>
+          <div class="gl fade" style="--o:6.4;width:92%"></div><div class="gl fade" style="--o:6.6;width:78%"></div><div class="gl fade" style="--o:6.8;width:85%"></div></div>
+      </div>
+      <div class="fly card" style="--o:7.3">✉️ Fwd: order summary (v2)</div>
+      <div class="screen r card pop" style="--o:8.6;--r0:4deg">
+        <div class="hd"><i></i>Inbox<span class="badge pop" style="--o:9.6">47 unread</span></div>
+        <div class="bd">
+          <div class="mail"><span class="who">L</span><span><b>Fwd: order summary (v2)</b></span></div>
+          <div class="mail rise" style="--o:9.2"><span class="who" style="background:var(--olive);color:var(--paper)">K</span><span>Re: <b>which version?</b></span></div>
+          <div class="mail rise" style="--o:9.9"><span class="who">L</span><span>Re: Re: <b>see attached</b></span></div>
+        </div>
+      </div>
+      <div class="file pop" style="--o:10.3;left:700px;top:440px;--r:-4deg">📊 Orders_final.xlsx</div>
+      <div class="file pop" style="--o:10.6;left:780px;top:505px;--r:3deg">📊 Orders_final_v3.xlsx</div>
+      <div class="file pop" style="--o:10.9;left:720px;top:570px;--r:-2deg">📊 Orders_FINAL_real.xlsx</div>
+    </div>
+    <div class="pile card pop" style="--o:12.9;top:300px;--r:4deg">✉️ Re: Re: Fwd: orders</div>
+    <div class="pile card pop" style="--o:13.2;top:360px;--r:-3deg">✉️ Fwd: meeting notes</div>
+    <div class="pile card pop" style="--o:13.5;top:420px;--r:2deg">✉️ Re: which version?</div>
+    <div class="say l pop" style="--o:14.8;--r0:-4deg">Did anyone reply to the client?</div>
+    <div class="say r pop" style="--o:15.7;--r0:4deg">I thought you did.</div>
+    <div class="q pop" style="--o:16.6;left:600px;top:560px;--r:-12deg">?</div>
+    <div class="q pop" style="--o:16.8;left:1250px;top:560px;--r:12deg">?</div>
+  </div>
+  <!-- the client card stays in the room the whole time -->
+  <div class="client card" style="--o:12.2"><small>Client · Thursday</small>Can you confirm our order today?</div>
+  <div class="out" style="--x:18.2;z-index:4"><div class="stamp pop" style="--o:14.1">OVERDUE</div></div>
+
+  <!-- the desk sits in front of people and paper -->
+  <div class="desk"></div>
+  <div class="laptop l"><i class="glow" style="--o:29.4"></i></div><div class="laptop r"><i class="glow" style="--o:30.9"></i></div>
+  <div class="name l rise" style="--o:1.2">Lina <small>ops</small></div>
+  <div class="name r rise" style="--o:1.4">Karim <small>sales</small></div>
+
+  <!-- 18.6 · Za3tar hops onto the desk -->
+  <svg class="wires" viewBox="0 0 1920 1080">
+    <path class="halo" d="M868 744 C790 744 720 744 642 744" style="--o:23.0"/>
+    <path d="M868 744 C790 744 720 744 642 744" style="--o:23.0"/>
+    <path class="halo" d="M1052 744 C1130 744 1200 744 1278 744" style="--o:23.4"/>
+    <path d="M1052 744 C1130 744 1200 744 1278 744" style="--o:23.4"/>
+  </svg>
+  <div class="mascot pop talk" data-mascot style="--o:18.8;--talk:37.6;--r0:-14deg"></div>
+  <div class="out" style="--x:22.4"><div class="bubble hi pop" style="--o:19.6">hi 👋</div></div>
+  <div class="out" style="--x:36.4">
+  <div class="tool pop" style="--o:24.4;left:800px;top:560px;--r:-6deg">📥 inbox</div>
+  <div class="tool pop" style="--o:24.7;left:990px;top:545px;--r:5deg">📊 orders</div>
+  <div class="tool pop" style="--o:25.0;left:905px;top:500px;--r:-2deg">📅 calendar</div>
+  </div>
+
+  <!-- 28.6 · Lina confirms the order; Karim already knows -->
+  <div class="screen l card sheet pop" style="--o:27.6;--r0:-3deg">
+    <div class="hd"><i></i>Orders</div>
+    <div class="bd">
+      <div class="row"><span>Client order · 120 units</span><span class="flip" style="--o:29.0"><span class="st a">pending</span><span class="st b">confirmed ✓</span></span></div>
+      <div class="row"><span>Café order · 40 units</span><span class="st">shipped</span></div>
+    </div>
+  </div>
+  <i class="pulse" style="--o:29.3;left:642px;top:744px;--dx:226px"></i>
+  <i class="pulse" style="--o:30.2;left:1052px;top:744px;--dx:226px"></i>
+  <div class="screen r card pop" style="--o:31.0;--r0:3deg">
+    <div class="hd"><i></i>Updates</div>
+    <div class="bd"><div class="note"><span class="av" data-mini></span><span>Lina confirmed the client order: 120 units.<small>Za3tar · just now</small></span></div></div>
+  </div>
+  <div class="say ky pop" style="--o:32.4">👍</div>
+
+  <!-- 36.8 · the reply is ready; Lina just says yes -->
+  <div class="out" style="--x:40.9">
+    <div class="say z pop" style="--o:37.4;--r0:-3deg">The client's reply is drafted. Send it?</div>
+    <div class="say ly pop" style="--o:39.6;--r0:3deg">Yes 🙌</div>
+  </div>
+  <div class="stamp ok pop" style="--o:41.4">Answered ✓</div>
+
+  <!-- 44.6 · the quiet ending -->
+  <div class="veil" style="--o:44.4"></div>
+  <div class="endline rise" style="--o:44.8">Same people. Same work.<br>Just more connected.</div>
+  <div class="sign fade" style="--o:46.8" data-sign></div>
+</section>
+
+<script>
+  // stamp the mascot into every slot, with unique clip ids
+  const tpl = document.getElementById('mascot').innerHTML;
+  let n = 0;
+  const one = () => { n++; return tpl.replaceAll('id="ct"', `id="ct${n}"`).replaceAll('id="cb"', `id="cb${n}"`)
+    .replaceAll('url(#ct)', `url(#ct${n})`).replaceAll('url(#cb)', `url(#cb${n})`); };
+  document.querySelectorAll('[data-mascot]').forEach(el => el.innerHTML = one());
+  // tiny static mascot for the chat avatar (on ink: limestone bars, lime leaf)
+  document.querySelectorAll('[data-mini]').forEach(el => {
+    n++; el.innerHTML = `<svg viewBox="56 14 134 134"><defs><clipPath id="ct${n}"><path d="M0 0H190V14C147.2 88 102 128 56 148L0 200Z"/></clipPath><clipPath id="cb${n}"><path d="M56 148C150 140 195.4 96 190 14H200V200H56Z"/></clipPath></defs><rect x="56" y="14" width="134" height="44" fill="#F2EEE2" clip-path="url(#ct${n})"/><rect x="56" y="104" width="134" height="44" fill="#F2EEE2" clip-path="url(#cb${n})"/><path d="M190 14C195.4 96 150 140 56 148C102 128 147.2 88 190 14Z" fill="#C6DE3E"/><circle cx="126" cy="36" r="11" fill="#C6DE3E"/></svg>`;
+  });
+  document.querySelectorAll('[data-url]').forEach(el => {
+    n++; el.innerHTML = `<svg viewBox="56 14 134 134"><defs><clipPath id="ct${n}"><path d="M0 0H190V14C147.2 88 102 128 56 148L0 200Z"/></clipPath><clipPath id="cb${n}"><path d="M56 148C150 140 195.4 96 190 14H200V200H56Z"/></clipPath></defs><rect x="56" y="14" width="134" height="44" fill="#F2EEE2" clip-path="url(#ct${n})"/><rect x="56" y="104" width="134" height="44" fill="#F2EEE2" clip-path="url(#cb${n})"/><path d="M190 14C195.4 96 150 140 56 148C102 128 147.2 88 190 14Z" fill="#C6DE3E"/><circle cx="126" cy="36" r="11" fill="#C6DE3E"/></svg>za3tar<em>.ai</em>`;
+  });
+
+  document.querySelectorAll('[data-sign]').forEach(el => {
+    n++; el.innerHTML = `<svg viewBox="56 14 134 134"><defs><clipPath id="ct${n}"><path d="M0 0H190V14C147.2 88 102 128 56 148L0 200Z"/></clipPath><clipPath id="cb${n}"><path d="M56 148C150 140 195.4 96 190 14H200V200H56Z"/></clipPath></defs><rect x="56" y="14" width="134" height="44" fill="#F2EEE2" clip-path="url(#ct${n})"/><rect x="56" y="104" width="134" height="44" fill="#F2EEE2" clip-path="url(#cb${n})"/><path d="M190 14C195.4 96 150 140 56 148C102 128 147.2 88 190 14Z" fill="#C6DE3E"/><circle cx="126" cy="36" r="11" fill="#C6DE3E"/></svg>za3tar <em>· we help companies work</em>`;
+  });
+  // render hook: freeze every animation at time t (seconds)
+  // Lina and Karim: flat drawn people, no one real
+  const PEOPLE={
+    lina:{skin:'#E8C3A0',shirt:'#C6DE3E',hair:'<path d="M70 150C62 78 104 46 150 46C196 46 238 78 230 150L232 196C214 178 212 128 198 100C172 118 128 118 102 100C88 128 86 178 68 196Z" fill="#0B1710"/>'},
+    karim:{skin:'#C08A5E',shirt:'#F2EEE2',hair:'<path d="M78 122C78 74 112 52 150 52C188 52 222 74 222 122C206 98 182 90 150 94C118 90 94 98 78 122Z" fill="#0B1710"/><path d="M104 176C118 204 182 204 196 176C188 214 112 214 104 176Z" fill="#0B1710"/>'}
+  };
+  document.querySelectorAll('[data-person]').forEach(el=>{
+    const p=PEOPLE[el.dataset.person], ink='#0B1710';
+    el.classList.add('shrug');
+    el.innerHTML=`<svg viewBox="0 0 300 360">
+      <rect class="arm al" x="34" y="214" width="48" height="140" rx="24" fill="${p.shirt}" stroke="${ink}" stroke-width="7"/>
+      <rect class="arm ar" x="218" y="214" width="48" height="140" rx="24" fill="${p.shirt}" stroke="${ink}" stroke-width="7"/>
+      <rect class="torso" x="64" y="196" width="172" height="220" rx="78" fill="${p.shirt}" stroke="${ink}" stroke-width="7"/>
+      <g class="head"><circle cx="150" cy="128" r="74" fill="${p.skin}" stroke="${ink}" stroke-width="7"/>${p.hair}
+        <circle class="eye" cx="124" cy="132" r="8" fill="${ink}"/><circle class="eye" cx="176" cy="132" r="8" fill="${ink}"/>
+        <circle cx="112" cy="156" r="9" fill="#E07A5F" opacity=".35"/><circle cx="188" cy="156" r="9" fill="#E07A5F" opacity=".35"/>
+        <path d="M134 166Q150 178 166 166" fill="none" stroke="${ink}" stroke-width="6" stroke-linecap="round"/></g>
+    </svg>`;
+  });
+  window.DURATION = 50;
+  window.seek = t => { for (const a of document.getAnimations()) { a.pause(); a.currentTime = t * 1000; } };
+  // ?t=12.5 freezes on one moment (for checking a single frame)
+  const qt = new URLSearchParams(location.search).get('t');
+  if (qt !== null) document.fonts.ready.then(() => window.seek(+qt));
+</script>
+</body>
+</html>
