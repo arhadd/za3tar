@@ -16,10 +16,12 @@ documenting them as a public API would be a lie.
 
 `/demo/` is the company demo: the visitor types a company name or website and
 taps once; that tap starts the voice (`api/live.js`, told the company up front)
-and five parallel `api/demo.js` calls, one per part of the company page (`core`
-header, then team, tools, projects, customers, each with three recommendations
-and one example workflow). Each part renders as it lands. `/demo/?q=<company>`
-(the homepage hand-off) starts the build on load; the voice is one tap away.
+and two parallel `api/demo.js` calls: `core` (the header) and `jobs` (3 jobs an
+agent would do, each with a short flow, plus what we'd connect first). It is one
+screen, no tabs. When it lands, Za3tar asks whether to walk through the jobs and
+only does so on a yes (or the "Walk me through it" button), one job at a time.
+`/demo/?q=<company>` (the homepage hand-off) starts the build on load; the voice
+is one tap away.
 
 ## Licence
 
@@ -38,7 +40,7 @@ Functions need `ANTHROPIC_API_KEY` (`/api/demo`, `/api/try`) and
 `PERPLEXITY_API_KEY` makes `/api/demo` search with the Perplexity Search API;
 without it, Claude's own web search tool does the search. Optional overrides for
 the in-memory limits: `DEMO_LIMIT_PER_10MIN`, `DEMO_GLOBAL_PER_HOUR` (both
-count demos; each demo is five part-requests),
+count demos; each demo is two part-requests),
 `TRY_LIMIT_PER_10MIN`, `TRY_PAGE_LIMIT_PER_10MIN`, `TRY_GLOBAL_PER_HOUR`,
 `LIVE_LIMIT_PER_HOUR`, `LIVE_GLOBAL_PER_HOUR`.
 
