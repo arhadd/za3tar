@@ -67,7 +67,7 @@
 }
 *{box-sizing:border-box;margin:0}
 html{scroll-behavior:smooth}
-@media(min-width:821px){html{scroll-snap-type:y proximity}.steps,.page3{scroll-snap-align:start}}
+@media(min-width:821px){html{scroll-snap-type:y proximity}.reel,.steps,.page3{scroll-snap-align:start}}
 body{background:var(--paper);color:var(--ink);font-family:var(--sans);font-stretch:100%;line-height:1.5;-webkit-font-smoothing:antialiased;overflow-x:hidden}
 a{color:inherit;text-decoration:none}
 .wrap{max-width:1200px;margin:0 auto;padding:0 max(24px,env(safe-area-inset-right)) 0 max(24px,env(safe-area-inset-left))}
@@ -133,6 +133,14 @@ section{border-top:1px solid var(--ink-18);padding:48px 0 72px}
 .sh{font-size:clamp(26px,3vw,38px);font-weight:700;font-stretch:90%;letter-spacing:-.025em;line-height:1.1;margin-bottom:36px;text-wrap:balance}
 .sh small{display:block;font-size:15px;font-weight:400;font-stretch:100%;letter-spacing:0;color:var(--ink-66);margin-top:8px}
 
+
+/* the reel: what a teammate does all week, in 48 silent seconds. It sits above #overlay (z 5), so the
+   flying mark pieces pass behind the video on their way to the steps */
+.reel{padding:56px 0 72px}
+.reelbox{position:relative;z-index:6;border:1.5px solid var(--ink);border-radius:14px;overflow:hidden;aspect-ratio:16/9;background:var(--ink);cursor:pointer}
+.reelbox video{width:100%;height:100%;display:block;object-fit:cover}
+.reelbox .play{position:absolute;right:14px;bottom:14px;font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;background:var(--ink);color:var(--paper);border-radius:6px;padding:7px 10px;opacity:0;transition:opacity .2s;pointer-events:none}
+.reelbox.paused .play{opacity:1}
 
 .steps{min-height:100vh;min-height:100svh;display:flex;flex-direction:column;justify-content:center;padding:24px 0}
 .cards{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:0 28px}
@@ -251,7 +259,7 @@ footer a:hover{color:var(--ink)}
     <p>za3tar helps you bring the latest AI tools and frameworks into your organisation and move to AI-native ways of working, through implementation and hands-on education.</p>
   </div>
 
-  <a class="cue" href="#steps" aria-label="See how it works"><span>See how it works</span><span class="arr">↓</span></a>
+  <a class="cue" href="#reel" aria-label="See how it works"><span>See how it works</span><span class="arr">↓</span></a>
 
   <!-- za3tar mark, mono variant (BRAND.md) — geometry verbatim; the dot is the eye -->
   <div class="markwrap" aria-hidden="true">
@@ -270,6 +278,14 @@ footer a:hover{color:var(--ink)}
     </svg>
   </div>
 </header>
+
+<section class="reel" id="reel">
+  <h2 class="sh rv">Here’s what we build.<small>A teammate that lives in your chat, keeps every project on one page, and asks before the big stuff.</small></h2>
+  <div class="reelbox rv paused" id="reelbox">
+    <video id="reelv" src="/media/za3tar-reel.mp4" poster="/media/za3tar-reel.jpg" muted loop playsinline preload="none" aria-label="A 48-second animation of a za3tar teammate at work: it answers in chat, keeps a page per project, turns meetings into next steps, pulls numbers from your systems, asks before anything big, and sends the Monday update."></video>
+    <span class="play">▶ Play</span>
+  </div>
+</section>
 
 <section class="steps" id="steps">
   <h2 class="sh rv">How it works</h2>
@@ -493,6 +509,23 @@ footer a:hover{color:var(--ink)}
     requestAnimationFrame(tick);
   }
   tick();
+})();
+
+/* the reel plays while it is on screen (it only loads once it is near), and a tap pauses or resumes it.
+   With reduced motion it waits for a tap. */
+(function(){
+  var box=document.getElementById('reelbox'), v=document.getElementById('reelv');
+  if(!box||!v) return;
+  var still=matchMedia('(prefers-reduced-motion: reduce)').matches, held=still, seen=false;
+  function sync(){ box.classList.toggle('paused', v.paused); }
+  v.addEventListener('play',sync); v.addEventListener('pause',sync);
+  function go(){ var p=v.play(); if(p&&p.catch) p.catch(sync); }
+  box.addEventListener('click',function(){ if(v.paused){ held=false; go(); } else { held=true; v.pause(); } });
+  if(still||!('IntersectionObserver' in window)) return;
+  new IntersectionObserver(function(es){ es.forEach(function(en){
+    seen=en.isIntersecting;
+    if(seen&&!held) go(); else if(!seen&&!v.paused) v.pause();
+  }); },{threshold:.4}).observe(box);
 })();
 </script>
 </body>

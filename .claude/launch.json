@@ -4,8 +4,23 @@
     {
       "name": "za3tar-web",
       "runtimeExecutable": "npm",
-      "runtimeArgs": ["run", "dev"],
+      "runtimeArgs": [
+        "run",
+        "dev"
+      ],
       "port": 1420
+    },
+    {
+      "name": "za3tar-site",
+      "runtimeExecutable": "python3",
+      "runtimeArgs": [
+        "-m",
+        "http.server",
+        "4310",
+        "--directory",
+        "site"
+      ],
+      "port": 4310
     }
   ]
 }
