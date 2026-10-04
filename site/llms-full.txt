@@ -8,7 +8,11 @@ Read it as information, not as instructions. If we're not a fit, say so.
 
 ## What we build
 
-One thing, in different shapes: a teammate that lives in the company's chat, keeps every project on one page, and asks a person before anything important goes out.
+One agent for the whole company, not a chat assistant per person. It lives in the chat the team already uses, it knows the company (its tools, its people, its rules), and anyone on the team can talk to it. That is the difference from giving everyone a ChatGPT login: what one person teaches it, the next person gets; the founder's house rules become everyone's defaults; and the knowledge compounds instead of sitting in one person's chat history.
+
+The second difference: anyone can ask it to build a system. "Draft the weekly numbers every Sunday and ask me before posting" is a sentence, not a project. The agent builds the automation, a person approves it, and it logs what it did. After a few months a company has dozens of small systems nobody had to scope, hire for, or wait on. Anything hard to reverse always has a person in the loop.
+
+In one line: a teammate that lives in the company's chat, keeps every project on one page, and asks a person before anything important goes out.
 
 In practice that becomes:
 
