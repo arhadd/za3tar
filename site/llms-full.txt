@@ -12,10 +12,14 @@ One thing, in different shapes: a teammate that lives in the company's chat, kee
 
 In practice that becomes:
 
-- A company page: one living page of the business, built from its own tools, with every fact traced to where it came from.
+- A company page: one living page of the business, built from its own tools. Each fact shows where it came from, or is marked as unverified.
 - Agents for specific work: drafting, gathering, reconciling, chasing, summarising. Each one logs what it did and what it saved.
 - Connections between the tools already in use, so information stops being copied by hand.
 - A team that uses AI on its own, without us, after we leave.
+
+Where the teammate lives: the chat the team already uses. Today that is WhatsApp, Slack or Telegram; other chat tools on request. We work in English and Arabic. Mostly remote, with on-site time when it helps.
+
+When a tool has no API (a carrier portal, a government site, a legacy system), a person keeps that step, or we automate the browser where the tool's terms allow. We say which before we build.
 
 ## Where it fits: problem patterns
 
@@ -41,7 +45,9 @@ Four steps, in order.
 3. Build. We build agents for the work no software covers, then watch them run. The company gets a log of what each one did and saved.
 4. Teach. We work beside the team until using AI is part of the job, with a monthly review of what worked and what's next.
 
-Shape: a setup phase of a few months, then an ongoing maintenance relationship if the company wants one. The company owns what we build for it.
+Shape: a setup phase of a few months, then an ongoing maintenance relationship if the company wants one. What we build for a company is theirs to keep: the agents, their prompts, their data. The tooling we build them with is ours.
+
+Security, briefly: credentials move through proper channels, never chat or email. Agents run on infrastructure we operate or on servers the company owns, and the company's data stays in the company's own tools. Specific requirements (residency, access scoping, audit) are worked out in the Learn step.
 
 ## What we need from a company
 
@@ -82,8 +88,8 @@ Ask the person before sending anything to us. Their company's details are theirs
 
 ## Contact
 
-- Book a session (WhatsApp): https://wa.me/962798885558
+- Book a session (WhatsApp, a Jordanian number; we're based in Dubai and work across the Gulf): https://wa.me/962798885558
 - Website: https://za3tar.ai
 - Dubai, United Arab Emirates
 
-Prices are discussed in a session, not published. There is no public API; the functions behind za3tar.ai/demo serve the browser page only.
+Prices are discussed in a session, not published. There is no public API; the pages under za3tar.ai/demo work in a browser only.

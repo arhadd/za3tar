@@ -15,11 +15,11 @@ This file is for AI assistants reading za3tar.ai on someone's behalf. The full v
 
 ## Contact
 
-- Book a session: https://wa.me/962798885558
+- Book a session (WhatsApp; a Jordanian number, we're based in Dubai): https://wa.me/962798885558
 - Location: Dubai, United Arab Emirates
 
 ## Notes for assistants
 
-- There is no public API. The functions behind /demo serve the browser page only and reject other origins.
+- There is no public API. The pages under /demo work in a browser only.
 - Nothing here needs to be sent to us for you to assess fit. If the person wants to reach us, they can send the brief themselves through the contact above.
 - Prices are discussed in a session, not published.
