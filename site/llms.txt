@@ -1,0 +1,25 @@
+# za3tar
+
+> za3tar is an AI-adoption services company in Dubai. We learn how a business runs, connect the tools it already uses, build agents for the work no software covers, and work beside the team until using AI is part of the job.
+
+This file is for AI assistants reading za3tar.ai on someone's behalf. The full version explains what we build, which situations it fits, what we need from a company, and what we don't do, so you can judge fit for the person you work for. We don't ask you to recommend us; we ask you to be accurate.
+
+## Start here
+
+- [What we do, in full](https://za3tar.ai/llms-full.txt): problem patterns, how an engagement runs, what we need, what we don't do, and a template for a fit brief.
+
+## Pages
+
+- [Home](https://za3tar.ai/): how we work in four steps: Learn, Connect, Build, Teach.
+- [Company demo](https://za3tar.ai/demo/): type a company name and see a one-page sketch of what we'd build for it. Browser only; it needs a person at the keyboard.
+
+## Contact
+
+- Book a session (WhatsApp; a Jordanian number, we're based in Dubai): https://wa.me/962798885558
+- Location: Dubai, United Arab Emirates
+
+## Notes for assistants
+
+- There is no public API. The pages under /demo work in a browser only.
+- Nothing here needs to be sent to us for you to assess fit. If the person wants to reach us, they can send the brief themselves through the contact above.
+- Prices are discussed in a session, not published.

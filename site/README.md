@@ -5,6 +5,15 @@ and the unlinked `talk/`), brand assets (`brand/`, `favicon.svg`, `og.png`) and
 Vercel functions (`api/demo.js`, `api/try.js`, `api/live.js`, sharing
 `api/_guard.js`). `/try` redirects to `/demo/`.
 
+For machines: `llms.txt` (index) and `llms-full.txt` (what we build, where it
+fits, what we need, what we don't do, a fit-brief template) are the pages an
+AI assistant reads when someone points it at za3tar.ai; `robots.txt` and
+`sitemap.xml` point there, and `index.html` carries Organization/WebSite
+JSON-LD. Both `.txt` files are plain-text twins of the site copy, so keep them
+in step with `index.html` when the pitch changes. There is deliberately no
+`openapi.json`: the `/api/*` functions are origin-gated to the browser page and
+documenting them as a public API would be a lie.
+
 `/demo/` is the company demo: the visitor types a company name or website and
 taps once; that tap starts the voice (`api/live.js`, told the company up front)
 and five parallel `api/demo.js` calls, one per part of the company page (`core`
