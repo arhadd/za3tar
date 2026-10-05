@@ -1429,17 +1429,11 @@ function App() {
     setChatMode("chat");
     setChatLines([
       { role: "you", text },
-      { role: "activity", text: `handing to ${label}: ${text}` },
+      { role: "activity", text: `handed to ${label}: ${text} (the reply lands here when it's ready)` },
     ]);
-    setChatBusy(true);
-    try {
-      const reply = await askRoute(routeId, text);
-      setChatLines((cur) => [...cur, { role: "za3tar", text: reply?.trim() || `${label} had nothing to say.` }]);
-    } catch (e) {
-      setChatLines((cur) => [...cur, { role: "error", text: String(e) }]);
-    } finally {
-      setChatBusy(false);
-    }
+    dispatchRoute(routeId, text, (reply) =>
+      setChatLines((cur) => [...cur, { role: "za3tar", text: `${label}: ${reply}` }]),
+    );
   }
 
   // ── thread lines from the runtime ─────────────────────────────────────
@@ -1476,11 +1470,13 @@ function App() {
         ...active.map((t) => `${t.id} | ${t.title} | ${wsOf(t.workspace)} | current: ${t.summary || "(none)"}`),
       ].join("\n");
       if (r.kind !== "acp") return;
-      setRouteSessions((c) => ({
-        ...c,
-        [r.id]: { ...(c[r.id] ?? emptySession(r)), text: "", tools: {}, lastPrompt: "refreshing thread lines", error: null },
-      }));
-      const res = await promptRoute(r.id, prompt);
+      const res = await queued(r.id, () => {
+        setRouteSessions((c) => ({
+          ...c,
+          [r.id]: { ...(c[r.id] ?? emptySession(r)), text: "", tools: {}, lastPrompt: "refreshing thread lines", error: null },
+        }));
+        return promptRoute(r.id, prompt);
+      });
       const raw = res.text ?? "";
       const a = raw.indexOf("{");
       const b = raw.lastIndexOf("}");
@@ -1561,18 +1557,41 @@ function App() {
     return askRoute(routeId, text);
   }
 
-  /** send text to a route and wait for its answer; the panel shows the work */
+  // one prompt at a time per route: a hand-off waits its turn behind whatever
+  // that agent is already doing instead of clobbering the running turn
+  const routeQueue = useRef<Record<string, Promise<unknown>>>({});
+  function queued<T>(routeId: string, job: () => Promise<T>): Promise<T> {
+    const run = (routeQueue.current[routeId] ?? Promise.resolve()).then(job);
+    routeQueue.current[routeId] = run.catch(() => {});
+    return run;
+  }
+
+  /** hand work to a route without waiting on it: Za3tar stays free, and the
+   *  reply lands wherever onReply puts it once the agent finishes */
+  function dispatchRoute(routeId: string, text: string, onReply: (reply: string) => void) {
+    const label = routes.find((r) => r.id === routeId)?.label ?? routeId;
+    void askRoute(routeId, text).then((reply) => {
+      if (reply === null) return; // askRoute already surfaced the error
+      onReply(reply.trim() || `${label} had nothing to say.`);
+      showFlash(`${label} replied`);
+    });
+  }
+
+  /** send text to a route and wait for its answer; the panel shows the work.
+   *  null = failed (already shown), "" = the agent said nothing */
   async function askRoute(routeId: string, text: string): Promise<string | null> {
     try {
-      const r = await ensureRoute(routeId);
-      setRouteOpen(routeId);
-      if (r.kind !== "acp") return runtimeExchange(text, `asking ${r.label}…`);
-      setRouteSessions((c) => ({
-        ...c,
-        [routeId]: { ...(c[routeId] ?? emptySession(r)), text: "", tools: {}, lastPrompt: text, error: null },
-      }));
-      const res = await promptRoute(routeId, text);
-      return res.text || null;
+      return await queued(routeId, async () => {
+        const r = await ensureRoute(routeId);
+        setRouteOpen(routeId);
+        if (r.kind !== "acp") return runtimeExchange(text, `asking ${r.label}…`);
+        setRouteSessions((c) => ({
+          ...c,
+          [routeId]: { ...(c[routeId] ?? emptySession(r)), text: "", tools: {}, lastPrompt: text, error: null },
+        }));
+        const res = await promptRoute(routeId, text);
+        return res.text ?? "";
+      });
     } catch (e) {
       setRouteSessions((c) =>
         c[routeId] ? { ...c, [routeId]: { ...c[routeId], error: String(e), status: "closed" } } : c,
@@ -1754,17 +1773,17 @@ function App() {
       const local = ops.filter((o) => o.op !== "route");
       const routed = ops.filter((o) => o.op === "route") as Extract<LiveOp, { op: "route" }>[];
       const activity = local.length ? await apply.current(local) : [];
-      let say = turn.say?.trim() || "";
+      const say = turn.say?.trim() || "";
       for (const r of routed) {
         if (!(await confirmRoute(r.route, r.message))) {
           activity.push(`not sent to ${r.route}`);
           continue;
         }
-        activity.push(
-          `passing to ${routesRef.current.find((x) => x.id === r.route)?.label ?? r.route}: ${r.message}`,
+        const label = routesRef.current.find((x) => x.id === r.route)?.label ?? r.route;
+        activity.push(`handed to ${label}: ${r.message} (the reply lands here when it's ready)`);
+        dispatchRoute(r.route, r.message, (reply) =>
+          setChatLines((cur) => [...cur, { role: "za3tar", text: `${label}: ${reply}` }]),
         );
-        const reply = await askRoute(r.route, r.message);
-        if (reply) say = `${say}\n${reply}`.trim();
       }
       setChatLines((cur) => [
         ...cur,
