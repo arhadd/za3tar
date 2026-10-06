@@ -279,6 +279,7 @@ let settings: Settings = {
   language: "english",
   agent_name: "",
   agent_command: "~/bin/za3tar-runtime",
+  thread_store: "",
   za3tar_token: "",
   za3tar_base: "",
   onboarded: "",

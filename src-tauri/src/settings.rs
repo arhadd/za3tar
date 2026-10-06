@@ -32,6 +32,10 @@ pub struct Settings {
     pub agent_name: String,
     #[serde(default)]
     pub agent_command: String,
+    /// the shared thread record: a command that runs za3tar-threads
+    /// (store/), e.g. over ssh. Empty = threads stay on this Mac.
+    #[serde(default)]
+    pub thread_store: String,
     /// hosted mode: the account token from Sign in with Za3tar
     #[serde(default)]
     pub za3tar_token: String,
@@ -50,7 +54,7 @@ type VarBinding = (
     fn(&mut Settings) -> &mut String,
 );
 
-const VARS: [VarBinding; 10] = [
+const VARS: [VarBinding; 11] = [
     (
         "ELEVENLABS_API_KEY",
         |s| &s.elevenlabs_api_key,
@@ -84,6 +88,11 @@ const VARS: [VarBinding; 10] = [
         "ZA3TAR_AGENT_CMD",
         |s| &s.agent_command,
         |s| &mut s.agent_command,
+    ),
+    (
+        "ZA3TAR_THREAD_STORE",
+        |s| &s.thread_store,
+        |s| &mut s.thread_store,
     ),
 ];
 
