@@ -142,6 +142,7 @@ export type Settings = {
   language: string;
   agent_name: string;
   agent_command: string;
+  thread_store: string;
   za3tar_token: string;
   za3tar_base: string;
   onboarded: string;
