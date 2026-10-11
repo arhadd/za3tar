@@ -4,6 +4,7 @@
 import { useState } from "react";
 import { Button, Chip, Empty, ownerTone } from "../ui";
 import { bridgeId, relDate, todayISO } from "../format";
+import { verdictWord, type TidyVerdict } from "../tidy";
 import type {
   DecisionRef,
   OpenAction,
@@ -131,6 +132,56 @@ export function DecisionLine({
   );
 }
 
+/** the assistant's word on one to-do, under it, with the one-tap fix */
+function TidyLine({
+  v,
+  label,
+  onDone,
+  onHold,
+  onDismiss,
+}: {
+  v: TidyVerdict;
+  label: string;
+  onDone: () => void;
+  onHold: () => void;
+  onDismiss: () => void;
+}) {
+  const tone =
+    v.verdict === "done" ? "accent" : v.verdict === "keep" ? "neutral" : v.verdict === "drop" ? "olive" : "outline";
+  return (
+    <div className="mt-1 flex flex-wrap items-baseline gap-x-2 gap-y-1 rounded-lg bg-ink/4 px-2 py-1.5 text-[12px]">
+      <Chip tone={tone}>
+        {label}: {verdictWord[v.verdict]}
+      </Chip>
+      <span className="text-ink/80">
+        {v.why}
+        {v.evidence ? <span className="text-olive"> ({v.evidence})</span> : null}
+      </span>
+      {v.next && (
+        <span className="text-ink">
+          Next: {v.next}
+          {v.can_do ? <span className="text-olive"> · {label} can do this</span> : null}
+        </span>
+      )}
+      <span className="ml-auto flex gap-2">
+        {v.verdict === "done" && (
+          <button onClick={onDone} className="font-medium text-ink hover:underline">
+            mark done
+          </button>
+        )}
+        {v.verdict === "drop" && (
+          <button onClick={onHold} className="font-medium text-ink hover:underline">
+            put on hold
+          </button>
+        )}
+        <button onClick={onDismiss} className="text-olive hover:text-ink" title="hide this suggestion">
+          ×
+        </button>
+      </span>
+    </div>
+  );
+}
+
 export function FollowUpsView({
   openActions,
   runtimeStatus,
@@ -142,6 +193,7 @@ export function FollowUpsView({
   onOpenMeeting,
   busy,
   workspaces,
+  tidy,
 }: {
   onPark: (oa: OpenAction, parked: boolean) => void;
   openActions: OpenAction[];
@@ -154,6 +206,15 @@ export function FollowUpsView({
   busy: boolean;
   /** set on the all-workspaces page: group the list by workspace */
   workspaces?: Workspace[];
+  /** the assistant's verdicts on open to-dos, when there is one to ask */
+  tidy?: {
+    label: string;
+    running: boolean;
+    verdicts: Record<string, TidyVerdict>;
+    onRun: () => void;
+    onApply: (list: OpenAction[], as: "done" | "hold") => void;
+    onDismiss: (id: string) => void;
+  };
 }) {
   const today = todayISO();
   const [lens, setLens] = useState<"mine" | "others" | "all" | "parked">("mine");
@@ -193,6 +254,14 @@ export function FollowUpsView({
     g.rows.push(oa);
   }
 
+  // the assistant's verdicts on what is shown, and the ones it says to act on
+  const verdictOf = (oa: OpenAction) => tidy?.verdicts[bridgeId(oa.dir, oa.action.id)];
+  const judged = shown.filter((oa) => !oa.action.parked && verdictOf(oa));
+  const looksDone = judged.filter((oa) => verdictOf(oa)?.verdict === "done");
+  const toDrop = judged.filter((oa) => verdictOf(oa)?.verdict === "drop");
+  const count = (v: TidyVerdict["verdict"]) =>
+    judged.filter((oa) => verdictOf(oa)?.verdict === v).length;
+
   // who you are waiting on, with a one-click nudge (was on Home)
   const waiting =
     lens === "others"
@@ -221,11 +290,23 @@ export function FollowUpsView({
             </button>
           ))}
         </div>
+        {tidy && lens === "mine" && live.some(isMine) && (
+          <Button
+            tone="quiet"
+            size="sm"
+            className="ml-auto"
+            onClick={tidy.onRun}
+            disabled={tidy.running}
+            title={`${tidy.label} checks each to-do against your chats, calendar and notes; nothing changes until you apply it`}
+          >
+            {tidy.running ? `${tidy.label} is checking… (a few minutes)` : `Tidy up with ${tidy.label}`}
+          </Button>
+        )}
         {runtimeReady && openActions.length > 0 && (
           <Button
             tone="ghost"
             size="sm"
-            className="ml-auto"
+            className={tidy && lens === "mine" ? "" : "ml-auto"}
             onClick={onSync}
             disabled={busy}
             title="check with your assistant what was nudged, answered or done"
@@ -234,6 +315,37 @@ export function FollowUpsView({
           </Button>
         )}
       </div>
+
+      {tidy && judged.length > 0 && (
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-2 rounded-xl border border-line bg-paper px-3 py-2 text-[13px]">
+          <span>
+            {tidy.label} checked {judged.length}:{" "}
+            {[
+              ["done", "look done"],
+              ["drop", "to drop"],
+              ["theirs", "not yours"],
+              ["keep", "to keep"],
+              ["unsure", "no trace"],
+            ]
+              .map(([v, w]) => [count(v as TidyVerdict["verdict"]), w] as const)
+              .filter(([n]) => n > 0)
+              .map(([n, w]) => `${n} ${w}`)
+              .join(" · ")}
+          </span>
+          <span className="ml-auto flex gap-1.5">
+            {looksDone.length > 0 && (
+              <Button size="sm" tone="quiet" onClick={() => tidy.onApply(looksDone, "done")}>
+                mark {looksDone.length} done
+              </Button>
+            )}
+            {toDrop.length > 0 && (
+              <Button size="sm" tone="ghost" onClick={() => tidy.onApply(toDrop, "hold")}>
+                put {toDrop.length} on hold
+              </Button>
+            )}
+          </span>
+        </div>
+      )}
 
       {waiting.length > 0 && (
         <div className="flex flex-wrap items-center gap-1.5 px-1 text-[12px] text-olive">
@@ -278,7 +390,7 @@ export function FollowUpsView({
                   >
                     <DoneBox onClick={() => onDone(oa)} />
                     <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-                      <span dir="auto" className="arabic text-start text-[14px]">
+                      <span dir="auto" className="arabic text-left text-[14px]">
                         {oa.action.title}
                       </span>
                       <button
@@ -289,6 +401,15 @@ export function FollowUpsView({
                         {oa.meeting_title || "untitled note"} ·{" "}
                         {relDate(oa.meeting_created)} ↗
                       </button>
+                      {tidy && verdictOf(oa) && !oa.action.parked && (
+                        <TidyLine
+                          v={verdictOf(oa)!}
+                          label={tidy.label}
+                          onDone={() => onDone(oa)}
+                          onHold={() => onPark(oa, true)}
+                          onDismiss={() => tidy.onDismiss(bridgeId(oa.dir, oa.action.id))}
+                        />
+                      )}
                     </div>
                     <div className="flex shrink-0 items-center gap-1.5">
                       {js && js.status !== "open" && (

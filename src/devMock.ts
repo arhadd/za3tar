@@ -785,6 +785,21 @@ export async function mockInvoke<T>(
       return out("mock-session");
     case "acp_prompt": {
       const r = args.route;
+      if (String(args.text).includes("ZA3TAR_TIDY")) {
+        // tidy up: a verdict per item, cycling through the kinds
+        const q = JSON.parse(String(args.text).split("ZA3TAR_QUERY v1\n").pop() || "{}");
+        const kinds = [
+          { verdict: "done", why: "The demo happened on Thursday; the group thanked you after.", evidence: "WhatsApp with Lina, Thu", next: null, can_do: false },
+          { verdict: "drop", why: "Pricing moved to dollars, so this step no longer applies.", evidence: "Madar pricing note", next: null, can_do: false },
+          { verdict: "keep", why: "Still open: nothing sent yet.", evidence: "No reply in the thread", next: "Send Lina the final copy for sign-off", can_do: true },
+          { verdict: "unsure", why: "No later trace of this anywhere.", evidence: null, next: null, can_do: false },
+        ];
+        emit("acp-event", { route: r, kind: "status", status: "working" });
+        await new Promise((res) => setTimeout(res, 1200));
+        emit("acp-event", { route: r, kind: "status", status: "ready" });
+        const verdicts = (q.items ?? []).map((it: { id: string }, i: number) => ({ id: it.id, confidence: "high", ...kinds[i % kinds.length] }));
+        return out({ stopReason: "end_turn", text: "ZA3TAR_TIDY v1\n" + JSON.stringify({ verdicts }) });
+      }
       if (String(args.text).includes("where-it-stands")) {
         // the thread-line refresh: answer with one moved line
         emit("acp-event", { route: r, kind: "status", status: "working" });
