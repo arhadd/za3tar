@@ -161,7 +161,7 @@ export function HomeView({
   }
 
   return (
-    <div className="flex flex-col gap-8">
+    <div className="flex flex-col gap-6">
       {/* greeting + the one place to ask */}
       <div className="flex flex-col gap-3">
         <div className="flex flex-wrap items-baseline gap-x-3">
@@ -284,171 +284,182 @@ export function HomeView({
         </Card>
       )}
 
-      {liveFeeds.map((l) => (
-        <LiveCard key={l.id} label={l.label} feed={l.feed} />
-      ))}
+      {/* two columns on a wide window: the work on the left, what is moving
+          and what needs you on the right. Narrow, "now" comes first. */}
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
+        <aside className="flex min-w-0 flex-col gap-6 lg:col-start-2 lg:row-start-1">
+          {liveFeeds.map((l) => (
+            <LiveCard key={l.id} label={l.label} feed={l.feed} />
+          ))}
 
-      {/* the body of the page: your workspaces */}
-      <section className="flex flex-col gap-2">
-        <Eyebrow className="px-1">Your workspaces</Eyebrow>
-        <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
-          {workspaces.map((w) => {
-            const top = active.find((t) => t.workspace === w.id);
-            const todos = live.filter((o) => o.workspace === w.id).length;
-            const confirm = proposed.filter((d) => d.workspace === w.id).length;
-            const counts = [
-              todos ? plural(todos, "to-do") : "",
-              confirm ? plural(confirm, "decision") + " to confirm" : "",
-            ]
-              .filter(Boolean)
-              .join(" · ");
-            return (
+          {/* what needs you: short, with the way to all of it */}
+          <section className="flex flex-col gap-2">
+            <div className="flex items-baseline gap-2 px-1">
+              <Eyebrow>Needs you</Eyebrow>
               <button
-                key={w.id}
-                onClick={() => onGoWorkspace(w.id)}
-                className="flex min-h-[120px] flex-col gap-1.5 rounded-xl border border-line bg-paper p-4 text-left transition-colors hover:border-ink/40"
+                onClick={onSeeTodos}
+                className="ml-auto text-[12px] text-olive hover:text-ink"
               >
-                <span dir="auto" className="arabic text-start text-[16px] font-semibold">
-                  {w.name}
-                </span>
-                <p
-                  dir="auto"
-                  className="arabic line-clamp-2 text-start text-[13px] leading-relaxed text-olive"
-                >
-                  {top ? (
-                    <>
-                      <span className="font-medium text-ink">{top.title}</span>
-                      {top.summary ? ` — ${top.summary}` : ""}
-                    </>
-                  ) : (
-                    w.description || "Nothing here yet."
-                  )}
-                </p>
-                <span className="mt-auto pt-1 text-[12px] text-olive">
-                  {counts ? (
-                    <span className="text-ink">{counts}</span>
-                  ) : (
-                    "nothing open"
-                  )}
-                </span>
+                all to-dos →
               </button>
-            );
-          })}
-          {adding ? (
-            <div className="flex min-h-[120px] flex-col justify-center gap-2 rounded-xl border border-ink/40 bg-paper p-4">
-              <Field
-                autoFocus
-                dir="auto"
-                value={newName}
-                onChange={(e) => setNewName(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") void addWorkspace();
-                  if (e.key === "Escape") {
-                    setNewName("");
-                    setAdding(false);
-                  }
-                }}
-                onBlur={() => void addWorkspace()}
-                placeholder="a client, a company, a big area of life"
-                className="arabic"
-              />
-              <span className="text-[11px] text-olive">
-                enter to add · esc to cancel
-              </span>
             </div>
-          ) : (
-            <button
-              onClick={() => setAdding(true)}
-              className="flex min-h-[120px] items-center justify-center rounded-xl border border-dashed border-line text-[13px] text-olive transition-colors hover:border-ink/40 hover:text-ink"
-            >
-              + New workspace
-            </button>
-          )}
-        </div>
-      </section>
-
-      {/* what needs you: short, secondary */}
-      <section className="flex flex-col gap-2">
-        <div className="flex items-baseline gap-2 px-1">
-          <Eyebrow>Needs you</Eyebrow>
-          {needsSummary && (
-            <span className="text-[12px] text-olive">{needsSummary}</span>
-          )}
-          <button
-            onClick={onSeeTodos}
-            className="ml-auto text-[12px] text-olive hover:text-ink"
-          >
-            See all to-dos →
-          </button>
-        </div>
-        {needs.length === 0 ? (
-          <Empty>Nothing needs you right now.</Empty>
-        ) : (
-          <Card pad={false} className="p-2">
-            {needs.slice(0, 5).map((n) =>
-              n.kind === "todo" ? (
-                <TodoLine
-                  key={`t-${n.oa.dir}-${n.oa.action.id}`}
-                  oa={n.oa}
-                  where={wsName(n.oa.workspace)}
-                  onDone={onDone}
-                  onOpen={(oa) => onOpenMeeting(oa.dir, oa.workspace)}
-                />
-              ) : (
-                <DecisionLine
-                  key={`d-${n.d.dir}-${n.d.decision.id}`}
-                  d={n.d}
-                  where={wsName(n.d.workspace)}
-                  onStatus={onDecisionStatus}
-                />
-              ),
+            {needsSummary && (
+              <span className="px-1 text-[12px] text-olive">{needsSummary}</span>
             )}
-          </Card>
-        )}
-      </section>
+            {needs.length === 0 ? (
+              <Empty>Nothing needs you right now.</Empty>
+            ) : (
+              <Card pad={false} className="p-2">
+                {needs.slice(0, 5).map((n) =>
+                  n.kind === "todo" ? (
+                    <TodoLine
+                      key={`t-${n.oa.dir}-${n.oa.action.id}`}
+                      oa={n.oa}
+                      where={wsName(n.oa.workspace)}
+                      onDone={onDone}
+                      onOpen={(oa) => onOpenMeeting(oa.dir, oa.workspace)}
+                    />
+                  ) : (
+                    <DecisionLine
+                      key={`d-${n.d.dir}-${n.d.decision.id}`}
+                      d={n.d}
+                      where={wsName(n.d.workspace)}
+                      onStatus={onDecisionStatus}
+                    />
+                  ),
+                )}
+              </Card>
+            )}
+          </section>
+        </aside>
 
-      {/* the latest notes */}
-      <section className="flex flex-col gap-2">
-        <div className="flex items-baseline gap-2 px-1">
-          <Eyebrow>Recent notes</Eyebrow>
-          <button
-            onClick={onRecord}
-            className="ml-auto flex items-center gap-1.5 text-[12px] text-olive hover:text-ink"
-          >
-            <span className="inline-block h-1.5 w-1.5 rounded-full bg-thyme" />
-            Record a meeting
-          </button>
-        </div>
-        {latest.length === 0 ? (
-          <Empty>
-            No notes yet. Record a meeting, or paste notes into a workspace.
-          </Empty>
-        ) : (
-          <Card pad={false} className="p-2">
-            {latest.map((s) => (
-              <button
-                key={s.id}
-                onClick={() => onOpenMeeting(s.dir, s.workspace)}
-                className="flex w-full items-center gap-3 rounded-lg px-2 py-1.5 text-left hover:bg-ink/5"
-              >
-                <span
-                  dir="auto"
-                  className="arabic min-w-0 flex-1 truncate text-start text-[13px]"
+        <div className="flex min-w-0 flex-col gap-6 lg:col-start-1 lg:row-start-1">
+          {/* the body of the page: your workspaces, one row each */}
+          <section className="flex flex-col gap-2">
+            <Eyebrow className="px-1">Your workspaces</Eyebrow>
+            <Card pad={false} className="p-1.5">
+              {workspaces.map((w) => {
+                const top = active.find((t) => t.workspace === w.id);
+                const todos = live.filter((o) => o.workspace === w.id).length;
+                const confirm = proposed.filter((d) => d.workspace === w.id).length;
+                const counts = [
+                  todos ? plural(todos, "to-do") : "",
+                  confirm ? `${confirm} to confirm` : "",
+                ]
+                  .filter(Boolean)
+                  .join(" · ");
+                return (
+                  <button
+                    key={w.id}
+                    onClick={() => onGoWorkspace(w.id)}
+                    className="flex w-full flex-col gap-0.5 rounded-lg px-3 py-2.5 text-left transition-colors hover:bg-ink/5"
+                  >
+                    <span className="flex items-baseline gap-3">
+                      <span
+                        dir="auto"
+                        className="arabic min-w-0 flex-1 truncate text-left text-[15px] font-semibold"
+                      >
+                        {w.name}
+                      </span>
+                      <span
+                        className={`shrink-0 text-[12px] ${counts ? "text-ink" : "text-olive"}`}
+                      >
+                        {counts || "nothing open"}
+                      </span>
+                    </span>
+                    <span
+                      dir="auto"
+                      className="arabic line-clamp-2 text-left text-[13px] leading-relaxed text-olive"
+                    >
+                      {top ? (
+                        <>
+                          <span className="font-medium text-ink">{top.title}</span>
+                          {top.summary ? ` — ${top.summary}` : ""}
+                        </>
+                      ) : (
+                        w.description || "Nothing here yet."
+                      )}
+                    </span>
+                  </button>
+                );
+              })}
+              {adding ? (
+                <div className="flex flex-col gap-1 px-3 py-2">
+                  <Field
+                    autoFocus
+                    dir="auto"
+                    value={newName}
+                    onChange={(e) => setNewName(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") void addWorkspace();
+                      if (e.key === "Escape") {
+                        setNewName("");
+                        setAdding(false);
+                      }
+                    }}
+                    onBlur={() => void addWorkspace()}
+                    placeholder="a client, a company, a big area of life"
+                    className="arabic"
+                  />
+                  <span className="text-[11px] text-olive">
+                    enter to add · esc to cancel
+                  </span>
+                </div>
+              ) : (
+                <button
+                  onClick={() => setAdding(true)}
+                  className="w-full rounded-lg px-3 py-2 text-left text-[13px] text-olive transition-colors hover:bg-ink/5 hover:text-ink"
                 >
-                  {s.title || "Untitled note"}
-                </span>
-                <span className="text-[11px] text-olive">
-                  {wsName(s.workspace)}
-                </span>
-                {s.person && <Chip tone="outline">{s.person}</Chip>}
-                <span className="w-24 shrink-0 text-right text-[12px] text-olive">
-                  {relDate(s.created)}
-                </span>
+                  + New workspace
+                </button>
+              )}
+            </Card>
+          </section>
+
+          {/* the latest notes */}
+          <section className="flex flex-col gap-2">
+            <div className="flex items-baseline gap-2 px-1">
+              <Eyebrow>Recent notes</Eyebrow>
+              <button
+                onClick={onRecord}
+                className="ml-auto flex items-center gap-1.5 text-[12px] text-olive hover:text-ink"
+              >
+                <span className="inline-block h-1.5 w-1.5 rounded-full bg-thyme" />
+                Record a meeting
               </button>
-            ))}
-          </Card>
-        )}
-      </section>
+            </div>
+            {latest.length === 0 ? (
+              <Empty>
+                No notes yet. Record a meeting, or paste notes into a workspace.
+              </Empty>
+            ) : (
+              <Card pad={false} className="p-1.5">
+                {latest.map((s) => (
+                  <button
+                    key={s.id}
+                    onClick={() => onOpenMeeting(s.dir, s.workspace)}
+                    className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left hover:bg-ink/5"
+                  >
+                    <span
+                      dir="auto"
+                      className="arabic min-w-0 flex-1 truncate text-left text-[14px]"
+                    >
+                      {s.title || "Untitled note"}
+                    </span>
+                    <span className="text-[12px] text-olive">
+                      {wsName(s.workspace)}
+                    </span>
+                    {s.person && <Chip tone="outline">{s.person}</Chip>}
+                    <span className="w-24 shrink-0 text-right text-[12px] text-olive">
+                      {relDate(s.created)}
+                    </span>
+                  </button>
+                ))}
+              </Card>
+            )}
+          </section>
+        </div>
+      </div>
     </div>
   );
 }

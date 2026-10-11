@@ -66,13 +66,13 @@ export function TodoLine({
     <div className="flex items-start gap-3 rounded-lg px-1 py-1.5 hover:bg-ink/4">
       <DoneBox onClick={() => onDone(oa)} />
       <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-        <span dir="auto" className="arabic text-start text-[14px]">
+        <span dir="auto" className="arabic text-left text-[14px]">
           {oa.action.title}
         </span>
         {where && (
           <button
             onClick={() => onOpen(oa)}
-            className="self-start text-[11px] text-olive hover:text-ink"
+            className="self-start text-[12px] text-olive hover:text-ink"
           >
             {where} ↗
           </button>
@@ -107,10 +107,10 @@ export function DecisionLine({
         ?
       </span>
       <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-        <span dir="auto" className="arabic text-start text-[14px]">
+        <span dir="auto" className="arabic text-left text-[14px]">
           {d.decision.text}
         </span>
-        <span className="text-[11px] text-olive">
+        <span className="text-[12px] text-olive">
           decision to confirm{where ? ` · ${where}` : ""}
         </span>
       </div>
