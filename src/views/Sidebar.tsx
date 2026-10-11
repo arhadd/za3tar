@@ -154,8 +154,8 @@ export function Sidebar({
               }`}
             />
             {assistant.status === "working"
-              ? "Assistant working…"
-              : "Assistant connected"}
+              ? `${assistant.label} is working…`
+              : `${assistant.label} connected`}
           </button>
         )}
         <button onClick={onSettings} className={item(inSettings)}>

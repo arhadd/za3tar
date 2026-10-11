@@ -209,190 +209,201 @@ export function WorkspaceView({
     );
   }
 
-
+  // like Home: the work on the left, what needs you here on the right;
+  // narrow, the right column comes first
   return (
-    <div className="flex flex-col gap-8">
+    <div className="flex flex-col gap-6">
       {ask}
 
-      <section className="flex flex-col gap-2">
-        <div className="flex items-baseline gap-2 px-1">
-          <Eyebrow>Projects</Eyebrow>
-          <button
-            onClick={() => onGo("threads")}
-            className="ml-auto text-[12px] text-olive hover:text-ink"
-          >
-            {threads.length > active.length
-              ? `all ${threads.length} projects →`
-              : "+ add a project"}
-          </button>
-        </div>
-        {active.length === 0 ? (
-          <Empty>
-            No active projects. Add one for each thing that moves over weeks
-            here.
-          </Empty>
-        ) : (
-          <div className="flex flex-col gap-1.5">
-            {active.map((t) => (
-              <ThreadCard
-                key={t.id}
-                t={t}
-                stats={statsFor(t, library, open, decisions)}
-                onOpen={onOpenThread}
-              />
-            ))}
-          </div>
-        )}
-      </section>
-
-      <section className="flex flex-col gap-2">
-        <div className="flex items-baseline gap-2 px-1">
-          <Eyebrow>To-dos</Eyebrow>
-          {live.length > 5 && (
-            <span className="text-[12px] text-olive">
-              {live.length} open, most urgent first
-            </span>
-          )}
-          <button
-            onClick={() => onGo("followups")}
-            className="ml-auto text-[12px] text-olive hover:text-ink"
-          >
-            all to-dos →
-          </button>
-        </div>
-        {live.length === 0 ? (
-          <Empty>No open to-dos here.</Empty>
-        ) : (
-          <Card pad={false} className="p-2">
-            {live.slice(0, 5).map((oa) => (
-              <TodoLine
-                key={`${oa.dir}-${oa.action.id}`}
-                oa={oa}
-                where={oa.meeting_title || "untitled note"}
-                onDone={onDone}
-                onOpen={(x) => onOpenMeeting(x.dir)}
-              />
-            ))}
-          </Card>
-        )}
-      </section>
-
-      <section className="flex flex-col gap-2">
-        <div className="flex items-baseline gap-2 px-1">
-          <Eyebrow>Recent notes</Eyebrow>
-          <button
-            onClick={() => onGo("meetings")}
-            className="ml-auto text-[12px] text-olive hover:text-ink"
-          >
-            all notes →
-          </button>
-        </div>
-        {library.length === 0 ? (
-          <Empty>No notes yet. Record a meeting or paste notes.</Empty>
-        ) : (
-          <Card pad={false} className="p-2">
-            {library.slice(0, 5).map((s) => (
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
+        <aside className="flex min-w-0 flex-col gap-6 lg:col-start-2 lg:row-start-1">
+          <section className="flex flex-col gap-2">
+            <div className="flex items-baseline gap-2 px-1">
+              <Eyebrow>To-dos</Eyebrow>
+              {live.length > 5 && (
+                <span className="text-[12px] text-olive">
+                  {live.length} open, most urgent first
+                </span>
+              )}
               <button
-                key={s.id}
-                onClick={() => onOpenMeeting(s.dir)}
-                className="flex w-full items-center gap-3 rounded-lg px-2 py-1.5 text-left hover:bg-ink/5"
+                onClick={() => onGo("followups")}
+                className="ml-auto text-[12px] text-olive hover:text-ink"
               >
-                <span
-                  dir="auto"
-                  className="arabic min-w-0 flex-1 truncate text-start text-[13px]"
-                >
-                  {s.title || "Untitled note"}
-                </span>
-                {s.person && <Chip tone="outline">{s.person}</Chip>}
-                <span className="w-24 shrink-0 text-right text-[12px] text-olive">
-                  {relDate(s.created)}
-                </span>
+                all to-dos →
               </button>
-            ))}
-          </Card>
-        )}
-      </section>
+            </div>
+            {live.length === 0 ? (
+              <Empty>No open to-dos here.</Empty>
+            ) : (
+              <Card pad={false} className="p-2">
+                {live.slice(0, 5).map((oa) => (
+                  <TodoLine
+                    key={`${oa.dir}-${oa.action.id}`}
+                    oa={oa}
+                    where={oa.meeting_title || "untitled note"}
+                    onDone={onDone}
+                    onOpen={(x) => onOpenMeeting(x.dir)}
+                  />
+                ))}
+              </Card>
+            )}
+          </section>
 
-      <section className="flex flex-col gap-2">
-        <div className="flex items-baseline gap-2 px-1">
-          <Eyebrow>People</Eyebrow>
-        </div>
-        {people.length === 0 ? (
-          <Empty>Nobody yet. Tag a note with a person.</Empty>
-        ) : (
-          <div className="flex flex-wrap gap-1.5">
-            {people.map((p) => (
+          <section className="flex flex-col gap-2">
+            <div className="flex items-baseline gap-2 px-1">
+              <Eyebrow>People</Eyebrow>
+            </div>
+            {people.length === 0 ? (
+              <Empty>Nobody yet. Tag a note with a person.</Empty>
+            ) : (
+              <div className="flex flex-wrap gap-1.5">
+                {people.map((p) => (
+                  <button
+                    key={p.name}
+                    onClick={() => onGo("people")}
+                    className="flex items-center gap-2 rounded-lg border border-line bg-paper px-2.5 py-1.5 text-[13px] hover:border-ink/40"
+                  >
+                    <span dir="auto" className="arabic">
+                      {p.name}
+                    </span>
+                    {(p.role || p.org) && (
+                      <span className="text-[11px] text-olive">
+                        {[p.role, p.org].filter(Boolean).join(" · ")}
+                      </span>
+                    )}
+                    {p.open_actions > 0 && (
+                      <Chip tone="accent">{p.open_actions}</Chip>
+                    )}
+                  </button>
+                ))}
+              </div>
+            )}
+          </section>
+        </aside>
+
+        <div className="flex min-w-0 flex-col gap-6 lg:col-start-1 lg:row-start-1">
+          <section className="flex flex-col gap-2">
+            <div className="flex items-baseline gap-2 px-1">
+              <Eyebrow>Projects</Eyebrow>
               <button
-                key={p.name}
-                onClick={() => onGo("people")}
-                className="flex items-center gap-2 rounded-lg border border-line bg-paper px-2.5 py-1.5 text-[13px] hover:border-ink/40"
+                onClick={() => onGo("threads")}
+                className="ml-auto text-[12px] text-olive hover:text-ink"
               >
-                <span dir="auto" className="arabic">
-                  {p.name}
-                </span>
-                {(p.role || p.org) && (
-                  <span className="text-[11px] text-olive">
-                    {[p.role, p.org].filter(Boolean).join(" · ")}
-                  </span>
-                )}
-                {p.open_actions > 0 && (
-                  <Chip tone="accent">{p.open_actions}</Chip>
-                )}
+                {threads.length > active.length
+                  ? `all ${threads.length} projects →`
+                  : "+ add a project"}
               </button>
-            ))}
-          </div>
-        )}
-      </section>
+            </div>
+            {active.length === 0 ? (
+              <Empty>
+                No active projects. Add one for each thing that moves over weeks
+                here.
+              </Empty>
+            ) : (
+              <div className="flex flex-col gap-1.5">
+                {active.map((t) => (
+                  <ThreadCard
+                    key={t.id}
+                    t={t}
+                    stats={statsFor(t, library, open, decisions)}
+                    onOpen={onOpenThread}
+                  />
+                ))}
+              </div>
+            )}
+          </section>
 
-      <details className="group rounded-xl border border-line bg-paper">
-        <summary className="flex cursor-pointer list-none items-center gap-2 px-4 py-3 text-[13px] text-olive hover:text-ink">
-          <span className="inline-block transition-transform group-open:rotate-90">
-            ›
-          </span>
-          Sources & links
-          <span className="text-[12px] text-olive">
-            {ws.links.length
-              ? `${ws.links.length} attached`
-              : "where Za3tar gets its information"}
-          </span>
-        </summary>
-        <div className="flex flex-col gap-4 border-t border-line px-3 py-3">
-          <div className="flex flex-col gap-1">
-            <span className="px-1 text-[12px] font-medium text-olive">
-              Where it gets its information
-            </span>
-            {sources.length === 0 ? (
-              <p className="px-1 text-[12px] text-olive">
-                None yet: a chat group, a sheet, a notes file.
-              </p>
+          <section className="flex flex-col gap-2">
+            <div className="flex items-baseline gap-2 px-1">
+              <Eyebrow>Recent notes</Eyebrow>
+              <button
+                onClick={() => onGo("meetings")}
+                className="ml-auto text-[12px] text-olive hover:text-ink"
+              >
+                all notes →
+              </button>
+            </div>
+            {library.length === 0 ? (
+              <Empty>No notes yet. Record a meeting or paste notes.</Empty>
             ) : (
-              sources.map((l, i) => (
-                <LinkRow key={i} l={l} onOpen={onOpenLink} />
-              ))
+              <Card pad={false} className="p-2">
+                {library.slice(0, 5).map((s) => (
+                  <button
+                    key={s.id}
+                    onClick={() => onOpenMeeting(s.dir)}
+                    className="flex w-full items-center gap-3 rounded-lg px-2 py-1.5 text-left hover:bg-ink/5"
+                  >
+                    <span
+                      dir="auto"
+                      className="arabic min-w-0 flex-1 truncate text-left text-[14px]"
+                    >
+                      {s.title || "Untitled note"}
+                    </span>
+                    {s.person && <Chip tone="outline">{s.person}</Chip>}
+                    <span className="w-24 shrink-0 text-right text-[12px] text-olive">
+                      {relDate(s.created)}
+                    </span>
+                  </button>
+                ))}
+              </Card>
             )}
-          </div>
-          <div className="flex flex-col gap-1">
-            <span className="px-1 text-[12px] font-medium text-olive">
-              Files & links
-            </span>
-            {rest.length === 0 ? (
-              <p className="px-1 text-[12px] text-olive">Nothing attached yet.</p>
-            ) : (
-              rest.map((l, i) => <LinkRow key={i} l={l} onOpen={onOpenLink} />)
-            )}
-          </div>
-          <Button
-            tone="quiet"
-            size="sm"
-            className="self-start"
-            onClick={() =>
-              setEdit({ ...ws, links: ws.links.map((l) => ({ ...l })) })
-            }
-          >
-            edit sources & links
-          </Button>
+          </section>
+
+          <details className="group rounded-xl border border-line bg-paper">
+            <summary className="flex cursor-pointer list-none items-center gap-2 px-4 py-3 text-[13px] text-olive hover:text-ink">
+              <span className="inline-block transition-transform group-open:rotate-90">
+                ›
+              </span>
+              Sources & links
+              <span className="text-[12px] text-olive">
+                {ws.links.length
+                  ? `${ws.links.length} attached`
+                  : "where Za3tar gets its information"}
+              </span>
+            </summary>
+            <div className="flex flex-col gap-4 border-t border-line px-3 py-3">
+              <div className="flex flex-col gap-1">
+                <span className="px-1 text-[12px] font-medium text-olive">
+                  Where it gets its information
+                </span>
+                {sources.length === 0 ? (
+                  <p className="px-1 text-[12px] text-olive">
+                    None yet: a chat group, a sheet, a notes file.
+                  </p>
+                ) : (
+                  sources.map((l, i) => (
+                    <LinkRow key={i} l={l} onOpen={onOpenLink} />
+                  ))
+                )}
+              </div>
+              <div className="flex flex-col gap-1">
+                <span className="px-1 text-[12px] font-medium text-olive">
+                  Files & links
+                </span>
+                {rest.length === 0 ? (
+                  <p className="px-1 text-[12px] text-olive">
+                    Nothing attached yet.
+                  </p>
+                ) : (
+                  rest.map((l, i) => (
+                    <LinkRow key={i} l={l} onOpen={onOpenLink} />
+                  ))
+                )}
+              </div>
+              <Button
+                tone="quiet"
+                size="sm"
+                className="self-start"
+                onClick={() =>
+                  setEdit({ ...ws, links: ws.links.map((l) => ({ ...l })) })
+                }
+              >
+                edit sources & links
+              </Button>
+            </div>
+          </details>
         </div>
-      </details>
+      </div>
     </div>
   );
 }

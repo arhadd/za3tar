@@ -1927,9 +1927,12 @@ function App() {
     .map((r) => ({ r, st: routeSessions[r.id]?.status }))
     .find((x) => x.st === "ready" || x.st === "working" || x.st === "connecting");
 
-  // Home is the cockpit: two columns when the window allows; every other
-  // page keeps the reading width
-  const homeWide = !(showSettings && settingsForm) && view === "home" && !meetingOpen;
+  // Home and a workspace's overview are cockpits: two columns when the window
+  // allows; every other page keeps the reading width
+  const wide =
+    !(showSettings && settingsForm) &&
+    !meetingOpen &&
+    (view === "home" || view === "overview");
 
   function goView(v: View) {
     setShowSettings(false);
@@ -2137,7 +2140,7 @@ function App() {
 
         <main className="flex-1 overflow-y-auto px-8 py-6">
           <div
-            className={`mx-auto flex flex-col gap-4 ${homeWide ? "max-w-5xl" : "max-w-3xl"}`}
+            className={`mx-auto flex flex-col gap-4 ${wide ? "max-w-5xl" : "max-w-3xl"}`}
           >
             {!loaded && <p className="px-1 text-[13px] text-olive">loading…</p>}
             {confirmOverlay}
