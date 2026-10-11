@@ -6,6 +6,8 @@ import { useState } from "react";
 import { Button, Card, Chip, Empty, Eyebrow, Field } from "../ui";
 import { relDate } from "../format";
 import { AskBox } from "./AskBox";
+import { LiveCard } from "./LiveCard";
+import type { Feed } from "../feed";
 import { DecisionLine, TodoLine, byUrgency, isMine } from "./FollowUpsView";
 import type {
   AskRead,
@@ -50,6 +52,7 @@ export function HomeView({
   onAsk,
   readAsk,
   routeLabel,
+  liveFeeds,
   onTalk,
   talking,
   onRecord,
@@ -76,6 +79,8 @@ export function HomeView({
   readAsk: ((text: string) => Promise<AskRead | null>) | null;
   /** route id → label, for the assistant chip */
   routeLabel: (id: string) => string;
+  /** assistants with a live line: what each is doing elsewhere, as it happens */
+  liveFeeds: { id: string; label: string; feed: Feed }[];
   onTalk: () => void;
   talking: boolean;
   onRecord: () => void;
@@ -278,6 +283,10 @@ export function HomeView({
           </div>
         </Card>
       )}
+
+      {liveFeeds.map((l) => (
+        <LiveCard key={l.id} label={l.label} feed={l.feed} />
+      ))}
 
       {/* the body of the page: your workspaces */}
       <section className="flex flex-col gap-2">

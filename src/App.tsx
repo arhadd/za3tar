@@ -8,6 +8,7 @@ import { DecisionsView } from "./views/DecisionsView";
 import { FollowUpsView, isMine } from "./views/FollowUpsView";
 import { WorkspaceView } from "./views/WorkspaceView";
 import { HomeView } from "./views/HomeView";
+import { useFeeds } from "./feed";
 import { AskBox } from "./views/AskBox";
 import { ThreadsView, ThreadDetail } from "./views/ThreadsView";
 import { TalkPanel, type TalkState } from "./views/TalkPanel";
@@ -135,6 +136,7 @@ function App() {
 
   // routes — other agents with hands
   const [routes, setRoutes] = useState<Route[]>([]);
+  const feeds = useFeeds(routes);
   const [routeSessions, setRouteSessions] = useState<Record<string, RouteSession>>({});
   const [routeOpen, setRouteOpen] = useState<string | null>(null);
   /** a hand-off the model proposed, waiting for the user to say send */
@@ -2260,6 +2262,9 @@ function App() {
                 onAsk={askZa3tar}
                 readAsk={caps?.fast ? readAsk : null}
                 routeLabel={(id) => routes.find((r) => r.id === id)?.label ?? id}
+                liveFeeds={routes
+                  .filter((r) => feeds[r.id])
+                  .map((r) => ({ id: r.id, label: r.label, feed: feeds[r.id] }))}
                 onTalk={startTalk}
                 talking={talk !== "idle"}
                 onRecord={start}

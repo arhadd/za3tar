@@ -5,6 +5,7 @@ pub mod anthropic;
 pub mod asr;
 mod capture;
 pub mod compose;
+pub mod feed;
 pub mod hosted;
 pub mod jev;
 pub mod library;
@@ -80,6 +81,7 @@ pub fn run() {
         .manage(CaptureState::default())
         .manage(live::LiveState::default())
         .manage(acp::AcpState::default())
+        .manage(feed::FeedState::default())
         .invoke_handler(tauri::generate_handler![
             open_system_audio_settings,
             open_path,
@@ -137,6 +139,9 @@ pub fn run() {
             acp::acp_permission,
             acp::acp_cancel,
             acp::acp_stop,
+            feed::feed_start,
+            feed::feed_stop,
+            feed::feed_get,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

@@ -223,6 +223,13 @@ export function SettingsView({
                 placeholder="working directory on the agent's side (optional)"
               />
             )}
+            <Field
+              mono
+              value={r.live ?? ""}
+              onChange={(e) => setRoute(i, { live: e.target.value })}
+              placeholder="live feed command (optional), e.g. ssh my-server za3tar-live work"
+              title="a read-only line that shows what this assistant is doing elsewhere, as it happens (see live/README.md)"
+            />
           </div>
         ))}
         <Button
@@ -239,6 +246,7 @@ export function SettingsView({
                 kind: "oneshot",
                 command: "",
                 cwd: "",
+                live: "",
                 enabled: false,
               },
             ])
