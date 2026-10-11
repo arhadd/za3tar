@@ -286,6 +286,7 @@ let settings: Settings = {
 };
 
 let mockSignedIn = false;
+let feedMoved = false;
 const listeners: Record<string, EventCallback<any>[]> = {};
 let levelTimer: number | null = null;
 
@@ -773,6 +774,7 @@ export async function mockInvoke<T>(
           kind: "acp",
           command: "mock",
           cwd: "",
+          live: "mock",
           enabled: true,
         },
       ]);
@@ -808,6 +810,29 @@ export async function mockInvoke<T>(
       return out(null);
     case "open_system_audio_settings":
       return out(null);
+    case "feed_start": {
+      // connect, then one thing moves a few seconds later
+      const r = args.route;
+      setTimeout(() => emit("feed-event", { route: r, kind: "status", status: "live" }), 500);
+      setTimeout(() => {
+        feedMoved = true;
+        emit("feed-event", { route: r, kind: "event", event: "sessions.changed" });
+      }, 4000);
+      return out(null);
+    }
+    case "feed_stop":
+      return out(null);
+    case "feed_get": {
+      const now = Date.now() / 1000;
+      const s = [
+        { id: "m1", title: "Venue options for the retreat", preview: "", source: "whatsapp", is_active: false, last_active: now - 600, message_count: 14 },
+        { id: "m2", title: "Morning brief", preview: "", source: "cron", is_active: false, last_active: now - 3 * 3600, message_count: 2 },
+        { id: "m3", title: "", preview: "can you check who still owes the deposit?", source: "slack", is_active: false, last_active: now - 26 * 3600, message_count: 6 },
+      ];
+      if (feedMoved)
+        s.unshift({ id: "m0", title: "Supplier asked to move Thursday", preview: "", source: "whatsapp", is_active: true, last_active: now - 5, message_count: 3 });
+      return out({ sessions: s });
+    }
     default:
       throw new Error(`mock: unknown command ${cmd}`);
   }

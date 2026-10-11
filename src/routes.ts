@@ -10,6 +10,8 @@ export type Route = {
   command: string;
   cwd: string;
   enabled: boolean;
+  /** optional read-only live line: what this assistant is doing elsewhere (feed.ts) */
+  live?: string;
 };
 
 export type RouteTool = {

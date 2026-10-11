@@ -35,6 +35,10 @@ pub struct Route {
     pub cwd: String,
     #[serde(default = "yes")]
     pub enabled: bool,
+    /// optional second command: a read-only live line (live/za3tar_live.py)
+    /// that tells the app what this assistant is doing elsewhere (feed.rs)
+    #[serde(default)]
+    pub live: String,
 }
 fn oneshot() -> String {
     "oneshot".into()
@@ -57,7 +61,7 @@ fn defaults() -> Vec<Route> {
     Vec::new()
 }
 
-fn saved_routes(app: &AppHandle) -> Result<Vec<Route>, String> {
+pub(crate) fn saved_routes(app: &AppHandle) -> Result<Vec<Route>, String> {
     let p = routes_path(app)?;
     Ok(std::fs::read_to_string(&p)
         .ok()

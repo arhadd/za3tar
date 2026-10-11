@@ -91,6 +91,14 @@ perform is the one thing that makes this worse than having no agent at all.
   vocabulary exists so the app and the agent cannot silently diverge, which
   is the failure this protocol was written to kill.
 
+## Seeing it work, live
+
+Packets and queries only move when the user clicks. To show what the agent
+is doing on its own (its other chats, its scheduled jobs) as it happens, give
+the route a live feed command running [`live/za3tar_live.py`](../../live/README.md)
+next to the profile: a read-only line over Hermes's own backend, refreshed by
+Hermes's change events rather than polling.
+
 ## Status
 
 The capability verbs are new and the app does not yet render an
