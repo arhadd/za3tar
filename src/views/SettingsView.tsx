@@ -272,6 +272,29 @@ export function SettingsView({
         </label>
       </Card>
 
+      <Card className="flex flex-col gap-3">
+        <div className="flex flex-col gap-1">
+          <Eyebrow>Shared threads (advanced)</Eyebrow>
+          <p className="text-[12px] leading-relaxed text-olive">
+            Optional. Keep threads in one record that your assistant also reads
+            and moves, instead of only on this Mac. A command that runs
+            za3tar-threads (see store/README.md), usually over ssh. Empty keeps
+            threads here.
+          </p>
+        </div>
+        <label className="flex flex-col gap-1 text-[12px] text-olive">
+          thread store command
+          <Field
+            mono
+            value={form.thread_store}
+            onChange={(e) =>
+              onChange({ ...form, thread_store: e.target.value })
+            }
+            placeholder="e.g. ssh my-server za3tar-threads"
+          />
+        </label>
+      </Card>
+
       <div className="flex items-center gap-3">
         <Button tone="primary" onClick={onSave}>
           save
