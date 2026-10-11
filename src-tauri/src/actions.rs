@@ -99,13 +99,12 @@ pub struct Draft {
     pub body: String,
 }
 
-const EXTRACT_SYSTEM: &str = r#"You are za3tar's outcome extractor for Arabic-speaking teams.
+const EXTRACT_SYSTEM: &str = r#"You are za3tar's outcome extractor for teams that work in Arabic, English, or both.
 From a meeting transcript (and optional notes), extract what was ACTUALLY agreed — not what could be.
 
-LANGUAGE CONTRACT (most important rule):
-- Mirror how the meeting was spoken. Arabic content in Arabic script.
-- Keep English technical terms, product/company/people names, and numbers in
-  Latin script (write "deploy", "Vercel", "447" — never transliterate).
+WHO SAID WHAT:
+- Keep technical terms, product/company/people names, and numbers in Latin
+  script (write "deploy", "Vercel", "447" — never transliterate).
 - Transcript lines are labelled [me ...] (the user) and [them ...] (other
   participants). In-person recordings use [voice1 ...], [voice2 ...] instead —
   unidentified voices; work out who is who from names/roles revealed in the
@@ -122,12 +121,13 @@ OUTPUT: only valid JSON, no markdown fences, exactly this shape:
 RULES:
 - decisions: things the meeting settled. actions: concrete commitments someone
   took. questions: raised but left open. Empty arrays are fine — never invent.
-- title: short imperative, in the language it was spoken.
+- title: short imperative.
 - owner: a name if the transcript reveals one, else "me"/"them" by who
   committed. For in-person [voiceN] transcripts, prefer real names; use "me"
   only when a voice is identifiable as the user; never output "voiceN".
 - due_date only when the meeting implies one; resolve relative dates ("بكرا",
   "الأسبوع الجاي", "end of month") from the meeting date in Context.
+  due_label says the same in a word or two ("Thursday", "this week").
 - detail: one clarifying sentence, or null."#;
 
 const WHATSAPP_SYSTEM: &str = r#"You are za3tar drafting the user's post-meeting WhatsApp follow-up to the other participant(s).
@@ -363,7 +363,8 @@ pub fn list_decisions(app: tauri::AppHandle) -> Result<Vec<DecisionRef>, String>
     Ok(out)
 }
 
-/// Rung 3: draft the follow-up in the meeting's own language mix.
+/// Rung 3: draft the follow-up in the meeting's own language mix — it goes to
+/// the people who were in it, so it is written the way they spoke.
 /// kind: "whatsapp" | "email"
 #[tauri::command]
 pub async fn draft_followup(
@@ -383,7 +384,7 @@ pub async fn draft_followup(
         "email" => EMAIL_SYSTEM,
         other => return Err(format!("unknown draft kind: {other}")),
     };
-    let (raw, _) = anthropic::complete(&anthropic::with_language(system), &user, 2048).await?;
+    let (raw, _) = anthropic::complete(&anthropic::for_others(system), &user, 2048).await?;
     let draft: Draft =
         serde_json::from_str(extract_json(&raw)).map_err(|e| format!("parse draft: {e}"))?;
     if draft.body.trim().is_empty() {
@@ -514,8 +515,9 @@ script, English terms/names/numbers in Latin. Write as the user ("me" in the
 transcript; for in-person [voiceN] transcripts, the user is named in Context).
 
 SHAPE: 1–3 lines. Friendly, zero passive aggression: a light check-in on the
-item, referencing the meeting naturally ("من اجتماعنا يوم..."), and an easy
-out ("إذا بدك إشي مني قلي"). If the item is owned by the user themselves,
+item, referencing the meeting naturally ("from our meeting on…" /
+"من اجتماعنا يوم..."), and an easy out ("let me know if you need anything
+from me" / "إذا بدك إشي مني قلي"). If the item is owned by the user themselves,
 instead draft a status update TO the other side about it. At most one emoji.
 
 OUTPUT: only valid JSON, no fences: {"subject": null, "body": "…"}"#;
@@ -535,8 +537,7 @@ pub async fn draft_nudge(dir: String, id: u32, title: Option<String>) -> Result<
     user.push_str("\n# The action item to nudge about (JSON)\n");
     user.push_str(&serde_json::to_string(item).unwrap_or_default());
 
-    let (raw, _) =
-        anthropic::complete(&anthropic::with_language(NUDGE_SYSTEM), &user, 1024).await?;
+    let (raw, _) = anthropic::complete(&anthropic::for_others(NUDGE_SYSTEM), &user, 1024).await?;
     let draft: Draft =
         serde_json::from_str(extract_json(&raw)).map_err(|e| format!("parse nudge: {e}"))?;
     if draft.body.trim().is_empty() {

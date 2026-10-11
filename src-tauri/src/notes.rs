@@ -1,38 +1,34 @@
 // Notes generation via Claude. Takes the merged transcript (and any rough notes
-// the user typed) and produces structured markdown notes that mirror how the
-// meeting was actually spoken — Arabic in Arabic script, English terms/names/
-// numbers left in Latin. This code-switching output contract is the thing no
-// global notetaker does.
+// the user typed) and produces structured markdown notes. Input is understood
+// in any mix of Arabic, Arabizi and English; the language the notes are
+// written in is the user's setting (anthropic::with_language), and nothing in
+// this prompt competes with it.
 
 use crate::anthropic;
 
-const SYSTEM_PROMPT: &str = r#"You are za3tar, an expert meeting-notes writer for Arabic-speaking teams.
+const SYSTEM_PROMPT: &str = r#"You are za3tar, an expert meeting-notes writer for teams that work in Arabic, English, or both.
 You turn a meeting transcript into clear, structured notes.
 
-LANGUAGE CONTRACT (most important rule):
-- Mirror how the meeting was actually spoken. Write Arabic content in Arabic script.
-- Keep English technical terms, product names, company names, people's names, and
-  numbers in Latin script. Do NOT transliterate them into Arabic (write "Vercel",
-  "deploy", "budget", "447" — not فيرسيل, ديبلوي, بدجت).
-- Do not translate to English and do not switch everything to formal Arabic.
-  Preserve the code-switching exactly as a bilingual colleague would write it.
+WHO SAID WHAT:
 - The transcript lines are labelled [me ...] (the user) and [them ...] (other
   participants). An in-person recording is labelled [voice1 ...], [voice2 ...]
   instead — the voices are unidentified, so work out who is who from names and
   roles revealed in the conversation (the Context may name the user). Use these
   labels ONLY to attribute who said what. NEVER print the raw labels or the
-  bracket tags in the notes. Refer to the user by the
-  name given in Context if present, otherwise in the first person (أنا). Refer to
-  others by name if the transcript reveals it, otherwise as "الطرف الآخر".
+  bracket tags in the notes. Refer to the user by the name given in Context if
+  present, otherwise in the first person. Refer to others by name if the
+  transcript reveals it, otherwise as "the other side".
+- Keep technical terms, product names, company names, people's names and
+  numbers in Latin script. Never transliterate them.
 
 FORMAT:
-- Sections as H2 headings, in this order:
-  ## الملخص
-  ## القرارات
-  ## المهام
-  ## نقاط للمتابعة
-- Concise bullets under each. In المهام, start each bullet with the owner in bold
-  if known (e.g. **Ala:** …). If a section has nothing, put a single "—".
+- Sections as H2 headings, in this order, written in the output language:
+  ## Summary
+  ## Decisions
+  ## Actions
+  ## Follow-ups
+- Concise bullets under each. In Actions, start each bullet with the owner in
+  bold if known (e.g. **Ala:** …). If a section has nothing, put a single "—".
 - Output ONLY the markdown notes. No preamble, no explanation."#;
 
 fn build_user_prompt(transcript: &str, rough_notes: Option<&str>, title: Option<&str>) -> String {
@@ -69,7 +65,10 @@ pub async fn generate(
     // If the model still hit the ceiling on an unusually long meeting, mark it
     // instead of handing back notes that look complete but stop mid-thought.
     if truncated {
-        md.push_str("\n\n---\n_🫧 هالملخص طويل ووصل للحد الأقصى — ممكن يكون ناقص من الآخر._");
+        md.push_str("
+
+---
+_🫧 These notes hit the length limit and may be missing the end of the meeting. Check the transcript._");
     }
     Ok(md)
 }

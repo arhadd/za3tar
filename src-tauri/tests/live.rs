@@ -58,11 +58,30 @@ async fn extract_actions_and_draft_followup() {
         "expected at least two actions"
     );
     assert!(!extracted.questions.is_empty(), "venue question missed");
+    // what the app shows the user is in English (the default setting), even
+    // though the meeting was in Arabic; names may stay as written
+    let arabic = |t: &str| t.chars().any(|c| ('\u{0600}'..='\u{06FF}').contains(&c));
+    assert!(
+        !extracted.decisions.iter().any(|d| arabic(&d.text)),
+        "decisions came back in Arabic: {:?}",
+        extracted.decisions
+    );
+    assert!(
+        !extracted.actions.iter().any(|a| arabic(&a.title)),
+        "actions came back in Arabic: {:?}",
+        extracted.actions
+    );
     // both sides committed to something
     let owners: Vec<&str> = extracted.actions.iter().map(|a| a.owner.as_str()).collect();
-    assert!(owners.contains(&"me"), "no action owned by me: {owners:?}");
+    // the user's own items say "me", or their name when ZA3TAR_USER gives one
+    let user = std::env::var("ZA3TAR_USER").unwrap_or_default();
+    let mine = |o: &str| o == "me" || (!user.is_empty() && o == user.trim());
     assert!(
-        owners.iter().any(|o| *o != "me"),
+        owners.iter().any(|o| mine(o)),
+        "no action owned by me: {owners:?}"
+    );
+    assert!(
+        owners.iter().any(|o| !mine(o)),
         "no action owned by the other side: {owners:?}"
     );
     // at least one resolved, well-formed date (Thursday proposal / Monday call)

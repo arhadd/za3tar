@@ -99,6 +99,10 @@ export function SettingsView({
             <option value="match">Match the conversation</option>
             <option value="arabic">Arabic</option>
           </select>
+          <span className="text-[11px] text-olive/80">
+            Messages Za3tar drafts to other people (follow-ups, nudges) are
+            written the way they spoke, whatever this is set to.
+          </span>
         </label>
         <SecretField
           label="ElevenLabs API key (transcription)"

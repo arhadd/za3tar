@@ -128,24 +128,24 @@ const recsSeed: Rec[] = [
       { speaker: "me", start: 24.6, text: "Bilingual من أول يوم، خلص قررنا." },
     ],
     notes:
-      "## الملخص\n- مراجعة الـ onboarding flow لـ Madar: الـ design جاهز، الربط مع Stripe لسا.\n- الاتفاق على demo يوم الخميس بعد إنهاء الربط.\n\n## القرارات\n- الإطلاق bilingual من اليوم الأول.\n\n## المهام\n- **Ala:** ربط Stripe وتجهيز الـ demo.\n- **Lina:** إرسال الـ copy النهائي للـ onboarding.",
+      "## Summary\n- Reviewed the Madar onboarding flow: design is done, Stripe is not wired yet.\n- Demo on Thursday once Stripe is wired.\n\n## Decisions\n- Launch bilingual from day one.\n\n## Actions\n- **Ala:** wire Stripe and prepare the demo.\n- **Lina:** send the final onboarding copy.",
     actions: {
       decisions: [
-        dec(1, "الإطلاق bilingual من اليوم الأول", "confirmed"),
-        dec(2, "الـ demo يوم الخميس"),
+        dec(1, "Launch bilingual from day one", "confirmed"),
+        dec(2, "Demo on Thursday"),
       ],
       actions: [
-        act(1, "ربط Stripe بالـ backend", "me", "هالأسبوع", iso(now + 3 * day)),
+        act(1, "Wire Stripe to the backend", "me", "this week", iso(now + 3 * day)),
         act(
           2,
-          "إرسال الـ copy النهائي للـ onboarding",
+          "Send the final onboarding copy",
           "Lina",
-          "بكرا",
+          "tomorrow",
           iso(now + day),
         ),
-        act(3, "تجهيز الـ demo", "me", "الخميس", iso(now + 2 * day)),
+        act(3, "Prepare the demo", "me", "Thursday", iso(now + 2 * day)),
       ],
-      questions: ["مين بيدفع رسوم Stripe بالمرحلة الأولى؟"],
+      questions: ["Who pays the Stripe fees in phase one?"],
     },
   },
   {
@@ -161,14 +161,14 @@ const recsSeed: Rec[] = [
       { speaker: "me", start: 0, text: "خلينا نراجع الـ pricing tiers." },
     ],
     notes:
-      "## الملخص\n- مراجعة الـ pricing tiers الثلاثة.\n\n## القرارات\n- Tier واحد مجاني بدون بطاقة.",
+      "## Summary\n- Reviewed the three pricing tiers.\n\n## Decisions\n- One free tier, no card needed.",
     actions: {
       decisions: [
-        dec(1, "Tier مجاني بدون بطاقة", "confirmed"),
-        dec(2, "السعر بالدولار مش بالدينار", "superseded"),
+        dec(1, "Free tier with no card", "confirmed"),
+        dec(2, "Price in dollars, not dinars", "superseded"),
       ],
       actions: [
-        act(1, "نشر صفحة الأسعار", "Lina", "الأسبوع الجاي", iso(now - day)),
+        act(1, "Publish the pricing page", "Lina", "next week", iso(now - day)),
       ],
       questions: [],
     },
@@ -189,13 +189,13 @@ const recsSeed: Rec[] = [
       },
     ],
     notes:
-      "## الملخص\n- جولة مع Samer على الموقع: العزل قبل الشتا.\n\n## المهام\n- **Samer:** عرض سعر للعزل.",
+      "## Summary\n- Site walk with Samer: insulation before winter.\n\n## Actions\n- **Samer:** quote for the insulation.",
     actions: {
-      decisions: [dec(1, "العزل قبل أي شغل داخلي")],
+      decisions: [dec(1, "Insulation before any interior work")],
       actions: [
-        act(1, "عرض سعر للعزل", "Samer", "خلال يومين", iso(now - 3 * day)),
+        act(1, "Quote for the insulation", "Samer", "in two days", iso(now - 3 * day)),
       ],
-      questions: ["هل الرخصة بتغطي التوسعة؟"],
+      questions: ["Does the permit cover the extension?"],
     },
   },
   {
@@ -660,7 +660,7 @@ export async function mockInvoke<T>(
     case "generate_notes": {
       const r = byDir(args.dir)!;
       r.notes =
-        "## الملخص\n- تجربة تسجيل سريعة.\n\n## القرارات\n—\n\n## المهام\n—";
+        "## Summary\n- A quick test recording.\n\n## Decisions\n—\n\n## Actions\n—";
       return out(r.notes);
     }
     case "extract_actions": {
@@ -677,8 +677,8 @@ export async function mockInvoke<T>(
         return out(r.actions);
       }
       r.actions = {
-        decisions: [dec(1, "نستخدم Za3tar لكل الاجتماعات")],
-        actions: [act(1, "إرسال ملخص الاجتماع", "me", "اليوم", iso(now))],
+        decisions: [dec(1, "Use Za3tar for every meeting")],
+        actions: [act(1, "Send the meeting summary", "me", "today", iso(now))],
         questions: [],
       };
       return out(r.actions);
@@ -701,7 +701,7 @@ export async function mockInvoke<T>(
       const msg = String(args.message);
       if (msg.startsWith("ZA3TAR_PACKET"))
         return out(
-          'ZA3TAR_ACK v1\n{"ok":true,"events_created":[{"action_id":"1#a1","title":"ربط Stripe","when":"' +
+          'ZA3TAR_ACK v1\n{"ok":true,"events_created":[{"action_id":"1#a1","title":"Wire Stripe","when":"' +
             iso(now + 3 * day) +
             '"}],"followups_tracked":["1#a1","1#a2","1#a3"],"person":"Lina","warnings":[]}',
         );
@@ -709,7 +709,7 @@ export async function mockInvoke<T>(
         return out(
           'ZA3TAR_SCHEDULE v1\n{"date":"' +
             iso(now) +
-            '","events":[{"start":"10:00","end":"10:45","title":"Madar weekly","attendees":["Lina"]},{"start":"15:30","end":"16:00","title":"مقابلة مع Samer","attendees":["Samer"]}]}',
+            '","events":[{"start":"10:00","end":"10:45","title":"Madar weekly","attendees":["Lina"]},{"start":"15:30","end":"16:00","title":"Interview with Samer","attendees":["Samer"]}]}',
         );
       if (msg.includes('"type":"followups"'))
         return out(

@@ -129,7 +129,16 @@ pub fn with_language(system: &str) -> String {
     let rule = match language().as_str() {
         "match" => "OUTPUT LANGUAGE (overrides any language rule above): mirror how the conversation was actually spoken — Arabic content in Arabic script, English content in English, mixed stays mixed. Keep technical terms, product/company/people names and numbers in Latin script; never transliterate them.",
         "arabic" => "OUTPUT LANGUAGE (overrides any language rule above): write in Arabic (Levantine register is fine), but keep technical terms, product/company/people names and numbers in Latin script; never transliterate them.",
-        _ => "OUTPUT LANGUAGE (overrides any language rule above): write in plain English. You understand Arabic, Arabizi and mixed input fully; render what was said in English, keep names as the person wrote or said them, and keep a short Arabic phrase verbatim only when translating it would lose the meaning (quote it, then say what it means).",
+        _ => "OUTPUT LANGUAGE (overrides any language rule above): write in plain English, unless the request itself asks for another language. You understand Arabic, Arabizi and mixed input fully; render what was said in English, keep names as the person wrote or said them, and keep a short Arabic phrase verbatim only when translating it would lose the meaning (quote it, then say what it means).",
     };
     format!("{system}\n\n{rule}")
+}
+
+/// For writing that goes to other people (a follow-up, a nudge): their
+/// language, not the user's setting. A message to someone who spoke Arabic
+/// in the meeting is written in Arabic; that is the case where it matters.
+pub fn for_others(system: &str) -> String {
+    format!(
+        "{system}\n\nOUTPUT LANGUAGE (overrides any language rule above): this goes to the other people from the meeting, so write it the way they spoke — Arabic in Arabic script if the meeting was in Arabic, English if it was in English, mixed stays mixed. Keep technical terms, product/company/people names and numbers in Latin script; never transliterate them."
+    )
 }
