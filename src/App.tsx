@@ -5,7 +5,8 @@ import { MeetingsView } from "./views/MeetingsView";
 import { MeetingDetail } from "./views/MeetingDetail";
 import { PeopleView } from "./views/PeopleView";
 import { DecisionsView } from "./views/DecisionsView";
-import { FollowUpsView, isMine } from "./views/FollowUpsView";
+import { FollowUpsView, byUrgency, isMine } from "./views/FollowUpsView";
+import { MAX_ITEMS, loadTidy, parseTidy, saveTidy, tidyPrompt, type Tidy } from "./tidy";
 import { WorkspaceView } from "./views/WorkspaceView";
 import { HomeView } from "./views/HomeView";
 import { useFeeds } from "./feed";
@@ -1517,6 +1518,74 @@ function App() {
     }
   }
 
+  // Tidy up: the assistant sees the chats, calendar and status notes the app
+  // cannot, so it says which open to-dos on the user already happened, which
+  // to drop, and the next step for the rest. Suggestions only; the user
+  // applies them in the To-dos list.
+  const [tidy, setTidy] = useState<Tidy>(loadTidy);
+  const [tidying, setTidying] = useState(false);
+  function keepTidy(t: Tidy) {
+    setTidy(t);
+    saveTidy(t);
+  }
+
+  async function tidyUp() {
+    const r = defaultRoute;
+    if (!r || r.kind !== "acp" || tidying) return;
+    const mine = byUrgency(openActions.filter((o) => !o.action.parked && isMine(o))).slice(
+      0,
+      MAX_ITEMS,
+    );
+    if (!mine.length) return;
+    setTidying(true);
+    setError(null);
+    try {
+      await ensureRoute(r.id, true);
+      const prompt = tidyPrompt(mine, (id) => workspaces.find((w) => w.id === id)?.name ?? id);
+      const res = await queued(r.id, () => {
+        setRouteSessions((c) => ({
+          ...c,
+          [r.id]: { ...(c[r.id] ?? emptySession(r)), text: "", tools: {}, lastPrompt: "tidying up your to-dos", error: null },
+        }));
+        return promptRoute(r.id, prompt);
+      });
+      const verdicts = parseTidy(res.text ?? "");
+      keepTidy({ at: Date.now(), verdicts });
+      showFlash(`${r.label} checked ${Object.keys(verdicts).length} to-dos`);
+    } catch (e) {
+      setError(`${r.label} could not tidy up: ${String(e)}`);
+    } finally {
+      setTidying(false);
+    }
+  }
+
+  /** apply a group of verdicts one write at a time: each write rewrites
+   * that meeting's file, so parallel writes to one meeting would race */
+  async function applyTidy(list: OpenAction[], as: "done" | "hold") {
+    const keys = new Set(list.map((oa) => `${oa.dir}#${oa.action.id}`));
+    const hit = (x: OpenAction) => keys.has(`${x.dir}#${x.action.id}`);
+    setOpenActions((cur) =>
+      as === "done"
+        ? cur.filter((x) => !hit(x))
+        : cur.map((x) => (hit(x) ? { ...x, action: { ...x.action, parked: true } } : x)),
+    );
+    for (const oa of list) {
+      await invoke(
+        as === "done" ? "set_action_done" : "set_action_parked",
+        as === "done"
+          ? { dir: oa.dir, id: oa.action.id, done: true }
+          : { dir: oa.dir, id: oa.action.id, parked: true },
+      ).catch(() => {});
+    }
+    await refreshAll();
+  }
+
+  function dismissTidy(id: string) {
+    const verdicts = { ...tidy.verdicts };
+    delete verdicts[id];
+    keepTidy({ ...tidy, verdicts });
+  }
+
   // once the app has its threads and routes: warm the default hand and
   // refresh the lines if they are older than 15 minutes
   useEffect(() => {
@@ -2434,6 +2503,18 @@ function App() {
               <FollowUpsView
                 openActions={openActions}
                 workspaces={workspaces}
+                tidy={
+                  defaultRoute?.kind === "acp"
+                    ? {
+                        label: defaultRoute.label,
+                        running: tidying,
+                        verdicts: tidy.verdicts,
+                        onRun: () => void tidyUp(),
+                        onApply: (list, as) => void applyTidy(list, as),
+                        onDismiss: dismissTidy,
+                      }
+                    : undefined
+                }
                 runtimeStatus={runtimeStatus}
                 runtimeReady={runtimeReady}
                 onSync={syncFollowups}

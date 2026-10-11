@@ -93,9 +93,17 @@ A calendar failure degrades to a warning; the ack still comes back `ok`.
 {"type": "today"}
 {"type": "followups", "ids": ["rec-…#a3"]}
 {"type": "capabilities"}
+{"type": "tidy", "today": "2026-10-11", "items": [{"id": "rec-…#a3", "kind": "todo", "text": "…", …}]}
 ```
 
 `followups` without `ids` returns everything not done/dropped.
+
+`tidy` asks for a verdict on each open item, from what the agent can see and
+the app cannot (chats, calendar, status notes). The app sends the full
+instructions with the query — the kit's
+[`za3tar-tidy`](../kit/skills/za3tar-tidy/SKILL.md) skill — so an agent that
+has not installed the skill can still answer. Read-only: the agent looks
+things up and changes nothing; the user applies verdicts in the app.
 
 `capabilities` asks what this agent can actually do, so the app can offer
 those actions and stay quiet about the rest. An agent that does not recognise
@@ -141,6 +149,18 @@ The app already does a local, credential-free version of the first three —
 WhatsApp or Mail client. These verbs mean the agent does the part the app
 deliberately will not: acting on an account. An agent declaring nothing is
 still useful for `today` and `followups`.
+
+**ZA3TAR_TIDY v1** (for `tidy`; one verdict per item, ids untouched):
+
+```json
+{"verdicts": [{"id": "rec-…#a3", "verdict": "done", "confidence": "high",
+               "why": "the proposal went out on Thursday",
+               "evidence": "WhatsApp with Rania, Thu", "next": null, "can_do": false}]}
+```
+
+Verdicts: `done | drop | theirs | keep | unsure` for to-dos, `confirm | drop |
+unsure` for decisions. `next` is the one next step for `keep` (and a nudge
+for `theirs`); `can_do` says the agent could take that step if asked.
 
 **ZA3TAR_STATUS v1** (for `followups`):
 
