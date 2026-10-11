@@ -219,12 +219,16 @@ export class LiveSession {
         const lines = await this.h.applyOps(local);
         for (const l of lines) this.h.onLine({ role: "activity", text: l });
       }
+      // hand-offs run on their own: the talk keeps going and the agent's
+      // reply shows up here whenever it finishes
       for (const r of runtimeOps) {
-        this.h.onLine({ role: "activity", text: `handing to ${r.route}: ${r.message}` });
-        const reply = await this.h.runtime(r.route, r.message);
-        if (reply) say = `${say} ${reply}`.trim();
+        this.h.onLine({ role: "activity", text: `handed to ${r.route}: ${r.message}` });
+        void this.h.runtime(r.route, r.message).then((reply) => {
+          if (reply && !this.closed)
+            this.h.onLine({ role: "activity", text: `${r.route} replied: ${reply}` });
+        });
       }
-      if (!say) say = "done.";
+      if (!say) say = runtimeOps.length ? "handed over; the reply will show up here." : "done.";
       await this.send(delegationId, say);
     } catch (e) {
       this.h.onLine({ role: "error", text: String(e) });
