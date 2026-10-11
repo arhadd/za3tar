@@ -111,7 +111,7 @@ fn writer() -> String {
 
 enum StoreErr {
     /// someone moved the thread since we read it; here is where it is now
-    Moved(Thread),
+    Moved(Box<Thread>),
     Failed(String),
 }
 
@@ -156,7 +156,7 @@ async fn store(
     match out.status.code() {
         Some(0) => Ok(body),
         Some(3) => match body.get("current").and_then(from_store) {
-            Some(t) => Err(StoreErr::Moved(t)),
+            Some(t) => Err(StoreErr::Moved(Box::new(t))),
             None => Err(StoreErr::Failed("thread store: version conflict".into())),
         },
         _ => Err(StoreErr::Failed(
@@ -339,7 +339,7 @@ pub async fn update_thread(
                 cache_one(&app, &id, Some(&t));
                 Ok(t)
             }
-            Err(StoreErr::Moved(latest)) => Err(moved(&app, latest, summary.trim())),
+            Err(StoreErr::Moved(latest)) => Err(moved(&app, *latest, summary.trim())),
             Err(e) => Err(e.into()),
         };
     }
@@ -375,7 +375,7 @@ pub async fn delete_thread(app: AppHandle, id: String) -> Result<(), String> {
                 cache_one(&app, &id, None);
                 Ok(())
             }
-            Err(StoreErr::Moved(latest)) => Err(moved(&app, latest, "(delete)")),
+            Err(StoreErr::Moved(latest)) => Err(moved(&app, *latest, "(delete)")),
             Err(e) => Err(e.into()),
         };
     }
