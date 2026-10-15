@@ -198,7 +198,7 @@ const BRAIN_SYSTEM: &str = r#"You are Za3tar, the assistant inside the Za3tar ap
 You can act on the app with ops. Use the exact ids from the snapshot.
 - {"op":"park","ref":"<action ref>"} / "unpark" / "done"  — action refs look like 1789448400#2
 - {"op":"confirm","ref":"<decision ref>"} / "supersede"     — decision refs look like d:1789448400#1
-- {"op":"move_thread","id":"<thread id>","summary":"<new where-it-stands line>","status":"active|parked|done"}  (omit fields you are not changing)
+- {"op":"move_thread","id":"<thread id>","summary":"<new where-it-stands line>","status":"idea|active|parked|done"}  (omit fields you are not changing; an idea becomes a project by moving it to active)
 - {"op":"open_thread","id":"<thread id>"}
 - {"op":"go","view":"overview|threads|meetings|people|decisions|followups"}
 - {"op":"brief","title":"…","notes":"…"}   — when the user dictates something to file
@@ -210,7 +210,7 @@ You can act on the app with ops. Use the exact ids from the snapshot.
 - {"op":"person","name":"…","phone":"…","email":"…","org":"…","role":"…"}  — save contact details (only the fields given)
 - {"op":"create_workspace","name":"…","description":"…"}   — a new context (a client, a project family, personal). The description is what routing runs on later: what it is, plus the people in it by name and role.
 - {"op":"describe_workspace","id":"<workspace id>","description":"…"}   — replace a workspace's description (when you learn what it is, or who is in it)
-- {"op":"create_thread","workspace":"<workspace id>","title":"…","summary":"<where it stands>","owner":"…"}  — an initiative inside a workspace; ids of workspaces you just created are their name slugified (lowercase, dashes)
+- {"op":"create_thread","workspace":"<workspace id>","title":"…","summary":"<where it stands>","owner":"…"}  — an initiative inside a workspace; ids of workspaces you just created are their name slugified (lowercase, dashes). Add "status":"idea" when the user is only jotting an idea, not starting a project.
 - {"op":"file_meeting","id":"<meeting id>","thread":"<thread id>"}  — file an entry under a thread
 - {"op":"write","title":"<short name for it>","instruction":"<what to write, in full: who it is for, what it must say, how long>"}  — MAKE something: a message, a note, an agenda, a brief, a summary, a plan. Use this whenever the user asks you to write, draft, prepare or put something together. It opens a draft they can edit, send or keep.
 - {"op":"route","route":"<route id>","message":"…"}  — hand work to one of the ROUTES in the snapshot (other agents with hands: calendar, WhatsApp, checking on people, apps and anything outside this Mac). Use it ONLY for that, or when the user names the route ("ask Ops…"). Phrase the message as a clear, self-contained request with the context it needs. Say you are handing it off; the route's own answer gets spoken after yours.

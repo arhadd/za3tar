@@ -16,15 +16,19 @@ import type {
   ThreadStatus,
 } from "../types";
 
-export const threadTone: Record<ThreadStatus, "accent" | "outline" | "olive"> =
-  {
-    active: "accent",
-    parked: "outline",
-    done: "olive",
-  };
+export const threadTone: Record<
+  ThreadStatus,
+  "neutral" | "accent" | "outline" | "olive"
+> = {
+  idea: "neutral",
+  active: "accent",
+  parked: "outline",
+  done: "olive",
+};
 
 /** what the status is called on screen (the stored value stays) */
 export const statusLabel: Record<ThreadStatus, string> = {
+  idea: "idea",
   active: "active",
   parked: "on hold",
   done: "done",
@@ -131,6 +135,7 @@ export function ThreadsView({
   const [title, setTitle] = useState("");
   const groups: { status: ThreadStatus; label: string }[] = [
     { status: "active", label: "Active" },
+    { status: "idea", label: "Ideas" },
     { status: "parked", label: "On hold" },
     { status: "done", label: "Done" },
   ];
@@ -261,12 +266,32 @@ export function ThreadDetail({
 
   return (
     <div className="flex flex-col gap-5">
-      <button
-        onClick={onBack}
-        className="self-start text-[12px] text-olive hover:text-ink"
-      >
-        ← all projects
-      </button>
+      <div className="flex flex-col gap-1">
+        <button
+          onClick={onBack}
+          className="self-start text-[12px] text-olive hover:text-ink"
+        >
+          ← all projects
+        </button>
+        <div className="flex items-center gap-3">
+          <h2
+            dir="auto"
+            className="display arabic min-w-0 flex-1 text-start text-[20px] leading-tight"
+          >
+            {t.title}
+          </h2>
+          {t.status === "idea" && !edit && (
+            <Button
+              tone="primary"
+              size="sm"
+              disabled={busy}
+              onClick={() => onSave({ ...t, status: "active" })}
+            >
+              start it
+            </Button>
+          )}
+        </div>
+      </div>
 
       {edit ? (
         <form
@@ -297,6 +322,7 @@ export function ThreadDetail({
               }
               className="rounded-lg border border-line bg-white px-2 py-2 text-[13px] outline-none focus:border-ink"
             >
+              <option value="idea">idea</option>
               <option value="active">active</option>
               <option value="parked">on hold</option>
               <option value="done">done</option>

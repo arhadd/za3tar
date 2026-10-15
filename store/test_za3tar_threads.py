@@ -97,6 +97,13 @@ class Store(unittest.TestCase):
             zt.update(self.db, {"id": row["id"], "where_it_stands": "x", "by": "ala"})
         self.assertEqual(e.exception.code, 2)
 
+    def test_an_idea_can_be_jotted_and_started(self):
+        row = self.make(title="Pop-up in Amman", status="idea")
+        self.assertEqual(row["status"], "idea")
+        row = zt.update(self.db, {"id": row["id"], "expected_version": 1,
+                                  "status": "active", "by": "ala"})
+        self.assertEqual(row["status"], "active")
+
     def test_unknown_status_is_refused(self):
         row = self.make()
         with self.assertRaises(zt.Refused):

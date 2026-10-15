@@ -1,9 +1,11 @@
-// Two places and your workspaces: Home, To-dos across everything, then one
-// row per workspace. What a workspace holds (projects, notes, people…) is a
-// tab row on the workspace's own page, not a second list here.
+// Three places and your workspaces: Home, To-dos and Ideas across
+// everything, then one row per workspace. The open workspace lists its active
+// projects underneath, so switching project is one click; a workspace with a
+// single active project opens straight to it. Notes, people and the rest are
+// a tab row on the workspace's own page, not a second list here.
 import { useState } from "react";
 import { Mark } from "../brand/Mark";
-import type { Workspace } from "../types";
+import type { Thread, Workspace } from "../types";
 
 const WS_VIEWS = new Set([
   "overview",
@@ -16,27 +18,42 @@ const WS_VIEWS = new Set([
 
 export function Sidebar({
   workspaces,
+  threads,
   wsId,
+  threadOpen,
   onSelectWorkspace,
+  onOpenProject,
   onCreateWorkspace,
   view,
   onHome,
   onTodos,
   todosOnMe,
+  onIdeas,
+  ideas,
+  onJump,
   inSettings,
   onSettings,
   assistant,
   onAssistant,
 }: {
   workspaces: Workspace[];
+  threads: Thread[];
   wsId: string;
+  /** the project on screen, if any */
+  threadOpen: string | null;
   onSelectWorkspace: (id: string) => void;
+  onOpenProject: (id: string) => void;
   onCreateWorkspace: (name: string) => Promise<void>;
   view: string;
   onHome: () => void;
   onTodos: () => void;
   /** open to-dos on the user, across workspaces */
   todosOnMe: number;
+  onIdeas: () => void;
+  /** ideas across workspaces */
+  ideas: number;
+  /** open the ⌘K switcher */
+  onJump: () => void;
   inSettings: boolean;
   onSettings: () => void;
   /** a connected assistant (route), shown as one quiet line; null when none */
@@ -61,6 +78,8 @@ export function Sidebar({
         : "text-limestone/70 hover:bg-limestone/5 hover:text-limestone"
     }`;
   const inWorkspace = !inSettings && WS_VIEWS.has(view);
+  const activeIn = (id: string) =>
+    threads.filter((t) => t.workspace === id && t.status === "active");
 
   return (
     <aside className="flex w-[232px] shrink-0 flex-col bg-panel text-limestone">
@@ -70,6 +89,14 @@ export function Sidebar({
       </div>
 
       <nav className="flex flex-col gap-0.5 px-3 pb-5">
+        <button
+          onClick={onJump}
+          title="jump to a project, or jot an idea"
+          className="mb-2 flex w-full items-center gap-2 rounded-md border border-hairline px-2 py-1.5 text-left text-[12px] text-limestone/45 transition-colors hover:border-limestone/30 hover:text-limestone"
+        >
+          Jump to…
+          <span className="ml-auto text-[11px] text-limestone/35">⌘K</span>
+        </button>
         <button
           onClick={onHome}
           className={item(!inSettings && view === "home")}
@@ -90,26 +117,68 @@ export function Sidebar({
             </span>
           )}
         </button>
+        <button
+          onClick={onIdeas}
+          className={item(!inSettings && view === "ideas")}
+        >
+          Ideas
+          {ideas > 0 && (
+            <span className="ml-auto text-[11px] tabular-nums text-limestone/45">
+              {ideas}
+            </span>
+          )}
+        </button>
       </nav>
 
-      <div className="px-3">
+      <div className="min-h-0 flex-1 overflow-y-auto px-3 pb-3">
         <div className="eyebrow px-1 pb-1.5 text-limestone/45">Workspaces</div>
         <div className="flex flex-col gap-0.5">
           {workspaces.map((w) => {
             const on = inWorkspace && w.id === wsId;
+            const projects = activeIn(w.id);
+            const single = projects.length === 1 ? projects[0] : null;
             return (
-              <button
-                key={w.id}
-                onClick={() => onSelectWorkspace(w.id)}
-                className={item(on)}
-              >
-                <span
-                  className={`h-1.5 w-1.5 shrink-0 rounded-full ${
-                    on ? "bg-thyme" : "bg-limestone/25"
-                  }`}
-                />
-                <span className="truncate">{w.name}</span>
-              </button>
+              <div key={w.id} className="flex flex-col gap-0.5">
+                <button
+                  onClick={() =>
+                    single ? onOpenProject(single.id) : onSelectWorkspace(w.id)
+                  }
+                  title={single ? `${w.name} · ${single.title}` : w.name}
+                  className={item(on)}
+                >
+                  <span
+                    className={`h-1.5 w-1.5 shrink-0 rounded-full ${
+                      on ? "bg-thyme" : "bg-limestone/25"
+                    }`}
+                  />
+                  <span className="truncate">{w.name}</span>
+                  {!on && projects.length > 1 && (
+                    <span className="ml-auto text-[11px] tabular-nums text-limestone/35">
+                      {projects.length}
+                    </span>
+                  )}
+                </button>
+                {on &&
+                  projects.length > 1 &&
+                  projects.map((t) => {
+                    const here = view === "threads" && threadOpen === t.id;
+                    return (
+                      <button
+                        key={t.id}
+                        dir="auto"
+                        onClick={() => onOpenProject(t.id)}
+                        title={t.title}
+                        className={`arabic ml-3.5 truncate rounded-md px-2 py-1 text-start text-[12px] transition-colors ${
+                          here
+                            ? "bg-limestone/10 text-limestone"
+                            : "text-limestone/55 hover:bg-limestone/5 hover:text-limestone"
+                        }`}
+                      >
+                        {t.title}
+                      </button>
+                    );
+                  })}
+              </div>
             );
           })}
           {adding ? (

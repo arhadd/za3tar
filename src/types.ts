@@ -15,7 +15,9 @@ export type Workspace = {
   runtime_command: string;
 };
 
-export type ThreadStatus = "active" | "parked" | "done";
+/** "idea" is a project not started yet: a line worth keeping, no owner or
+ * state yet. Starting it makes it active. */
+export type ThreadStatus = "idea" | "active" | "parked" | "done";
 export type Thread = {
   id: string;
   workspace: string;
@@ -188,4 +190,6 @@ export type View =
   | "decisions"
   | "followups"
   /** every to-do across workspaces (the sidebar's To-dos) */
-  | "todos";
+  | "todos"
+  /** every idea across workspaces (the sidebar's Ideas) */
+  | "ideas";

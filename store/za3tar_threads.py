@@ -50,7 +50,7 @@ import sys
 import tempfile
 from datetime import datetime, timezone
 
-STATUSES = ("active", "parked", "done")
+STATUSES = ("idea", "active", "parked", "done")
 
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS threads (
