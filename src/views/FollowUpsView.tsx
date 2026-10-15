@@ -73,7 +73,7 @@ export function TodoLine({
         {where && (
           <button
             onClick={() => onOpen(oa)}
-            className="self-start text-[12px] text-olive hover:text-ink"
+            className="self-start text-left text-[12px] text-olive hover:text-ink"
           >
             {where} ↗
           </button>
