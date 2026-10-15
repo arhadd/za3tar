@@ -236,6 +236,16 @@ const threadsSeed: Thread[] = [
     updated: now - 3 * day,
   },
   {
+    id: "madar-arabic-content",
+    workspace: "madar",
+    title: "Arabic help centre",
+    summary: "Lina has the first 12 articles; translation brief not sent.",
+    status: "active",
+    owner: "Lina",
+    created: now - 6 * day,
+    updated: now - 1 * day,
+  },
+  {
     id: "house-build",
     workspace: "house",
     title: "Winter-proofing",
@@ -244,6 +254,26 @@ const threadsSeed: Thread[] = [
     owner: "",
     created: now - 5 * day,
     updated: now - 5 * day,
+  },
+  {
+    id: "madar-referrals",
+    workspace: "madar",
+    title: "Referral credit for teams that bring a team",
+    summary: "",
+    status: "idea",
+    owner: "",
+    created: now - 2 * day,
+    updated: now - 2 * day,
+  },
+  {
+    id: "personal-supper-club",
+    workspace: "personal",
+    title: "Monthly supper club for founders",
+    summary: "",
+    status: "idea",
+    owner: "",
+    created: now - 4 * 3600,
+    updated: now - 4 * 3600,
   },
 ];
 
@@ -391,14 +421,15 @@ export async function mockInvoke<T>(
       byDir(args.dir)!.thread = args.thread;
       return out(null);
     case "list_threads":
-      return out(threads);
+      // a fresh list each time, like the real IPC, so memos see the change
+      return out(threads.map((t) => ({ ...t })));
     case "create_thread": {
       const t: Thread = {
         id: `${args.workspace}-${String(args.title).toLowerCase().replace(/[^a-z0-9]+/g, "-")}`,
         workspace: args.workspace,
         title: args.title,
         summary: args.summary ?? "",
-        status: "active",
+        status: args.status ?? "active",
         owner: args.owner ?? "",
         created: now,
         updated: now,

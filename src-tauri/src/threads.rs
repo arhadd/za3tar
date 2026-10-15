@@ -23,7 +23,7 @@ pub struct Thread {
     /// where it stands, in a line or two — the living state, not history
     #[serde(default)]
     pub summary: String,
-    /// "active" | "parked" | "done"
+    /// one of STATUSES
     #[serde(default = "active")]
     pub status: String,
     #[serde(default)]
@@ -41,8 +41,19 @@ pub struct Thread {
     pub updated_by: String,
 }
 
+/// "idea" is a project not started yet; starting it makes it "active".
+const STATUSES: [&str; 4] = ["idea", "active", "parked", "done"];
+
 fn active() -> String {
     "active".into()
+}
+
+fn check_status(status: &str) -> Result<(), String> {
+    if STATUSES.contains(&status) {
+        Ok(())
+    } else {
+        Err(format!("unknown thread status: {status}"))
+    }
 }
 
 fn path(app: &AppHandle) -> Result<PathBuf, String> {
@@ -257,11 +268,14 @@ pub async fn create_thread(
     title: String,
     summary: Option<String>,
     owner: Option<String>,
+    status: Option<String>,
 ) -> Result<Thread, String> {
     let title = title.trim().to_string();
     if title.is_empty() {
         return Err("a thread needs a title".into());
     }
+    let status = status.unwrap_or_else(active);
+    check_status(&status)?;
     let ws = crate::workspaces::or_default(&workspace);
     if let Some(cmd) = store_cmd() {
         let op = serde_json::json!({
@@ -270,6 +284,7 @@ pub async fn create_thread(
             "title": title,
             "where_it_stands": summary.unwrap_or_default().trim(),
             "owner": owner.unwrap_or_default().trim(),
+            "status": status,
             "by": writer(),
             "source": "za3tar app",
         });
@@ -291,7 +306,7 @@ pub async fn create_thread(
         workspace: ws,
         title,
         summary: summary.unwrap_or_default().trim().to_string(),
-        status: active(),
+        status,
         owner: owner.unwrap_or_default().trim().to_string(),
         created: now(),
         updated: now(),
@@ -314,9 +329,7 @@ pub async fn update_thread(
     status: String,
     owner: String,
 ) -> Result<Thread, String> {
-    if !["active", "parked", "done"].contains(&status.as_str()) {
-        return Err(format!("unknown thread status: {status}"));
-    }
+    check_status(&status)?;
     let title = title.trim().to_string();
     if title.is_empty() {
         return Err("a thread needs a title".into());
@@ -395,6 +408,13 @@ mod tests {
             "gala-venue-book-it-for-march"
         );
         assert!(slug("زعتر").starts_with("t-"));
+    }
+
+    #[test]
+    fn idea_is_a_status() {
+        assert!(check_status("idea").is_ok());
+        assert!(check_status("active").is_ok());
+        assert!(check_status("someday").is_err());
     }
 
     #[test]

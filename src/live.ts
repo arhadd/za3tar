@@ -41,6 +41,7 @@ export type LiveOp =
       title: string;
       summary?: string;
       owner?: string;
+      status?: string;
     }
   | { op: "file_meeting"; id: string; thread: string }
   | { op: "write"; title: string; instruction: string }

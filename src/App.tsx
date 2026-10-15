@@ -12,6 +12,8 @@ import { HomeView } from "./views/HomeView";
 import { useFeeds } from "./feed";
 import { AskBox } from "./views/AskBox";
 import { ThreadsView, ThreadDetail } from "./views/ThreadsView";
+import { IdeasView } from "./views/IdeasView";
+import { Switcher } from "./views/Switcher";
 import { TalkPanel, type TalkState } from "./views/TalkPanel";
 import { ChatPanel, type ChatLine } from "./views/ChatPanel";
 import { Composer, type Draft as ComposerDraft } from "./views/Composer";
@@ -65,11 +67,13 @@ import type {
 } from "./types";
 
 const WS_KEY = "za3tar.workspace";
+const VISITED_KEY = "za3tar.visited";
 
 /** what each view is called on screen (the brain's view ids stay) */
 const VIEW_LABEL: Record<View, string> = {
   home: "Home",
   todos: "To-dos",
+  ideas: "Ideas",
   overview: "Overview",
   threads: "Projects",
   meetings: "Notes",
@@ -118,6 +122,15 @@ function App() {
   const [threads, setThreads] = useState<Thread[]>([]);
   const [questions, setQuestions] = useState<QuestionRef[]>([]);
   const [threadOpen, setThreadOpen] = useState<string | null>(null);
+  const [switcherOpen, setSwitcherOpen] = useState(false);
+  // projects opened, most recent first: what ⌘K offers before you type
+  const [visited, setVisited] = useState<string[]>(() => {
+    try {
+      return JSON.parse(localStorage.getItem(VISITED_KEY) || "[]");
+    } catch {
+      return [];
+    }
+  });
 
   // talk
   const live = useRef<LiveSession | null>(null);
@@ -334,6 +347,30 @@ function App() {
   });
 
   useEffect(() => {
+    if (!threadOpen) return;
+    setVisited((v) => {
+      const next = [threadOpen, ...v.filter((id) => id !== threadOpen)].slice(0, 12);
+      try {
+        localStorage.setItem(VISITED_KEY, JSON.stringify(next));
+      } catch {
+        /* a convenience; fine without it */
+      }
+      return next;
+    });
+  }, [threadOpen]);
+
+  // ⌘K from anywhere, even mid-typing: jump to a project or jot an idea
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (!(e.metaKey || e.ctrlKey) || e.key.toLowerCase() !== "k") return;
+      e.preventDefault();
+      setSwitcherOpen((o) => !o);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
+
+  useEffect(() => {
     if (phase === "recording") {
       const started = Date.now();
       timer.current = window.setInterval(
@@ -524,6 +561,45 @@ function App() {
     } catch (e) {
       setError(String(e));
     }
+  }
+
+  /** a project's page, in its own workspace, from wherever you are */
+  function openProject(id: string) {
+    const t = threads.find((x) => x.id === id);
+    setShowSettings(false);
+    setWsEdit(null);
+    if (t) setWsId(t.workspace);
+    setView("threads");
+    setThreadOpen(id);
+    if (phase !== "recording") setMeetingOpen(false);
+  }
+
+  function openWorkspace(id: string) {
+    setWsId(id);
+    goView("overview");
+  }
+
+  async function saveIdea(title: string, workspace: string) {
+    try {
+      await invoke<Thread>("create_thread", {
+        workspace,
+        title,
+        summary: null,
+        owner: null,
+        status: "idea",
+      });
+      await refreshAll();
+      const name = workspaces.find((w) => w.id === workspace)?.name ?? workspace;
+      showFlash(`idea kept in ${name}`);
+    } catch (e) {
+      setError(String(e));
+    }
+  }
+
+  /** an idea becomes an active project, and its page opens */
+  async function startIdea(t: Thread) {
+    await saveThread({ ...t, status: "active" });
+    openProject(t.id);
   }
 
   async function moveMeetingThread(thread: string) {
@@ -1281,9 +1357,7 @@ function App() {
           });
           out.push(`updated project: ${t.title}`);
         } else if (op.op === "open_thread") {
-          setThreadOpen(op.id);
-          setView("threads");
-          setMeetingOpen(false);
+          openProject(op.id);
           out.push(`opened ${threads.find((x) => x.id === op.id)?.title ?? op.id}`);
         } else if (op.op === "go") {
           setView(op.view as View);
@@ -1353,9 +1427,10 @@ function App() {
             title: op.title,
             summary: op.summary ?? null,
             owner: op.owner ?? null,
+            status: op.status === "idea" ? "idea" : null,
           });
           await refreshAll();
-          out.push(`new project: ${t.title}`);
+          out.push(`${t.status === "idea" ? "new idea" : "new project"}: ${t.title}`);
         } else if (op.op === "describe_workspace") {
           const w = workspaces.find((x) => x.id === op.id || x.name.toLowerCase() === op.id.toLowerCase());
           if (!w) {
@@ -1979,7 +2054,9 @@ function App() {
         : "Home"
       : view === "todos"
         ? "To-dos"
-        : wsName;
+        : view === "ideas"
+          ? "Ideas"
+          : wsName;
   const todayIso = new Date().toISOString().slice(0, 10);
   const tabCount: Partial<Record<View, number>> = {
     threads: wsThreads.filter((t) => t.status === "active").length,
@@ -2104,18 +2181,35 @@ function App() {
 
   return (
     <div className="flex h-full">
+      {switcherOpen && (
+        <Switcher
+          workspaces={workspaces}
+          threads={threads}
+          visited={visited}
+          current={view === "threads" ? threadOpen : null}
+          ideaWorkspace={inWorkspace ? wsId : "personal"}
+          onOpenProject={openProject}
+          onOpenWorkspace={openWorkspace}
+          onGo={goView}
+          onSaveIdea={saveIdea}
+          onClose={() => setSwitcherOpen(false)}
+        />
+      )}
       <Sidebar
         workspaces={workspaces}
+        threads={threads}
         wsId={wsId}
-        onSelectWorkspace={(id) => {
-          setWsId(id);
-          goView("overview");
-        }}
+        threadOpen={threadOpen}
+        onSelectWorkspace={openWorkspace}
+        onOpenProject={openProject}
         onCreateWorkspace={createWorkspace}
         view={view}
         onHome={() => goView("home")}
         onTodos={() => goView("todos")}
         todosOnMe={openActions.filter((o) => !o.action.parked && isMine(o)).length}
+        onIdeas={() => goView("ideas")}
+        ideas={threads.filter((t) => t.status === "idea").length}
+        onJump={() => setSwitcherOpen(true)}
         inSettings={showSettings}
         onSettings={openSettings}
         assistant={
@@ -2159,7 +2253,7 @@ function App() {
                     edit
                   </button>
                 </div>
-              ) : !showSettings && view === "todos" ? (
+              ) : !showSettings && (view === "todos" || view === "ideas") ? (
                 <p className="text-[13px] text-olive">across all your workspaces</p>
               ) : null}
             </div>
@@ -2498,6 +2592,18 @@ function App() {
                 onStatus={setDecisionStatus}
                 onOpenMeeting={openPast}
                 busy={!!busy}
+              />
+            ) : view === "ideas" ? (
+              <IdeasView
+                ideas={threads.filter((t) => t.status === "idea")}
+                workspaces={workspaces}
+                defaultWorkspace={
+                  workspaces.some((w) => w.id === wsId) ? wsId : "personal"
+                }
+                onSave={saveIdea}
+                onOpen={openProject}
+                onStart={startIdea}
+                onDrop={deleteThread}
               />
             ) : view === "todos" ? (
               <FollowUpsView
