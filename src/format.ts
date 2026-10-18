@@ -57,6 +57,15 @@ export const meetingIdOf = (d: string) =>
 export const bridgeId = (d: string, actionId: number) =>
   `${meetingIdOf(d)}#a${actionId}`;
 
+/** the notes' first section is the summary (notes.rs asks for it first, its
+    heading in the notes' own language) — its text, plain, for a packet */
+export function summaryOf(notes: string | null | undefined, max = 600): string {
+  if (!notes) return "";
+  const body = notes.split(/^##\s.*$/m)[1] ?? "";
+  const text = body.replace(/^\s*[-*]\s+/gm, "").replace(/\s+/g, " ").trim();
+  return text.length > max ? `${text.slice(0, max - 1).trimEnd()}…` : text;
+}
+
 /** the far side is still an agent — find the header, then the outermost JSON */
 export function parseEnvelope<T>(reply: string, header: string): T {
   const at = reply.indexOf(header);
