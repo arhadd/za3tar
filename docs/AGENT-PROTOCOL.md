@@ -68,12 +68,22 @@ Two pieces make a good implementation, both outside this repo:
  "actions": [{"id": "rec-…#a3", "text": "ببعت الـ proposal", "owner": "me",
               "due": "2026-07-30"}],
  "questions": ["…"],
- "notes_md": "…"}
+ "notes_md": "…",
+ "summary": "…",
+ "workspace": "studio",
+ "thread": {"id": "studio-spring-launch", "title": "Spring launch"}}
 ```
 
 Only open (not-done) actions are sent. `due` empty ⇒ tracked but no calendar
 event. Re-sending the same meeting is safe: the router upserts by id and
 preserves follow-up statuses.
+
+`summary`, `workspace` and `thread` (added 2026-10-18, additive) say where
+the meeting is filed and what it was about: `summary` is the notes' first
+section as plain text (≤600 characters), `workspace` the workspace id, and
+`thread` the project it's filed under, or `null` when it isn't under one.
+An agent can use them to put the outcomes where that team works (for
+example a project page); agents that ignore them are unaffected.
 
 **Reply — ZA3TAR_ACK v1:**
 

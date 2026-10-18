@@ -39,6 +39,7 @@ import {
   meetingIdOf,
   mmss,
   parseEnvelope,
+  summaryOf,
   todayContext,
 } from "./format";
 import type {
@@ -1028,6 +1029,16 @@ function App() {
       })),
       questions: actions.questions,
       notes_md: notes ?? "",
+      // where the meeting is filed and its short summary, so the agent can
+      // put the outcomes where that team works (additive to v1)
+      summary: summaryOf(notes),
+      workspace: meetingWs,
+      thread: meetingThread
+        ? {
+            id: meetingThread,
+            title: threads.find((t) => t.id === meetingThread)?.title ?? "",
+          }
+        : null,
     };
     const reply = await runtimeExchange(
       `ZA3TAR_PACKET v1\n${JSON.stringify(packet)}`,
