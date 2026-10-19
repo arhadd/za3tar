@@ -13,6 +13,7 @@ import { useFeeds } from "./feed";
 import { AskBox } from "./views/AskBox";
 import { ThreadsView, ThreadDetail } from "./views/ThreadsView";
 import { IdeasView } from "./views/IdeasView";
+import { LibraryView, type Sent } from "./views/LibraryView";
 import { Switcher } from "./views/Switcher";
 import { TalkPanel, type TalkState } from "./views/TalkPanel";
 import { ChatPanel, type ChatLine } from "./views/ChatPanel";
@@ -69,12 +70,14 @@ import type {
 
 const WS_KEY = "za3tar.workspace";
 const VISITED_KEY = "za3tar.visited";
+const SENT_KEY = "za3tar.sent";
 
 /** what each view is called on screen (the brain's view ids stay) */
 const VIEW_LABEL: Record<View, string> = {
   home: "Home",
   todos: "To-dos",
   ideas: "Ideas",
+  library: "Meetings",
   overview: "Overview",
   threads: "Projects",
   meetings: "Notes",
@@ -203,6 +206,14 @@ function App() {
     Record<string, RuntimeFollowupStatus>
   >({});
   const [runtimeReady, setRuntimeReady] = useState(false);
+  // meetings handed over from the Meetings page (this Mac only; marks the row)
+  const [sent, setSent] = useState<Sent>(() => {
+    try {
+      return JSON.parse(localStorage.getItem(SENT_KEY) ?? "{}");
+    } catch {
+      return {};
+    }
+  });
 
   const heardThem = !!segments?.some((s) => s.speaker !== "me");
 
@@ -989,13 +1000,14 @@ function App() {
   async function runtimeExchange(
     message: string,
     busyMsg: string,
+    workspace?: string,
   ): Promise<string | null> {
     setBusy(busyMsg);
     setError(null);
     try {
       return await invoke<string>("send_to_agent", {
         message,
-        workspace: meetingOpen && dir ? meetingWs : wsId,
+        workspace: workspace ?? (meetingOpen && dir ? meetingWs : wsId),
       });
     } catch (e) {
       setError(String(e));
@@ -1005,56 +1017,206 @@ function App() {
     }
   }
 
+  /** a meeting as a ZA3TAR_PACKET body (docs/AGENT-PROTOCOL.md) */
+  function packetOf(m: {
+    dir: string;
+    title: string;
+    created?: number;
+    person: string;
+    actions: MeetingActions | null;
+    notes: string | null;
+    workspace: string;
+    thread: string;
+  }) {
+    const who = m.person.trim();
+    const contact = who ? contactOf(who) : undefined;
+    return {
+      meeting: {
+        id: meetingIdOf(m.dir),
+        title: m.title.trim() || "untitled",
+        started_at: new Date(
+          m.created ? m.created * 1000 : Date.now(),
+        ).toISOString(),
+        person: { name: who, phone: contact?.phone ?? "" },
+      },
+      decisions: (m.actions?.decisions ?? []).map((d) => d.text),
+      actions: (m.actions?.actions ?? [])
+        .filter((a) => !a.done)
+        .map((a) => ({
+          id: bridgeId(m.dir, a.id),
+          text: a.title,
+          owner: a.owner,
+          due: a.due_date ?? "",
+        })),
+      questions: m.actions?.questions ?? [],
+      notes_md: m.notes ?? "",
+      // where the meeting is filed and its short summary, so the agent can
+      // put the outcomes where that team works (additive to v1)
+      summary: summaryOf(m.notes),
+      workspace: m.workspace,
+      thread: m.thread
+        ? {
+            id: m.thread,
+            title: threads.find((t) => t.id === m.thread)?.title ?? "",
+          }
+        : null,
+    };
+  }
+
+  /** an ack as one line: where it was filed, what was scheduled, any note */
+  function ackLine(ack: RuntimeAck, scheduled: boolean): string {
+    const bits: string[] = [];
+    if (ack.admin?.project)
+      bits.push(
+        `filed on ${ack.admin.project}${
+          typeof ack.admin.proposals === "number"
+            ? ` · ${ack.admin.proposals} to keep or skip`
+            : ""
+        }`,
+      );
+    if (scheduled) bits.push(`${ack.events_created.length} on your calendar`);
+    bits.push(`${ack.followups_tracked.length} follow-ups being tracked`);
+    // the filing step reports last, and says the most about where it went
+    const note = ack.warnings[ack.warnings.length - 1];
+    if (note) bits.push(`note: ${note}`);
+    return bits.join(" · ");
+  }
+
   /** the whole meeting → the runtime as a ZA3TAR_PACKET: calendar +
       follow-up tracking, acknowledged structurally */
   async function trackAndSchedule() {
     if (!actions || !dir) return;
-    const contact = person.trim() ? contactOf(person.trim()) : undefined;
-    const open = actions.actions.filter((a) => !a.done);
-    const packet = {
-      meeting: {
-        id: meetingIdOf(dir),
-        title: title.trim() || "untitled",
-        started_at: current
-          ? new Date(current.created * 1000).toISOString()
-          : new Date().toISOString(),
-        person: { name: person.trim(), phone: contact?.phone ?? "" },
-      },
-      decisions: actions.decisions.map((d) => d.text),
-      actions: open.map((a) => ({
-        id: bridgeId(dir, a.id),
-        text: a.title,
-        owner: a.owner,
-        due: a.due_date ?? "",
-      })),
-      questions: actions.questions,
-      notes_md: notes ?? "",
-      // where the meeting is filed and its short summary, so the agent can
-      // put the outcomes where that team works (additive to v1)
-      summary: summaryOf(notes),
+    const packet = packetOf({
+      dir,
+      title,
+      created: current?.created,
+      person,
+      actions,
+      notes,
       workspace: meetingWs,
-      thread: meetingThread
-        ? {
-            id: meetingThread,
-            title: threads.find((t) => t.id === meetingThread)?.title ?? "",
-          }
-        : null,
-    };
+      thread: meetingThread,
+    });
     const reply = await runtimeExchange(
       `ZA3TAR_PACKET v1\n${JSON.stringify(packet)}`,
       "Za3tar is scheduling and tracking…",
     );
     if (reply == null) return;
+    markSent(dir, meetingThread);
     try {
       const ack = parseEnvelope<RuntimeAck>(reply, "ZA3TAR_ACK");
-      const bits = [
-        `${ack.events_created.length} on your calendar`,
-        `${ack.followups_tracked.length} follow-ups being tracked`,
-      ];
-      if (ack.warnings.length) bits.push(`note: ${ack.warnings[0]}`);
-      showFlash(bits.join(" · "), 6000);
+      showFlash(ackLine(ack, true), 6000);
     } catch {
       showFlash(`${reply.slice(0, 140)}${reply.length > 140 ? "…" : ""}`, 5000);
+    }
+  }
+
+  // ── the Meetings page: file in place, then hand over ──────────────────
+  /** remember a hand-over so the Meetings list can say "sent" */
+  function markSent(recDir: string, thread: string) {
+    setSent((cur) => {
+      const next = {
+        ...cur,
+        [recDir]: { at: Math.floor(Date.now() / 1000), thread },
+      };
+      try {
+        localStorage.setItem(SENT_KEY, JSON.stringify(next));
+      } catch {
+        /* fine: it only marks the row */
+      }
+      return next;
+    });
+  }
+
+  /** put a meeting under a workspace and project without opening it */
+  async function fileMeeting(
+    recDir: string,
+    workspace: string,
+    thread: string,
+    threadTitle?: string,
+  ) {
+    try {
+      await invoke("set_recording_workspace", { dir: recDir, workspace });
+      await invoke("set_recording_thread", { dir: recDir, thread });
+      if (recDir === dir) {
+        setMeetingWs(workspace);
+        setMeetingThread(thread);
+      }
+      await refreshAll();
+      const w = workspaces.find((x) => x.id === workspace)?.name ?? workspace;
+      const t = threadTitle ?? threads.find((x) => x.id === thread)?.title;
+      showFlash(t ? `filed under ${w} · ${t}` : `moved to ${w}`);
+    } catch (e) {
+      setError(String(e));
+    }
+  }
+
+  async function fileUnderNewProject(
+    recDir: string,
+    workspace: string,
+    name: string,
+  ) {
+    // a name that is already a project here files under it, not a twin
+    const same = threads.find(
+      (t) =>
+        t.workspace === workspace &&
+        t.title.trim().toLowerCase() === name.trim().toLowerCase(),
+    );
+    if (same) return fileMeeting(recDir, workspace, same.id, same.title);
+    try {
+      const t = await invoke<Thread>("create_thread", {
+        workspace,
+        title: name,
+        summary: null,
+        owner: null,
+      });
+      await fileMeeting(recDir, workspace, t.id, t.title);
+    } catch (e) {
+      setError(String(e));
+    }
+  }
+
+  /** the same packet as track & schedule, filing only: nothing new goes on
+      the calendar, so an old meeting (or one sent twice) is safe to send */
+  async function sendMeeting(s: Summary) {
+    try {
+      const detail = await invoke<{
+        title: string;
+        person: string;
+        workspace: string;
+        thread: string;
+        notes: string | null;
+      }>("load_recording", { dir: s.dir });
+      const past = await invoke<MeetingActions | null>("load_actions", {
+        dir: s.dir,
+      }).catch(() => null);
+      const packet = {
+        ...packetOf({
+          dir: s.dir,
+          title: detail.title,
+          created: s.created,
+          person: detail.person,
+          actions: past,
+          notes: detail.notes,
+          workspace: detail.workspace,
+          thread: detail.thread,
+        }),
+        schedule: false,
+      };
+      const reply = await runtimeExchange(
+        `ZA3TAR_PACKET v1\n${JSON.stringify(packet)}`,
+        `sending ${detail.title.trim() || "the note"}…`,
+        detail.workspace,
+      );
+      if (reply == null) return;
+      markSent(s.dir, detail.thread);
+      try {
+        const ack = parseEnvelope<RuntimeAck>(reply, "ZA3TAR_ACK");
+        showFlash(ackLine(ack, false), 6000);
+      } catch {
+        showFlash(`${reply.slice(0, 140)}${reply.length > 140 ? "…" : ""}`, 5000);
+      }
+    } catch (e) {
+      setError(String(e));
     }
   }
 
@@ -1155,7 +1317,8 @@ function App() {
       setViewingPast(true);
       if (!meetingOpen) setMeetingFrom({ view, thread: threadOpen });
       setMeetingOpen(true);
-      if (view !== "home" && view !== "threads") setView("meetings");
+      if (view !== "home" && view !== "threads" && view !== "library")
+        setView("meetings");
       if (phase !== "recording") setPhase("done");
     } catch (e) {
       setError(String(e));
@@ -2063,11 +2226,15 @@ function App() {
           ? "Recording"
           : title.trim() || "Note"
         : "Home"
-      : view === "todos"
-        ? "To-dos"
-        : view === "ideas"
-          ? "Ideas"
-          : wsName;
+      : view === "library"
+        ? meetingOpen
+          ? title.trim() || "Note"
+          : "Meetings"
+        : view === "todos"
+          ? "To-dos"
+          : view === "ideas"
+            ? "Ideas"
+            : wsName;
   const todayIso = new Date().toISOString().slice(0, 10);
   const tabCount: Partial<Record<View, number>> = {
     threads: wsThreads.filter((t) => t.status === "active").length,
@@ -2216,6 +2383,8 @@ function App() {
         onCreateWorkspace={createWorkspace}
         view={view}
         onHome={() => goView("home")}
+        onMeetings={() => goView("library")}
+        unfiled={library.filter((s) => !s.thread).length}
         onTodos={() => goView("todos")}
         todosOnMe={openActions.filter((o) => !o.action.parked && isMine(o)).length}
         onIdeas={() => goView("ideas")}
@@ -2264,7 +2433,9 @@ function App() {
                     edit
                   </button>
                 </div>
-              ) : !showSettings && (view === "todos" || view === "ideas") ? (
+              ) : !showSettings &&
+                !meetingOpen &&
+                (view === "todos" || view === "ideas" || view === "library") ? (
                 <p className="text-[13px] text-olive">across all your workspaces</p>
               ) : null}
             </div>
@@ -2553,7 +2724,9 @@ function App() {
                           ? "overview"
                           : meetingFrom?.view === "followups"
                             ? "to-dos"
-                            : "all notes"
+                            : meetingFrom?.view === "library"
+                              ? "meetings"
+                              : "all notes"
                 }
                 onTranscribePast={transcribePast}
                 onMakeNotes={makeNotes}
@@ -2602,6 +2775,22 @@ function App() {
                 decisions={wsDecisions}
                 onStatus={setDecisionStatus}
                 onOpenMeeting={openPast}
+                busy={!!busy}
+              />
+            ) : view === "library" ? (
+              <LibraryView
+                library={library}
+                workspaces={workspaces}
+                threads={threads}
+                onOpen={(s) => {
+                  setWsId(s.workspace);
+                  openPast(s.dir);
+                }}
+                onFile={fileMeeting}
+                onNewProject={fileUnderNewProject}
+                onSend={sendMeeting}
+                canSend={runtimeReady}
+                sent={sent}
                 busy={!!busy}
               />
             ) : view === "ideas" ? (

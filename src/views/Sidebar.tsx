@@ -1,8 +1,8 @@
-// Three places and your workspaces: Home, To-dos and Ideas across
-// everything, then one row per workspace. The open workspace lists its active
-// projects underneath, so switching project is one click; a workspace with a
-// single active project opens straight to it. Notes, people and the rest are
-// a tab row on the workspace's own page, not a second list here.
+// Four places and your workspaces: Home, then Meetings, To-dos and Ideas
+// across everything, then one row per workspace. The open workspace lists its
+// active projects underneath, so switching project is one click; a workspace
+// with a single active project opens straight to it. A workspace's own notes,
+// people and the rest are a tab row on its page, not a second list here.
 import { useState } from "react";
 import { Mark } from "../brand/Mark";
 import type { Thread, Workspace } from "../types";
@@ -26,6 +26,8 @@ export function Sidebar({
   onCreateWorkspace,
   view,
   onHome,
+  onMeetings,
+  unfiled,
   onTodos,
   todosOnMe,
   onIdeas,
@@ -46,6 +48,9 @@ export function Sidebar({
   onCreateWorkspace: (name: string) => Promise<void>;
   view: string;
   onHome: () => void;
+  onMeetings: () => void;
+  /** meetings not filed under a project yet, across workspaces */
+  unfiled: number;
   onTodos: () => void;
   /** open to-dos on the user, across workspaces */
   todosOnMe: number;
@@ -102,6 +107,20 @@ export function Sidebar({
           className={item(!inSettings && view === "home")}
         >
           Home
+        </button>
+        <button
+          onClick={onMeetings}
+          className={item(!inSettings && view === "library")}
+        >
+          Meetings
+          {unfiled > 0 && (
+            <span
+              title="meetings not filed under a project yet"
+              className="ml-auto text-[11px] tabular-nums text-limestone/45"
+            >
+              {unfiled}
+            </span>
+          )}
         </button>
         <button
           onClick={onTodos}
