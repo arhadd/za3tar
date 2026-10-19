@@ -162,6 +162,8 @@ export type RuntimeAck = {
   followups_tracked: string[];
   person: string;
   warnings: string[];
+  /** where the agent filed the outcomes on the team's own system, if it did */
+  admin?: { project: string; proposals?: number };
 };
 export type RuntimeEvent = {
   start: string;
@@ -192,4 +194,6 @@ export type View =
   /** every to-do across workspaces (the sidebar's To-dos) */
   | "todos"
   /** every idea across workspaces (the sidebar's Ideas) */
-  | "ideas";
+  | "ideas"
+  /** every meeting across workspaces, filed in place (the sidebar's Meetings) */
+  | "library";

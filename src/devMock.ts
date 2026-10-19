@@ -730,12 +730,33 @@ export async function mockInvoke<T>(
       return out(null);
     case "send_to_agent": {
       const msg = String(args.message);
-      if (msg.startsWith("ZA3TAR_PACKET"))
+      if (msg.startsWith("ZA3TAR_PACKET")) {
+        const p = JSON.parse(msg.slice(msg.indexOf("{")));
+        const acts: { id: string; due: string }[] = p.actions ?? [];
         return out(
-          'ZA3TAR_ACK v1\n{"ok":true,"events_created":[{"action_id":"1#a1","title":"Wire Stripe","when":"' +
-            iso(now + 3 * day) +
-            '"}],"followups_tracked":["1#a1","1#a2","1#a3"],"person":"Lina","warnings":[]}',
+          `ZA3TAR_ACK v1\n${JSON.stringify({
+            ok: true,
+            // filing only (schedule: false) puts nothing on the calendar
+            events_created:
+              p.schedule === false
+                ? []
+                : acts
+                    .filter((a) => a.due)
+                    .map((a) => ({ action_id: a.id, title: "…", when: a.due })),
+            followups_tracked: acts.map((a) => a.id),
+            person: p.meeting?.person?.name ? "updated" : "none",
+            warnings: [],
+            ...(p.thread
+              ? {
+                  admin: {
+                    project: p.thread.title,
+                    proposals: (p.decisions?.length ?? 0) + acts.length,
+                  },
+                }
+              : {}),
+          })}`,
         );
+      }
       if (msg.includes('"type":"today"'))
         return out(
           'ZA3TAR_SCHEDULE v1\n{"date":"' +

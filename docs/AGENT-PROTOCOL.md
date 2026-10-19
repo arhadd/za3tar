@@ -85,6 +85,11 @@ section as plain text (≤600 characters), `workspace` the workspace id, and
 An agent can use them to put the outcomes where that team works (for
 example a project page); agents that ignore them are unaffected.
 
+`schedule` (added 2026-10-19, additive) is `false` when the user only filed
+the meeting and handed it over from the Meetings list: store and file it as
+usual, but put nothing on the calendar. That makes an old meeting, or one
+sent twice, safe to send. Absent means `true`.
+
 **Reply — ZA3TAR_ACK v1:**
 
 ```json
@@ -96,6 +101,9 @@ example a project page); agents that ignore them are unaffected.
 ```
 
 A calendar failure degrades to a warning; the ack still comes back `ok`.
+An agent that filed the outcomes on the team's own system may add
+`"admin": {"project": "…", "proposals": 3}` (where, and how many items the
+team can keep or skip); the app shows it.
 
 ### ZA3TAR_QUERY v1 — ask
 

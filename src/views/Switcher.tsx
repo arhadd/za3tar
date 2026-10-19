@@ -11,7 +11,7 @@ import {
 import type { Thread, Workspace } from "../types";
 import { statusLabel } from "./ThreadsView";
 
-type Place = "home" | "todos" | "ideas";
+type Place = "home" | "library" | "todos" | "ideas";
 
 type Row =
   | { kind: "project"; t: Thread }
@@ -21,6 +21,7 @@ type Row =
 
 const PLACES: { place: Place; label: string }[] = [
   { place: "home", label: "Home" },
+  { place: "library", label: "Meetings" },
   { place: "todos", label: "To-dos" },
   { place: "ideas", label: "Ideas" },
 ];
