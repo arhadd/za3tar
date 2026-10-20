@@ -1,7 +1,7 @@
 # za3tar.ai — homepage copy v2
 
 2026-10-21. One page, one pitch, no live voice on the homepage.
-Built in PR feat/homepage-v2. Close reworded after review: ask how the company should run instead of what eats the week.
+Built in PR feat/homepage-v2. Reworded after review: ask how the company should run instead of what eats the week; we enable the team (same setup for everyone, the team decides what it does) instead of prescribing a build.
 
 ---
 
@@ -9,7 +9,7 @@ Built in PR feat/homepage-v2. Close reworded after review: ask how the company s
 
 **AI that runs inside your company.**
 
-We put one AI teammate in the chat your team already uses. It learns your tools, your people and your rules, and it takes the repeat work off everyone's week. A person approves anything that matters before it goes out.
+Every company gets the same start: one AI teammate in the chat your team already uses, connected to the tools you already run. Then your team teaches it how the work really runs, because nobody knows that better than them.
 
 [ Tell us about your company → ]  (jumps to the box at the bottom)
 [ Book a session ]  (WhatsApp)
@@ -32,7 +32,7 @@ What one person teaches it, the next person gets. Your house rules become everyo
 
 ## 3. What it does in a normal week
 
-Six cards. Each one is work we already run for clients today.
+Jobs teams have already handed theirs. Yours will be your own.
 
 **Drafts in your house style**
 Proposals, updates and replies, written from your own templates. Someone checks and sends.
@@ -66,13 +66,14 @@ We share names and walk-throughs in a session.
 
 ---
 
-## 5. How we start
+## 5. How it works
 
-**A few weeks to the first job, then it grows.**
+**The same start for every company. Your team takes it from there.**
 
-1. **Learn.** About two weeks with your team, mapping how the work really runs. You get one page of your business and a shortlist of what to fix first.
-2. **Connect and build.** We link the tools you already use and set up the first jobs. You see a log of what each one did.
-3. **Teach.** We work beside your team until they hand the teammate new jobs themselves, with a monthly review of what worked.
+1. **Set up.** We put your teammate in your chat and train it on how your company talks and works. You get a teammate that knows your company from day one.
+2. **Connect.** We link the tools you already use, so it works from the real numbers and nobody copies information by hand. You get every fact with where it came from.
+3. **Explore.** We sit with your team and try things together. They know the work, so they choose what the teammate takes on. You get first jobs picked by the people who do them.
+4. **Own.** Your team hands it new jobs themselves, and changes the old ones when the work changes. You get a monthly session on what worked and what to try next.
 
 What we build is yours to keep: the agents, their instructions, your data.
 
@@ -82,7 +83,7 @@ What we build is yours to keep: the agents, their instructions, your data.
 
 **How should your company run?**
 
-Tell us your company and what a great week there looks like. We'll reply with what we'd build first.
+Tell us your company and what a great week there looks like. We'll get back to you to explore it with your team.
 
 [ Company name ]
 [ On a great week, we… ]  (optional)
