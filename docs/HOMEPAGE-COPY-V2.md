@@ -20,41 +20,54 @@ Every company gets the same start: one AI teammate in the chat your team already
 
 ---
 
-## 2. What it is
+## 2. How it works (the Z breaks into these four)
+
+**The same start for every company. Your team takes it from there.**
+
+1. **Set up.** We put your teammate in your chat and train it on how your company talks and works. You get a teammate that knows your company from day one.
+2. **Connect.** We link the tools you already use, so it works from the real numbers and nobody copies information by hand. You get every fact with where it came from.
+3. **Try.** Your team brings real jobs from a normal week. We try them together, see what works and keep improving them with the people doing the work. You get jobs chosen and shaped by your own team.
+4. **Own.** Your team hands it new jobs themselves, and changes the old ones when the work changes. You get a monthly session on what worked and what to try next.
+
+What we build is yours to keep: the agents, their instructions, your data.
+
+---
+
+## 3. What it is
 
 **One teammate for the whole company.**
 
-It lives in WhatsApp, Slack or Telegram, in English and Arabic. Anyone on the team can ask it something or hand it a job.
+It lives in WhatsApp, Slack or Telegram, in English and Arabic. Anyone on the team can ask it something, teach it something or hand it a job.
 
-What one person teaches it, the next person gets. Your house rules become everyone's defaults. After a few months the company has dozens of small systems that nobody had to scope, hire for or wait on.
-
----
-
-## 3. What it does in a normal week
-
-Jobs teams have already handed theirs. Yours will be your own.
-
-**Drafts in your house style**
-Proposals, updates and replies, written from your own templates. Someone checks and sends.
-
-**Numbers from the real system**
-"What did we spend on events this month?" gets answered from your accounting or booking tool, with where each number came from.
-
-**Meetings that turn into work**
-Notes become tasks with owners and dates, and the teammate follows up when something slips.
-
-**One page per project**
-Every project gets a living page: status, people, files and what's next, updated from your tools.
-
-**The weekly report, ready on Sunday**
-It pulls the numbers, drafts the report and posts it once you say yes.
-
-**Asks before the big stuff**
-Money, clients, anything hard to undo: a person approves. Everything it does goes in a log.
+What one person teaches it, the next person gets. Your house rules become everyone's defaults. Over a few months your team builds dozens of small systems with it, one real job at a time.
 
 ---
 
-## 4. Proof
+## 4. What it does in a normal week
+
+Here's what teams are already doing with theirs. Yours will find its own.
+
+**Writes like your company**
+Proposals, updates and replies, written from your templates and the way your team actually speaks. Someone checks and sends.
+
+**Answers from real numbers**
+"What did we spend on events this month?" gets answered from your accounting or booking tool, with the source behind every number.
+
+**Turns meetings into work**
+Notes become tasks with owners and dates. The teammate follows up and keeps the work moving.
+
+**Keeps projects clear**
+One living page per project: status, people, files and what happens next, updated from your tools.
+
+**Gets Sunday ready**
+It pulls the numbers, drafts the weekly report and puts it in the chat for your team to approve.
+
+**Checks before it acts**
+Money, clients and anything hard to undo go to a person first. Everything it does stays in the log.
+
+---
+
+## 5. Proof
 
 **Already running.**
 
@@ -63,19 +76,6 @@ Money, clients, anything hard to undo: a person approves. Everything it does goe
 - A consumer brand runs product imagery and content through it.
 
 We share names and walk-throughs in a session.
-
----
-
-## 5. How it works
-
-**The same start for every company. Your team takes it from there.**
-
-1. **Set up.** We put your teammate in your chat and train it on how your company talks and works. You get a teammate that knows your company from day one.
-2. **Connect.** We link the tools you already use, so it works from the real numbers and nobody copies information by hand. You get every fact with where it came from.
-3. **Explore.** We sit with your team and try things together. They know the work, so they choose what the teammate takes on. You get first jobs picked by the people who do them.
-4. **Own.** Your team hands it new jobs themselves, and changes the old ones when the work changes. You get a monthly session on what worked and what to try next.
-
-What we build is yours to keep: the agents, their instructions, your data.
 
 ---
 
@@ -89,7 +89,7 @@ Tell us your company and what a great week there looks like. We'll get back to y
 [ On a great week, we… ]  (optional)
 [ Send on WhatsApp → ]
 
-Opens WhatsApp with your message ready. Nothing goes out until you press send.
+WhatsApp opens with your message ready. You read it and press send yourself.
 
 Rather talk now? **Book a session →**
 
