@@ -83,13 +83,13 @@ We share names and walk-throughs in a session.
 
 **How should your company run?**
 
-Tell us your company and what a great week there looks like. We'll get back to you to explore it with your team.
+Speech bubble from the Z, now holding a magic wand: "If you had a magic wand, what would you change in your company?"
 
 [ Company name ]
-[ On a great week, we… ]  (optional)
+[ With a magic wand, we'd… ]  (optional)
 [ Send on WhatsApp → ]
 
-WhatsApp opens with your message ready. You read it and press send yourself.
+WhatsApp opens with your message ready. You read it and press send yourself, and we get back to you to explore it with your team.
 
 Rather talk now? **Book a session →**
 

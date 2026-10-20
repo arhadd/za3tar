@@ -186,6 +186,14 @@ section{border-top:1px solid var(--ink-18);padding:48px 0 72px}
 .person a{font-weight:600;color:var(--ink);border-bottom:1.5px solid var(--ink);padding-bottom:1px}
 .howmark{justify-self:end;width:100%;max-width:400px;position:sticky;top:96px}
 .howmark svg{width:100%;height:auto;display:block}
+/* the reassembled Z holds a magic wand, cast toward the question */
+.howmark svg.wand{position:absolute;width:46%;right:84%;bottom:-6%;overflow:visible;visibility:visible!important;transform-origin:100% 100%;transition:opacity .4s ease,transform .5s cubic-bezier(.2,.8,.2,1)}
+body.fx .howmark svg.wand{opacity:0;transform:rotate(18deg) scale(.85)}
+body.fx.held .howmark svg.wand{opacity:1;transform:none}
+.wand .spark{transform-box:fill-box;transform-origin:center;animation:twinkle 1.8s ease-in-out infinite}
+.wand .spark:nth-of-type(2){animation-delay:.5s}
+.wand .spark:nth-of-type(3){animation-delay:1s}
+@keyframes twinkle{0%,100%{opacity:.25;transform:scale(.6)}50%{opacity:1;transform:scale(1)}}
 
 
 /* ---------- close / footer ---------- */
@@ -200,7 +208,7 @@ footer a:hover{color:var(--ink)}
   .jobs{grid-template-columns:repeat(2,minmax(0,1fr))}
   .what{grid-template-columns:1fr}
   .how{grid-template-columns:1fr;gap:36px}
-  .howmark{position:static;order:-1;justify-self:end;width:46vw;max-width:240px;margin-bottom:8px}
+  .howmark{position:relative;order:-1;top:auto;justify-self:end;width:46vw;max-width:240px;margin-bottom:8px}
 }
 @media(max-width:820px){
   .hero{grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr);gap:24px;min-height:calc(100vh - 64px);min-height:calc(100svh - 64px);padding:0 0 36px}
@@ -229,7 +237,10 @@ footer a:hover{color:var(--ink)}
   .how{grid-template-columns:minmax(0,1fr) 34vw;gap:0 12px;align-items:center}
   .ctacopy{display:contents}
   .ctacopy h2{grid-column:1;grid-row:1;font-size:clamp(24px,7vw,34px);max-width:none}
-  .howmark{grid-column:2;grid-row:1;order:0;position:static;justify-self:end;width:100%;max-width:none;margin:0}
+  .howmark{grid-column:2;grid-row:1;order:0;position:relative;top:auto;justify-self:end;width:100%;max-width:none;margin:0}
+  /* phone: the wand points down at the question */
+  .howmark svg.wand{width:36%;right:auto;left:-8%;bottom:-30%;transform-origin:100% 0}
+  .wand .wg{transform:scaleY(-1);transform-origin:50% 50%;transform-box:view-box}
   .zsay{grid-column:1/-1;grid-row:2;justify-self:start;border-radius:4px 18px 18px 18px}
   .tryform{grid-column:1/-1;grid-row:3}
   .tryform .btn{justify-content:center}
@@ -266,6 +277,7 @@ footer a:hover{color:var(--ink)}
 @media(prefers-reduced-motion:reduce){
   .eye,.pupil{transition:none!important}
   .cue .arr{animation:none}
+  .wand .spark{animation:none}
 }
 </style>
 </head>
@@ -367,13 +379,13 @@ footer a:hover{color:var(--ink)}
   <div class="how" id="start">
     <div class="ctacopy">
       <h2 class="display rv">How should your company run?</h2>
-      <p class="zsay rv">Tell us your company and what a great week there looks like. We’ll get back to you to explore it with your team.</p>
+      <p class="zsay rv">If you had a magic wand, what would you change in your company?</p>
       <form class="tryform rv" id="startform">
         <input name="company" required autocomplete="organization" placeholder="Company name" aria-label="Company name">
-        <input name="week" placeholder="On a great week, we… (optional)" aria-label="What a great week looks like">
+        <input name="week" placeholder="With a magic wand, we’d… (optional)" aria-label="What you would change with a magic wand">
         <button class="btn" type="submit">Send on WhatsApp <span class="ar">→</span></button>
       </form>
-      <p class="trynote muted rv">WhatsApp opens with your message ready. You read it and press send yourself.</p>
+      <p class="trynote muted rv">WhatsApp opens with your message ready. You read it and press send yourself, and we get back to you to explore it with your team.</p>
       <p class="person rv">Rather talk now? <a href="https://wa.me/962798885558?text=Hi%2C%20I%27d%20like%20to%20book%20a%20session." target="_blank" rel="noopener">Book a session →</a></p>
     </div>
     <!-- the four pieces reassemble here as the steps scroll by; static mark is the no-js fallback -->
@@ -385,6 +397,14 @@ footer a:hover{color:var(--ink)}
         <path d="M190 14C195.4 96 150 140 56 148C102 128 147.2 88 190 14Z" fill="#0B1710"/>
         <circle cx="126" cy="36" r="11" fill="#F2EEE2"/><circle cx="126" cy="36" r="5" fill="#0B1710"/>
       </svg>
+      <svg class="wand" viewBox="0 0 100 100"><g class="wg">
+        <line x1="96" y1="96" x2="34" y2="34" stroke="#0B1710" stroke-width="6" stroke-linecap="round"/>
+        <line x1="96" y1="96" x2="80" y2="80" stroke="#6F7F5A" stroke-width="6" stroke-linecap="round"/>
+        <path d="M24 6 L28.5 19.5 L42 24 L28.5 28.5 L24 42 L19.5 28.5 L6 24 L19.5 19.5 Z" fill="#0B1710"/>
+        <path class="spark" d="M48 2 L50 8 L56 10 L50 12 L48 18 L46 12 L40 10 L46 8 Z" fill="#6F7F5A"/>
+        <path class="spark" d="M6 44 L7.5 48.5 L12 50 L7.5 51.5 L6 56 L4.5 51.5 L0 50 L4.5 48.5 Z" fill="#6F7F5A"/>
+        <path class="spark" d="M44 40 L45 43 L48 44 L45 45 L44 48 L43 45 L40 44 L43 43 Z" fill="#0B1710"/>
+      </g></svg>
     </div>
   </div>
 </section>
@@ -486,6 +506,7 @@ footer a:hover{color:var(--ink)}
     if(end2<start2+320) start2=Math.max(end, end2-320);
     if(start2<end) { start2=end; }
     var p2=clamp((y-start2)/(end2-start2));
+    document.body.classList.toggle('held', p2>=.98);
 
     pieces.forEach(function(pc){
       var t=pc.slot.querySelector('svg').getBoundingClientRect();
@@ -572,7 +593,7 @@ footer a:hover{color:var(--ink)}
     e.preventDefault();
     var c=f.company.value.trim(), w=f.week.value.trim();
     if(!c) return f.company.focus();
-    var t='Hi za3tar, I’m from '+c+'.'+(w?' On a great week, we '+w.replace(/^we\s+/i,''):'');
+    var t='Hi za3tar, I’m from '+c+'.'+(w?' With a magic wand, we’d '+w.replace(/^(we’d|we'd|we would|i’d|i'd|i would)\s+/i,''):'');
     window.open('https://wa.me/962798885558?text='+encodeURIComponent(t),'_blank','noopener');
   });
 })();
