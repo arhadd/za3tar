@@ -3,16 +3,16 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>za3tar — we help companies work</title>
-<meta name="description" content="za3tar helps you bring the latest AI tools and frameworks into your organisation and move to AI-native ways of working, through implementation and hands-on education.">
-<meta property="og:title" content="za3tar — we help companies work">
-<meta property="og:description" content="za3tar helps you bring the latest AI tools and frameworks into your organisation and move to AI-native ways of working, through implementation and hands-on education.">
+<title>za3tar — AI that runs inside your company</title>
+<meta name="description" content="We put one AI teammate in the chat your team already uses. It learns your tools, your people and your rules, and takes the repeat work off everyone's week.">
+<meta property="og:title" content="za3tar — AI that runs inside your company">
+<meta property="og:description" content="We put one AI teammate in the chat your team already uses. It learns your tools, your people and your rules, and takes the repeat work off everyone's week.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://za3tar.ai/">
 <meta property="og:image" content="https://za3tar.ai/og.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="za3tar — we help companies work">
+<meta property="og:image:alt" content="za3tar — AI that runs inside your company">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:image" content="https://za3tar.ai/og.png">
 <link rel="canonical" href="https://za3tar.ai/">
@@ -29,7 +29,7 @@
       "name": "za3tar",
       "url": "https://za3tar.ai/",
       "logo": "https://za3tar.ai/brand/mark.svg",
-      "description": "za3tar helps companies bring the latest AI tools and frameworks into their organisation and move to AI-native ways of working, through implementation and hands-on education.",
+      "description": "za3tar puts one AI teammate inside a company's own chat. It learns the company's tools, people and rules, takes the repeat work off the team's week, and asks a person before anything important goes out.",
       "address": { "@type": "PostalAddress", "addressLocality": "Dubai", "addressCountry": "AE" },
       "areaServed": "Middle East",
       "knowsAbout": ["AI adoption", "AI agents", "workflow automation", "tool integration", "hands-on AI training"],
@@ -67,7 +67,7 @@
 }
 *{box-sizing:border-box;margin:0}
 html{scroll-behavior:smooth}
-@media(min-width:821px){html{scroll-snap-type:y proximity}.reel,.steps,.page3{scroll-snap-align:start}}
+@media(min-width:821px){html{scroll-snap-type:y proximity}.steps,.page3{scroll-snap-align:start}}
 body{background:var(--paper);color:var(--ink);font-family:var(--sans);font-stretch:100%;line-height:1.5;-webkit-font-smoothing:antialiased;overflow-x:hidden}
 a{color:inherit;text-decoration:none}
 .wrap{max-width:1200px;margin:0 auto;padding:0 max(24px,env(safe-area-inset-right)) 0 max(24px,env(safe-area-inset-left))}
@@ -134,15 +134,33 @@ section{border-top:1px solid var(--ink-18);padding:48px 0 72px}
 .sh small{display:block;font-size:15px;font-weight:400;font-stretch:100%;letter-spacing:0;color:var(--ink-66);margin-top:8px}
 
 
-/* the reel: Lina and Karim's story, in 50 silent seconds (source: story/). It sits above #overlay (z 5), so the
-   flying mark pieces pass behind the video on their way to the steps */
-.reel{padding:56px 0 72px}
-.reelbox{position:relative;z-index:6;border:1.5px solid var(--ink);border-radius:14px;overflow:hidden;aspect-ratio:16/9;background:var(--ink);cursor:pointer}
-.reelbox video{width:100%;height:100%;display:block;object-fit:cover}
-.reelbox .play{position:absolute;right:14px;bottom:14px;font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;background:var(--ink);color:var(--paper);border-radius:6px;padding:7px 10px;opacity:0;transition:opacity .2s;pointer-events:none}
-.reelbox.paused .play{opacity:1}
+/* what it is: one teammate, where it lives */
+/* it sits above #overlay (z 5), so the mark pieces pass behind it on their way to the steps */
+#what{position:relative;z-index:6;background:var(--paper)}
+.what{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:28px 64px;align-items:start}
+.what .sh{margin-bottom:0}
+.what p{font-size:clamp(17px,1.4vw,19px);line-height:1.55;text-wrap:pretty}
+.what p+p{margin-top:16px}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:26px}
+.chips span{border:1.5px solid var(--ink);border-radius:999px;padding:6px 12px;font-family:var(--mono);font-size:12px;letter-spacing:.06em;text-transform:uppercase}
+
+/* a normal week: six jobs we already run */
+.jobs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:36px 28px}
+.job{border-top:1.5px solid var(--ink);padding-top:16px}
+.job .n{display:block;margin-bottom:14px}
+.job h3{font-size:clamp(22px,1.9vw,27px);font-weight:700;font-stretch:88%;letter-spacing:-.02em;line-height:1.08;margin-bottom:10px;text-wrap:balance}
+.job p{font-size:16.5px;line-height:1.45;color:var(--ink-66);text-wrap:pretty}
+
+/* proof, described broadly */
+.proof{list-style:none;padding:0}
+.proof li{display:grid;grid-template-columns:minmax(0,4fr) minmax(0,7fr);gap:8px 28px;border-top:1.5px solid var(--ink);padding:18px 0 22px}
+.proof li .mono{color:var(--ink);padding-top:5px}
+.proof li p{font-size:clamp(18px,1.6vw,22px);font-weight:600;font-stretch:94%;letter-spacing:-.01em;line-height:1.3;text-wrap:pretty}
+.proofnote{margin-top:8px;font-size:15.5px}
 
 .steps{min-height:100vh;min-height:100svh;display:flex;flex-direction:column;justify-content:center;padding:24px 0}
+.keep{margin-top:40px;font-size:16.5px;max-width:60ch}
+.keep b{color:var(--ink);font-weight:600}
 .cards{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:0 28px}
 .card4{border-top:1.5px solid var(--ink);padding:20px 0 8px;display:flex;flex-direction:column}
 .card4 .slot{height:66px;margin:0 0 18px;align-items:flex-end}
@@ -154,14 +172,16 @@ section{border-top:1px solid var(--ink-18);padding:48px 0 72px}
 .page3{min-height:100vh;min-height:100svh;display:flex;flex-direction:column}
 .cta{flex:1;display:flex;align-items:center;padding:48px 0}
 .cta>.how{width:100%}
-.ctacopy h2{font-size:clamp(32px,4.2vw,58px);max-width:16ch}
+.ctacopy h2{font-size:clamp(36px,4.8vw,66px);max-width:14ch}
 .ctacopy p{margin-top:20px;font-size:clamp(17px,1.5vw,20px);color:var(--ink-66);max-width:44ch;text-wrap:pretty}
 .ctacopy .ctas{margin-top:26px}
 .zsay{position:relative;display:inline-block;margin-top:34px!important;border:1.5px solid var(--ink);border-radius:18px 18px 4px 18px;padding:14px 18px;font-size:clamp(17px,1.45vw,20px)!important;font-weight:600;color:var(--ink)!important;background:var(--paper);max-width:40ch!important;line-height:1.35}
-.tryform{display:flex;gap:10px;margin-top:22px;max-width:560px}
+.tryform{display:flex;flex-wrap:wrap;gap:10px;margin-top:22px;max-width:560px}
+.tryform .btn{cursor:pointer;font-family:inherit}
 .tryform input{flex:1;min-width:0;font:inherit;font-size:17px;color:var(--ink);background:transparent;border:1.5px solid var(--ink);border-radius:8px;padding:13px 14px;outline:none}
 .tryform input::placeholder{color:var(--ink-40,rgba(11,23,16,.4))}
 .tryform input:focus{box-shadow:0 0 0 3px rgba(11,23,16,.08)}
+.tryform input{flex:1 1 100%}
 .tryform .btn{white-space:nowrap}
 .trynote{margin-top:12px!important;font-size:14px!important}
 .person{margin-top:26px!important;font-size:15.5px!important}
@@ -179,6 +199,8 @@ footer a:hover{color:var(--ink)}
 /* ---------- responsive ---------- */
 @media(max-width:980px){
   .cards{grid-template-columns:repeat(2,minmax(0,1fr));gap:28px 28px}
+  .jobs{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .what{grid-template-columns:1fr}
   .how{grid-template-columns:1fr;gap:36px}
   .howmark{position:static;order:-1;justify-self:end;width:46vw;max-width:240px;margin-bottom:8px}
 }
@@ -201,7 +223,9 @@ footer a:hover{color:var(--ink)}
   .hero h1{grid-row:1;font-size:clamp(44px,12.5vw,64px)}
   .markwrap{grid-row:2;order:0;justify-self:end;align-self:center;width:66vw;max-width:300px;margin:12px 0}
   .hero p{grid-row:3;margin-top:6px;line-height:1.55;align-self:end}
-  .cue{grid-row:4;align-self:end;display:flex;align-items:center;gap:10px;font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-66);padding:18px 0 6px}
+  .hero .ctas{grid-row:4;margin-top:18px}
+  .hero .ctas .btn{flex:1 1 auto;justify-content:center}
+  .cue{grid-row:5;align-self:end;display:flex;align-items:center;gap:10px;font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-66);padding:18px 0 6px}
   .cue .arr{display:inline-block;font-size:16px;color:var(--ink);animation:cue 1.6s ease-in-out infinite}
   /* phone: closing heading left, reassembled Z to its right */
   .how{grid-template-columns:minmax(0,1fr) 34vw;gap:0 12px;align-items:center}
@@ -209,7 +233,7 @@ footer a:hover{color:var(--ink)}
   .ctacopy h2{grid-column:1;grid-row:1;font-size:clamp(24px,7vw,34px);max-width:none}
   .howmark{grid-column:2;grid-row:1;order:0;position:static;justify-self:end;width:100%;max-width:none;margin:0}
   .zsay{grid-column:1/-1;grid-row:2;justify-self:start;border-radius:4px 18px 18px 18px}
-  .tryform{grid-column:1/-1;grid-row:3;flex-direction:column}
+  .tryform{grid-column:1/-1;grid-row:3}
   .tryform .btn{justify-content:center}
   .trynote{grid-column:1/-1;grid-row:4}
   .person{grid-column:1/-1;grid-row:5}
@@ -229,6 +253,8 @@ footer a:hover{color:var(--ink)}
   .trylink .short{display:inline!important}
   footer{padding:32px 0 56px}
   .cards{grid-template-columns:1fr;gap:8px}
+  .jobs{grid-template-columns:1fr;gap:26px}
+  .proof li{grid-template-columns:1fr}
   .card4{display:grid;grid-template-columns:56px minmax(0,1fr);gap:0 16px;padding:22px 0 18px}
   .card4 .slot{height:auto;margin:4px 0 0;align-items:flex-start}
   .card4 h3{font-size:26px}
@@ -250,16 +276,17 @@ footer a:hover{color:var(--ink)}
 
 <nav>
   <a class="logo" href="/"><img src="/brand/mark-mono.svg" alt="" width="22" height="22">za3tar</a>
-  <span class="navr"><a class="trylink mono" href="/demo/"><span class="full">Try it on your company →</span><span class="short">Try it →</span></a><a class="btn" href="https://wa.me/962798885558?text=Hi%2C%20I%27d%20like%20to%20book%20a%20session." target="_blank" rel="noopener">Book a session <span class="ar">→</span></a></span>
+  <span class="navr"><a class="trylink mono" href="#start"><span class="full">Tell us about your company →</span><span class="short">Start →</span></a><a class="btn" href="https://wa.me/962798885558?text=Hi%2C%20I%27d%20like%20to%20book%20a%20session." target="_blank" rel="noopener">Book a session <span class="ar">→</span></a></span>
 </nav>
 
 <header class="hero">
   <div>
-    <h1 class="display">We help companies <span class="flip" id="flip"><span class="fw">work</span></span></h1>
-    <p>za3tar helps you bring the latest AI tools and frameworks into your organisation and move to AI-native ways of working, through implementation and hands-on education.</p>
+    <h1 class="display">AI that runs inside your <span class="flip" id="flip"><span class="fw">company</span></span></h1>
+    <p>We put one AI teammate in the chat your team already uses. It learns your tools, your people and your rules, and it takes the repeat work off everyone’s week. A person approves anything that matters before it goes out.</p>
+    <div class="ctas"><a class="btn" href="#start">Tell us about your company <span class="ar">→</span></a><a class="btn ghost" href="https://wa.me/962798885558?text=Hi%2C%20I%27d%20like%20to%20book%20a%20session." target="_blank" rel="noopener">Book a session</a></div>
   </div>
 
-  <a class="cue" href="#reel" aria-label="See how it works"><span>See how it works</span><span class="arr">↓</span></a>
+  <a class="cue" href="#what" aria-label="See what it is"><span>See what it is</span><span class="arr">↓</span></a>
 
   <!-- za3tar mark, mono variant (BRAND.md) — geometry verbatim; the dot is the eye -->
   <div class="markwrap" aria-hidden="true">
@@ -279,46 +306,76 @@ footer a:hover{color:var(--ink)}
   </div>
 </header>
 
-<section class="reel" id="reel">
-  <h2 class="sh rv">Here’s what we build.<small>A teammate that lives in your chat, keeps every project on one page, and asks before the big stuff.</small></h2>
-  <div class="reelbox rv paused" id="reelbox">
-    <video id="reelv" src="/media/za3tar-story.mp4" poster="/media/za3tar-story.jpg" muted loop playsinline preload="none" aria-label="A 50-second animation: Lina and Karim work for the same clients, each in their own chat, and a client waits. Za3tar joins them, connects their tools, and when Lina confirms an order Karim already knows; the client’s reply is drafted and Lina just says yes."></video>
-    <span class="play">▶ Play</span>
+<section id="what">
+  <div class="what">
+    <h2 class="sh rv">One teammate for the whole company.</h2>
+    <div class="rv">
+      <p>It lives in WhatsApp, Slack or Telegram, in English and Arabic. Anyone on the team can ask it something or hand it a job.</p>
+      <p class="muted">What one person teaches it, the next person gets. Your house rules become everyone’s defaults. After a few months the company has dozens of small systems that nobody had to scope, hire for or wait on.</p>
+      <div class="chips"><span>WhatsApp</span><span>Slack</span><span>Telegram</span><span>English</span><span>عربي</span></div>
+    </div>
   </div>
 </section>
 
+<section id="week">
+  <h2 class="sh rv">What it does in a normal week<small>Each one is work we already run for clients today.</small></h2>
+  <div class="jobs">
+    <div class="job rv"><span class="mono n">01</span><h3>Drafts in your house style</h3><p>Proposals, updates and replies, written from your own templates. Someone checks and sends.</p></div>
+    <div class="job rv"><span class="mono n">02</span><h3>Numbers from the real system</h3><p>“What did we spend on events this month?” gets answered from your accounting or booking tool, with where each number came from.</p></div>
+    <div class="job rv"><span class="mono n">03</span><h3>Meetings that turn into work</h3><p>Notes become tasks with owners and dates, and the teammate follows up when something slips.</p></div>
+    <div class="job rv"><span class="mono n">04</span><h3>One page per project</h3><p>Status, people, files and what’s next, kept current from your tools.</p></div>
+    <div class="job rv"><span class="mono n">05</span><h3>The weekly report, ready on Sunday</h3><p>It pulls the numbers, drafts the report and posts it once you say yes.</p></div>
+    <div class="job rv"><span class="mono n">06</span><h3>Asks before the big stuff</h3><p>Money, clients, anything hard to undo: a person approves. Everything it does goes in a log.</p></div>
+  </div>
+</section>
+
+<section id="proof">
+  <h2 class="sh rv">Already running.</h2>
+  <ul class="proof">
+    <li class="rv"><span class="mono">Operations &amp; events</span><p>A company workspace in their chat: projects, clients, team, calendar and reporting, with a few dozen connected workflows.</p></li>
+    <li class="rv"><span class="mono">Food &amp; beverage · many locations</span><p>A teammate that keeps their operations tooling running.</p></li>
+    <li class="rv"><span class="mono">Consumer brand</span><p>Product imagery and content, run through it.</p></li>
+  </ul>
+  <p class="proofnote muted rv">We share names and walk-throughs in a session.</p>
+</section>
+
 <section class="steps" id="steps">
-  <h2 class="sh rv">How it works</h2>
+  <h2 class="sh rv">How we start<small>A few weeks to the first job, then it grows.</small></h2>
   <div class="cards">
   <div class="card4">
     <div class="slot s-eye" data-piece="eye"><svg viewBox="113 23 26 26"><circle cx="126" cy="36" r="13" fill="#0B1710"/><circle cx="126" cy="36" r="11" fill="#F2EEE2"/><circle cx="126" cy="36" r="5" fill="#0B1710"/></svg></div>
-    <div class="rv"><h3>Learn</h3><p>We spend two weeks with your team and map how the work really runs.</p><p class="get"><span>You get</span>one page of your business, and a shortlist of what to fix first.</p></div>
+    <div class="rv"><h3>Learn</h3><p>About two weeks with your team, mapping how the work really runs.</p><p class="get"><span>You get</span>one page of your business, and a shortlist of what to set up first.</p></div>
   </div>
   <div class="card4">
     <div class="slot s-leaf" data-piece="leaf"><svg viewBox="56 14 135 134"><path d="M190 14C195.4 96 150 140 56 148C102 128 147.2 88 190 14Z" fill="#0B1710"/></svg></div>
-    <div class="rv"><h3>Connect</h3><p>We link the tools you already use, so nobody copies information by hand.</p><p class="get"><span>You get</span>every fact on the page, with where it came from.</p></div>
+    <div class="rv"><h3>Connect</h3><p>We link the tools you already use, so nobody copies information by hand.</p><p class="get"><span>You get</span>every fact with where it came from.</p></div>
   </div>
   <div class="card4">
     <div class="slot s-bar" data-piece="bottom"><svg viewBox="56 104 134 44"><defs><clipPath id="fcb"><path d="M56 148C150 140 195.4 96 190 14H200V200H56Z"/></clipPath></defs><rect x="56" y="104" width="134" height="44" fill="#0B1710" clip-path="url(#fcb)"/></svg></div>
-    <div class="rv"><h3>Build</h3><p>We build agents for the work no software covers, then watch them run. Soon your team asks for the next one in a sentence.</p><p class="get"><span>You get</span>a log of what each one did and saved.</p></div>
+    <div class="rv"><h3>Build</h3><p>We set up the first jobs and watch them run.</p><p class="get"><span>You get</span>a log of what each one did.</p></div>
   </div>
   <div class="card4">
     <div class="slot s-bar" data-piece="top"><svg viewBox="56 14 134 44"><defs><clipPath id="fct"><path d="M0 0H190V14C147.2 88 102 128 56 148L0 200Z"/></clipPath></defs><rect x="56" y="14" width="134" height="44" fill="#0B1710" clip-path="url(#fct)"/></svg></div>
-    <div class="rv"><h3>Teach</h3><p>We work beside your team until using AI is part of the job.</p><p class="get"><span>You get</span>a monthly review of what worked and what’s next.</p></div>
+    <div class="rv"><h3>Teach</h3><p>We work beside your team until they hand the teammate new jobs themselves.</p><p class="get"><span>You get</span>a monthly review of what worked.</p></div>
   </div>
   </div>
+  <p class="keep muted rv"><b>Yours to keep.</b> What we build stays with you: the agents, their instructions, your data.</p>
 </section>
 
 
 <div class="page3">
 <section id="how" class="cta">
-  <div class="how">
+  <div class="how" id="start">
     <div class="ctacopy">
-      <h2 class="display rv">Less time thinking about AI tools. More time finding out what works for your business.</h2>
-      <p class="zsay rv">Hey, I'm Za3tar. Tell me your company and I'll show you what we'd build for it.</p>
-      <div class="tryform rv"><a class="btn" href="/demo/">See the demo <span class="ar">→</span></a></div>
-      <p class="trynote rv">About a minute, and Za3tar talks you through it, so turn your sound on.</p>
-      <p class="person rv">Rather talk to a person? <a href="https://wa.me/962798885558?text=Hi%2C%20I%27d%20like%20to%20book%20a%20session." target="_blank" rel="noopener">Book a session →</a></p>
+      <h2 class="display rv">How should your company run?</h2>
+      <p class="zsay rv">Tell us your company and what a great week there looks like. We’ll reply with what we’d build first.</p>
+      <form class="tryform rv" id="startform">
+        <input name="company" required autocomplete="organization" placeholder="Company name" aria-label="Company name">
+        <input name="week" placeholder="On a great week, we… (optional)" aria-label="What a great week looks like">
+        <button class="btn" type="submit">Send on WhatsApp <span class="ar">→</span></button>
+      </form>
+      <p class="trynote muted rv">Opens WhatsApp with your message ready. Nothing goes out until you press send.</p>
+      <p class="person rv">Rather talk now? <a href="https://wa.me/962798885558?text=Hi%2C%20I%27d%20like%20to%20book%20a%20session." target="_blank" rel="noopener">Book a session →</a></p>
     </div>
     <!-- the four pieces reassemble here as the steps scroll by; static mark is the no-js fallback -->
     <div class="howmark" aria-hidden="true">
@@ -336,7 +393,7 @@ footer a:hover{color:var(--ink)}
 <footer>
   <div class="mono fbar">
     <span>za3tar · Dubai</span>
-    <span class="flinks"><a href="https://wa.me/962798885558?text=Hi%2C%20I%27d%20like%20to%20book%20a%20session." target="_blank" rel="noopener">Book a session →</a><a href="https://wa.me/962798885558?text=Hi%2C%20I%27d%20like%20to%20book%20a%20session." target="_blank" rel="noopener">WhatsApp</a></span>
+    <span class="flinks"><a href="https://wa.me/962798885558?text=Hi%2C%20I%27d%20like%20to%20book%20a%20session." target="_blank" rel="noopener">Book a session →</a><a href="/llms.txt">llms.txt</a></span>
   </div>
 </footer>
 </div><!-- /page3 -->
@@ -361,7 +418,7 @@ footer a:hover{color:var(--ink)}
 </svg>
 <script>
 (function(){
-  var words=['work','sell','hire','ship','plan','scale','decide','deliver','respond','grow','run'];
+  var words=['company','team','chat','sales','ops','events','week'];
   var box=document.getElementById('flip'), w=box&&box.querySelector('.fw');
   if(!box||!w||matchMedia('(prefers-reduced-motion: reduce)').matches) return;
   // the word sits on its own line, so its width never moves the rest of the headline
@@ -414,6 +471,9 @@ footer a:hover{color:var(--ink)}
     var phone=innerWidth<=700;
     var start=vh*(phone?.08:.14), end=(firstSlot.top+y)-vh*(phone?.42:.58);
     if(end<start+(phone?360:240)) end=start+(phone?360:240);
+    // more page sits between the hero and the steps now: the pieces drop out of view within about a screen,
+    // then ride along in their slots until the steps scroll in
+    end=Math.min(end, start+vh*(phone?.9:.75));
     var p1=clamp((y-start)/(end-start));
     // intro: pieces fly in and assemble on first paint
     var it=clamp((performance.now()-t0)/950);
@@ -508,21 +568,17 @@ footer a:hover{color:var(--ink)}
   tick();
 })();
 
-/* the reel plays while it is on screen (it only loads once it is near), and a tap pauses or resumes it.
-   With reduced motion it waits for a tap. */
+/* the closing box writes a WhatsApp message; the visitor sends it themselves */
 (function(){
-  var box=document.getElementById('reelbox'), v=document.getElementById('reelv');
-  if(!box||!v) return;
-  var still=matchMedia('(prefers-reduced-motion: reduce)').matches, held=still, seen=false;
-  function sync(){ box.classList.toggle('paused', v.paused); }
-  v.addEventListener('play',sync); v.addEventListener('pause',sync);
-  function go(){ var p=v.play(); if(p&&p.catch) p.catch(sync); }
-  box.addEventListener('click',function(){ if(v.paused){ held=false; go(); } else { held=true; v.pause(); } });
-  if(still||!('IntersectionObserver' in window)) return;
-  new IntersectionObserver(function(es){ es.forEach(function(en){
-    seen=en.isIntersecting;
-    if(seen&&!held) go(); else if(!seen&&!v.paused) v.pause();
-  }); },{threshold:.4}).observe(box);
+  var f=document.getElementById('startform');
+  if(!f) return;
+  f.addEventListener('submit',function(e){
+    e.preventDefault();
+    var c=f.company.value.trim(), w=f.week.value.trim();
+    if(!c) return f.company.focus();
+    var t='Hi za3tar, I’m from '+c+'.'+(w?' On a great week, we '+w.replace(/^we\s+/i,''):'');
+    window.open('https://wa.me/962798885558?text='+encodeURIComponent(t),'_blank','noopener');
+  });
 })();
 </script>
 </body>
