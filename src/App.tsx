@@ -71,6 +71,8 @@ import type {
 const WS_KEY = "za3tar.workspace";
 const VISITED_KEY = "za3tar.visited";
 const SENT_KEY = "za3tar.sent";
+/** workspaces whose meetings stay on this Mac unless sent by hand */
+const NO_AUTO_SEND = new Set(["family", "personal"]);
 
 /** what each view is called on screen (the brain's view ids stay) */
 const VIEW_LABEL: Record<View, string> = {
@@ -721,8 +723,9 @@ function App() {
       const segs = await invoke<Segment[]>("transcribe", { dir: d });
       setSegments(segs);
       setPhase("done");
-      // the whole point: stop → notes → actions, no clicks
+      // the whole point: stop → notes → actions → Jello, no clicks
       await synthesize(d);
+      await sendMeeting({ dir: d, created: Number(meetingIdOf(d)) }, true);
     } catch (e) {
       setError(String(e));
       setPhase("done");
@@ -744,6 +747,7 @@ function App() {
       return;
     }
     await synthesize(dir);
+    await sendMeeting({ dir, created: Number(meetingIdOf(dir)) }, true);
   }
 
   async function makeNotes() {
@@ -1176,8 +1180,13 @@ function App() {
   }
 
   /** the same packet as track & schedule, filing only: nothing new goes on
-      the calendar, so an old meeting (or one sent twice) is safe to send */
-  async function sendMeeting(s: Summary) {
+      the calendar, so an old meeting (or one sent twice) is safe to send.
+      auto = the hand-over right after processing: skips private workspaces
+      and meetings that produced nothing */
+  async function sendMeeting(
+    s: Pick<Summary, "dir" | "created">,
+    auto = false,
+  ) {
     try {
       const detail = await invoke<{
         title: string;
@@ -1189,6 +1198,11 @@ function App() {
       const past = await invoke<MeetingActions | null>("load_actions", {
         dir: s.dir,
       }).catch(() => null);
+      if (
+        auto &&
+        (NO_AUTO_SEND.has(detail.workspace) || (!detail.notes && !past))
+      )
+        return;
       const packet = {
         ...packetOf({
           dir: s.dir,
@@ -1211,7 +1225,8 @@ function App() {
       markSent(s.dir, detail.thread);
       try {
         const ack = parseEnvelope<RuntimeAck>(reply, "ZA3TAR_ACK");
-        showFlash(ackLine(ack, false), 6000);
+        const line = ackLine(ack, false);
+        showFlash(auto ? `sent to Jello · ${line}` : line, 6000);
       } catch {
         showFlash(`${reply.slice(0, 140)}${reply.length > 140 ? "…" : ""}`, 5000);
       }
