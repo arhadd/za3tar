@@ -33,13 +33,20 @@ What we build is yours to keep: the agents, their instructions, your data.
 
 ---
 
-## 3. What it is
+## 3. A guide that walks your team through it
 
-**One teammate for the whole company.**
+**A guide that walks your team through it.**
 
-It lives in WhatsApp, Slack or Telegram, in English and Arabic. Anyone on the team can ask it something, teach it something or hand it a job.
+Everyone on the team gets the same guide in their chat. Tell it what's slowing you down, and it walks you through fixing it. Nobody needs to know how AI works; people describe their job in their own words.
 
-What one person teaches it, the next person gets. Your house rules become everyone's defaults. Over a few months your team builds dozens of small systems with it, one real job at a time.
+1. **You say what's slow.** "I lose every Sunday night to the weekly report."
+2. **It asks where the work lives.** Which sheet, which tool, who signs off.
+3. **You build the first version together.** It drafts, you correct, it learns your way of doing it.
+4. **You say yes, and it runs.** Every week, with a log of what it did. It asks before anything leaves the company.
+
+What one person builds, the whole team can use.
+
+Chips: WhatsApp · Slack · Telegram · English · عربي
 
 ---
 

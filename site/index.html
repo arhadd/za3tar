@@ -139,6 +139,12 @@ section{border-top:1px solid var(--ink-18);padding:48px 0 72px}
 .what .sh{margin-bottom:0}
 .what p{font-size:clamp(17px,1.4vw,19px);line-height:1.55;text-wrap:pretty}
 .what p+p{margin-top:16px}
+.walk{list-style:none;padding:0;margin-top:44px;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:28px;counter-reset:none}
+.walk li{border-top:1.5px solid var(--ink);padding-top:16px}
+.walk .n{display:block;margin-bottom:14px}
+.walk h3{font-size:clamp(20px,1.7vw,24px);font-weight:700;font-stretch:88%;letter-spacing:-.02em;line-height:1.12;margin-bottom:8px;text-wrap:balance}
+.walk p{font-size:16px;line-height:1.45;color:var(--ink-66);text-wrap:pretty}
+.walknote{margin-top:32px;font-size:clamp(18px,1.6vw,22px);font-weight:600;font-stretch:94%;letter-spacing:-.01em}
 .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:26px}
 .chips span{border:1.5px solid var(--ink);border-radius:999px;padding:6px 12px;font-family:var(--mono);font-size:12px;letter-spacing:.06em;text-transform:uppercase}
 
@@ -212,6 +218,7 @@ footer a:hover{color:var(--ink)}
   .cards{grid-template-columns:repeat(2,minmax(0,1fr));gap:28px 28px}
   .jobs{grid-template-columns:repeat(2,minmax(0,1fr))}
   .what{grid-template-columns:1fr}
+  .walk{grid-template-columns:repeat(2,minmax(0,1fr))}
   .how{grid-template-columns:1fr;gap:36px}
   .howmark{position:relative;order:-1;top:auto;justify-self:end;width:46vw;max-width:240px;margin-bottom:8px}
 }
@@ -265,6 +272,7 @@ footer a:hover{color:var(--ink)}
   footer{padding:32px 0 56px}
   .cards{grid-template-columns:1fr;gap:8px}
   .jobs{grid-template-columns:1fr;gap:26px}
+  .walk{grid-template-columns:1fr;gap:22px;margin-top:32px}
   .proof li{grid-template-columns:1fr}
   .stats{gap:10px}
   .stat{padding-left:9px}
@@ -346,13 +354,19 @@ footer a:hover{color:var(--ink)}
 
 <section id="what">
   <div class="what">
-    <h2 class="sh rv">One teammate for the whole company.</h2>
+    <h2 class="sh rv">A guide that walks your team through it.</h2>
     <div class="rv">
-      <p>It lives in WhatsApp, Slack or Telegram, in English and Arabic. Anyone on the team can ask it something, teach it something or hand it a job.</p>
-      <p class="muted">What one person teaches it, the next person gets. Your house rules become everyone’s defaults. Over a few months your team builds dozens of small systems with it, one real job at a time.</p>
+      <p>Everyone on the team gets the same guide in their chat. Tell it what’s slowing you down, and it walks you through fixing it. Nobody needs to know how AI works; people describe their job in their own words.</p>
       <div class="chips"><span>WhatsApp</span><span>Slack</span><span>Telegram</span><span>English</span><span>عربي</span></div>
     </div>
   </div>
+  <ol class="walk">
+    <li class="rv"><span class="mono n">01</span><h3>You say what’s slow.</h3><p>“I lose every Sunday night to the weekly report.”</p></li>
+    <li class="rv"><span class="mono n">02</span><h3>It asks where the work lives.</h3><p>Which sheet, which tool, who signs off.</p></li>
+    <li class="rv"><span class="mono n">03</span><h3>You build the first version together.</h3><p>It drafts, you correct, it learns your way of doing it.</p></li>
+    <li class="rv"><span class="mono n">04</span><h3>You say yes, and it runs.</h3><p>Every week, with a log of what it did. It asks before anything leaves the company.</p></li>
+  </ol>
+  <p class="walknote rv">What one person builds, the whole team can use.</p>
 </section>
 
 <section id="week">
