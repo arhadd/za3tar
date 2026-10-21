@@ -7,16 +7,16 @@ Built in PR feat/homepage-v2. Reworded after review: ask how the company should 
 
 ## 1. Hero
 
-**We teach teams to *work*.**
+**We supercharge your team's ability to *work*.**
 
 The green word flips: work / build / experiment / sell / plan / ship / hire / grow.
 
-With AI, on your own work, in your own chat, with your own tools. We set it up, work beside your people, and step back once they run it.
+A shared platform where your whole team uses the latest in AI, with simple ways to build what they need themselves.
 
 [ Tell us about your company → ]  (jumps to the box at the bottom)
 [ Book a session ]  (WhatsApp)
 
-Rejected along the way: "AI that runs inside your company", the magic-wand heroes, Jello's eight (docs/HERO-OPTIONS-JELLO.md), and a live chat in the hero (read as a chatbot).
+Rejected along the way: "We teach teams to work", "AI that runs inside your company", the magic-wand heroes, Jello's eight (docs/HERO-OPTIONS-JELLO.md), and a live chat in the hero (read as a chatbot).
 
 ---
 
