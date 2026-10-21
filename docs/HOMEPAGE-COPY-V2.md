@@ -7,16 +7,16 @@ Built in PR feat/homepage-v2. Reworded after review: ask how the company should 
 
 ## 1. Hero
 
-**AI that runs inside your company.**
+**We teach teams to *work*.**
 
-Every company gets the same start: one AI teammate in the chat your team already uses, connected to the tools you already run. Then your team teaches it how the work really runs, because nobody knows that better than them.
+The green word flips: work / build / experiment / sell / plan / ship / hire / grow.
+
+With AI, on your own work, in your own chat, with your own tools. We set it up, work beside your people, and step back once they run it.
 
 [ Tell us about your company → ]  (jumps to the box at the bottom)
 [ Book a session ]  (WhatsApp)
 
-> Other headlines, if the first one doesn't land:
-> - "Your whole team, one AI teammate."
-> - "The work your team repeats every week, done by an agent you trust."
+Rejected along the way: "AI that runs inside your company", the magic-wand heroes, Jello's eight (docs/HERO-OPTIONS-JELLO.md), and a live chat in the hero (read as a chatbot).
 
 ---
 
