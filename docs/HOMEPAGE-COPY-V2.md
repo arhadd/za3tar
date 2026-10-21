@@ -69,13 +69,23 @@ Money, clients and anything hard to undo go to a person first. Everything it doe
 
 ## 5. Proof
 
-**Already running.**
+**Already running.** Three setups, counted from their own records, autumn 2026.
 
-- An operations and events company runs on a company workspace in their chat: projects, clients, team, calendar, reporting, with a few dozen connected workflows.
-- A food-and-beverage group with many locations has a teammate keeping their operations tooling running.
-- A consumer brand runs product imagery and content through it.
+**Marketing & events agency — The whole agency runs from its Slack.**
+Projects, clients, vendors, creators, capacity and reporting sit in one workspace, and the teammate works across all of it from Slack. Meetings become tasks with owners, calendars and capacity keep themselves in sync, and the weekly reports land without anyone chasing them. Approvals moved to the team, so the founder stopped being the bottleneck.
+30→13% founder's share of the day-to-day conversation · 8,000+ automatic calendar and capacity syncs · 19 Mondays in a row the weekly schedule landed
+
+**Brand & e-commerce studio — Product imagery at batch speed, checked by people.**
+The studio's teammate works across its client channels: product imagery in batches, catalogues and store listings drafted for the team, and nothing goes live in a store until an operator approves the exact plan. It learns from every correction, so the team corrects it less.
+47→18% replies sent back with "that's not it" · 64 product sets in 5 days, each reviewed by a person · 825 images catalogued with search text in a month
+
+**Our own company · community & events — We run our own company on it.**
+Our community and events company runs tickets, guest lists, check-ins, members and event planning through its own teammate, in WhatsApp with the team. Years of sheets became one member record, and the door runs off the same system.
+245 people checked in at one event, 72% of RSVPs · 3,393 rows of event history merged into one member record · 60 items in the first NYE plan, each with help attached
 
 We share names and walk-throughs in a session.
+
+Rule: counts and measured rates only. No hours-saved, revenue or money figures until a real before/after exists. Approved by Ala for publication 2026-10-21.
 
 ---
 

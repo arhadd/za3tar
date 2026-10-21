@@ -149,11 +149,16 @@ section{border-top:1px solid var(--ink-18);padding:48px 0 72px}
 .job h3{font-size:clamp(22px,1.9vw,27px);font-weight:700;font-stretch:88%;letter-spacing:-.02em;line-height:1.08;margin-bottom:10px;text-wrap:balance}
 .job p{font-size:16.5px;line-height:1.45;color:var(--ink-66);text-wrap:pretty}
 
-/* proof, described broadly */
+/* proof, described broadly: how each team runs, with numbers from the live setups */
 .proof{list-style:none;padding:0}
-.proof li{display:grid;grid-template-columns:minmax(0,4fr) minmax(0,7fr);gap:8px 28px;border-top:1.5px solid var(--ink);padding:18px 0 22px}
-.proof li .mono{color:var(--ink);padding-top:5px}
-.proof li p{font-size:clamp(18px,1.6vw,22px);font-weight:600;font-stretch:94%;letter-spacing:-.01em;line-height:1.3;text-wrap:pretty}
+.proof li{display:grid;grid-template-columns:minmax(0,4fr) minmax(0,7fr);gap:10px 28px;border-top:1.5px solid var(--ink);padding:22px 0 30px}
+.proof li>.mono{color:var(--ink);padding-top:6px}
+.proof h3{font-size:clamp(22px,2vw,28px);font-weight:700;font-stretch:88%;letter-spacing:-.02em;line-height:1.1;margin-bottom:10px;text-wrap:balance}
+.proof li p{font-size:16.5px;line-height:1.5;color:var(--ink-66);text-wrap:pretty;max-width:62ch}
+.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin-top:20px}
+.stat{border-left:1.5px solid var(--ink-18);padding-left:12px}
+.stat b{display:block;white-space:nowrap;font-size:clamp(24px,3.2vw,46px);font-weight:800;font-stretch:88%;letter-spacing:-.035em;line-height:1}
+.stat span{display:block;margin-top:6px;font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-66);line-height:1.4}
 .proofnote{margin-top:8px;font-size:15.5px}
 
 .steps{min-height:100vh;min-height:100svh;display:flex;flex-direction:column;justify-content:center;padding:24px 0}
@@ -264,6 +269,9 @@ footer a:hover{color:var(--ink)}
   .cards{grid-template-columns:1fr;gap:8px}
   .jobs{grid-template-columns:1fr;gap:26px}
   .proof li{grid-template-columns:1fr}
+  .stats{gap:10px}
+  .stat{padding-left:9px}
+  .stat span{font-size:10px}
   .card4{display:grid;grid-template-columns:56px minmax(0,1fr);gap:0 16px;padding:22px 0 18px}
   .card4 .slot{height:auto;margin:4px 0 0;align-items:flex-start}
   .card4 h3{font-size:26px}
@@ -363,11 +371,26 @@ footer a:hover{color:var(--ink)}
 </section>
 
 <section id="proof">
-  <h2 class="sh rv">Already running.</h2>
+  <h2 class="sh rv">Already running.<small>Three setups, counted from their own records, autumn 2026.</small></h2>
   <ul class="proof">
-    <li class="rv"><span class="mono">Operations &amp; events</span><p>A company workspace in their chat: projects, clients, team, calendar and reporting, with a few dozen connected workflows.</p></li>
-    <li class="rv"><span class="mono">Food &amp; beverage · many locations</span><p>A teammate that keeps their operations tooling running.</p></li>
-    <li class="rv"><span class="mono">Consumer brand</span><p>Product imagery and content, run through it.</p></li>
+    <li class="rv"><span class="mono">Marketing &amp; events agency</span>
+      <div>
+        <h3>The whole agency runs from its Slack.</h3>
+        <p>Projects, clients, vendors, creators, capacity and reporting sit in one workspace, and the teammate works across all of it from Slack. Meetings become tasks with owners, calendars and capacity keep themselves in sync, and the weekly reports land without anyone chasing them. Approvals moved to the team, so the founder stopped being the bottleneck.</p>
+        <div class="stats"><div class="stat"><b>30→13%</b><span>founder’s share of the day-to-day conversation</span></div><div class="stat"><b>8,000+</b><span>automatic calendar and capacity syncs</span></div><div class="stat"><b>19</b><span>Mondays in a row the weekly schedule landed</span></div></div>
+      </div></li>
+    <li class="rv"><span class="mono">Brand &amp; e-commerce studio</span>
+      <div>
+        <h3>Product imagery at batch speed, checked by people.</h3>
+        <p>The studio’s teammate works across its client channels: product imagery in batches, catalogues and store listings drafted for the team, and nothing goes live in a store until an operator approves the exact plan. It learns from every correction, so the team corrects it less.</p>
+        <div class="stats"><div class="stat"><b>47→18%</b><span>replies sent back with “that’s not it”</span></div><div class="stat"><b>64</b><span>product sets in 5 days, each reviewed by a person</span></div><div class="stat"><b>825</b><span>images catalogued with search text in a month</span></div></div>
+      </div></li>
+    <li class="rv"><span class="mono">Our own company · community &amp; events</span>
+      <div>
+        <h3>We run our own company on it.</h3>
+        <p>Our community and events company runs tickets, guest lists, check-ins, members and event planning through its own teammate, in WhatsApp with the team. Years of sheets became one member record, and the door runs off the same system.</p>
+        <div class="stats"><div class="stat"><b>245</b><span>people checked in at one event, 72% of RSVPs</span></div><div class="stat"><b>3,393</b><span>rows of event history merged into one member record</span></div><div class="stat"><b>60</b><span>items in the first NYE plan, each with help attached</span></div></div>
+      </div></li>
   </ul>
   <p class="proofnote muted rv">We share names and walk-throughs in a session.</p>
 </section>
