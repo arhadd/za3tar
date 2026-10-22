@@ -144,6 +144,8 @@ section{border-top:1px solid var(--ink-18);padding:48px 0 72px}
 .proof li p{font-size:16.5px;line-height:1.5;color:var(--ink-66);text-wrap:pretty;max-width:62ch}
 
 .steps{min-height:100vh;min-height:100svh;display:flex;flex-direction:column;justify-content:center;padding:24px 0}
+.demorow{display:flex;align-items:flex-end;justify-content:space-between;gap:24px 48px;flex-wrap:wrap}
+.demorow .sh{margin-bottom:0;max-width:30ch}
 .keep{margin-top:40px;font-size:16.5px;max-width:60ch}
 .keep b{color:var(--ink);font-weight:600}
 .cards{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:0 28px}
@@ -155,10 +157,9 @@ section{border-top:1px solid var(--ink-18);padding:48px 0 72px}
 .page3{min-height:100vh;min-height:100svh;display:flex;flex-direction:column}
 .cta{flex:1;display:flex;align-items:center;padding:48px 0}
 .cta>.how{width:100%}
-.ctacopy h2{font-size:clamp(36px,4.8vw,66px);max-width:14ch}
+.ctacopy h2{font-size:clamp(32px,3.6vw,54px);max-width:18ch}
 .ctacopy p{margin-top:20px;font-size:clamp(17px,1.5vw,20px);color:var(--ink-66);max-width:44ch;text-wrap:pretty}
 .ctacopy .ctas{margin-top:26px}
-.zsay{position:relative;display:inline-block;margin-top:34px!important;border:1.5px solid var(--ink);border-radius:18px 18px 4px 18px;padding:14px 18px;font-size:clamp(17px,1.45vw,20px)!important;font-weight:600;color:var(--ink)!important;background:var(--paper);max-width:40ch!important;line-height:1.35}
 .tryform{display:flex;flex-wrap:wrap;gap:10px;margin-top:22px;max-width:560px}
 .tryform .btn{cursor:pointer;font-family:inherit}
 .tryform input{flex:1;min-width:0;font:inherit;font-size:17px;color:var(--ink);background:transparent;border:1.5px solid var(--ink);border-radius:8px;padding:13px 14px;outline:none}
@@ -184,7 +185,8 @@ body.fx.held .howmark svg.wand{opacity:1;transform:none}
 /* ---------- close / footer ---------- */
 footer{border-top:1px solid var(--ink-18);padding:24px 0 40px}
 .fbar{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
-.flinks{display:flex;gap:22px}
+.flinks{display:flex;gap:22px;flex-wrap:wrap}
+.flinks a{white-space:nowrap}
 footer a:hover{color:var(--ink)}
 
 /* ---------- responsive ---------- */
@@ -217,16 +219,15 @@ footer a:hover{color:var(--ink)}
   /* phone: closing heading left, reassembled Z to its right */
   .how{grid-template-columns:minmax(0,1fr) 34vw;gap:0 12px;align-items:center}
   .ctacopy{display:contents}
-  .ctacopy h2{grid-column:1;grid-row:1;font-size:clamp(24px,7vw,34px);max-width:none}
+  .ctacopy h2{grid-column:1;grid-row:1;font-size:clamp(22px,6vw,30px);max-width:none}
   .howmark{grid-column:2;grid-row:1;order:0;position:relative;top:auto;justify-self:end;width:100%;max-width:none;margin:0}
   /* phone: the wand points down at the question */
   .howmark svg.wand{width:36%;right:auto;left:-8%;bottom:-30%;transform-origin:100% 0}
   .wand .wg{transform:scaleY(-1);transform-origin:50% 50%;transform-box:view-box}
-  .zsay{grid-column:1/-1;grid-row:2;justify-self:start;border-radius:4px 18px 18px 18px}
-  .tryform{grid-column:1/-1;grid-row:3}
+  .tryform{grid-column:1/-1;grid-row:2}
   .tryform .btn{justify-content:center}
-  .trynote{grid-column:1/-1;grid-row:4}
-  .person{grid-column:1/-1;grid-row:5}
+  .trynote{grid-column:1/-1;grid-row:3}
+  .person{grid-column:1/-1;grid-row:4}
   .fbar{gap:10px 22px}
   .fbar a{display:inline-block;padding:10px 0;font-size:13px}
   .flinks{gap:26px}
@@ -263,7 +264,7 @@ footer a:hover{color:var(--ink)}
 
 <nav>
   <a class="logo" href="/"><img src="/brand/mark-mono.svg" alt="" width="22" height="22">za3tar</a>
-  <span class="navr"><a class="trylink mono" href="#start"><span class="full">Tell us about your company →</span><span class="short">Start →</span></a><a class="btn" href="https://wa.me/962798885558?text=Hi%2C%20I%27d%20like%20to%20book%20a%20session." target="_blank" rel="noopener">Book a session <span class="ar">→</span></a></span>
+  <span class="navr"><a class="trylink mono" href="/demo/"><span class="full">Try it on your company →</span><span class="short">Try it →</span></a><a class="btn" href="https://wa.me/962798885558?text=Hi%20za3tar%2C%20we%27d%20like%20to%20start%20our%20setup." target="_blank" rel="noopener">Start your setup <span class="ar">→</span></a></span>
 </nav>
 
 <header class="hero">
@@ -339,19 +340,25 @@ footer a:hover{color:var(--ink)}
 
 
 
+<section id="demo" class="demo">
+  <div class="demorow">
+    <h2 class="sh rv">Try it on your company.<small>Tell Za3tar your company, and in about a minute it shows you what a teammate would take on. Turn your sound on.</small></h2>
+    <div class="rv"><a class="btn" href="/demo/">Start the demo <span class="ar">→</span></a></div>
+  </div>
+</section>
+
 <div class="page3">
 <section id="how" class="cta">
   <div class="how" id="start">
     <div class="ctacopy">
-      <h2 class="display rv">How should your company run?</h2>
-      <p class="zsay rv">If you had a magic wand, what would you change in your company?</p>
+      <h2 class="display rv">If you had a magic wand, how would you change how your company runs?</h2>
       <form class="tryform rv" id="startform">
         <input name="company" required autocomplete="organization" placeholder="Company name" aria-label="Company name">
         <input name="week" placeholder="With a magic wand, we’d… (optional)" aria-label="What you would change with a magic wand">
         <button class="btn" type="submit">Send on WhatsApp <span class="ar">→</span></button>
       </form>
       <p class="trynote muted rv">WhatsApp opens with your message ready. You read it and press send yourself, and we get back to you to explore it with your team.</p>
-      <p class="person rv">Rather talk now? <a href="https://wa.me/962798885558?text=Hi%2C%20I%27d%20like%20to%20book%20a%20session." target="_blank" rel="noopener">Book a session →</a></p>
+      <p class="person rv">Ready to go? <a href="https://wa.me/962798885558?text=Hi%20za3tar%2C%20we%27d%20like%20to%20start%20our%20setup." target="_blank" rel="noopener">Start your setup →</a></p>
     </div>
     <!-- the four pieces reassemble here as the steps scroll by; static mark is the no-js fallback -->
     <div class="howmark" aria-hidden="true">
@@ -377,7 +384,7 @@ footer a:hover{color:var(--ink)}
 <footer>
   <div class="mono fbar">
     <span>za3tar · Dubai</span>
-    <span class="flinks"><a href="https://wa.me/962798885558?text=Hi%2C%20I%27d%20like%20to%20book%20a%20session." target="_blank" rel="noopener">Book a session →</a><a href="/llms.txt">llms.txt</a></span>
+    <span class="flinks"><a href="https://wa.me/962798885558?text=Hi%20za3tar%2C%20we%27d%20like%20to%20start%20our%20setup." target="_blank" rel="noopener">Start your setup →</a><a href="/demo/">Try it →</a><a href="/llms.txt">llms.txt</a></span>
   </div>
 </footer>
 </div><!-- /page3 -->
