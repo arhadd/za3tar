@@ -8,53 +8,76 @@
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,100..900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="common.css">
 <style>
-.chat{position:absolute;left:140px;top:140px;width:960px;height:740px}
-.chat .bd{position:relative;height:calc(100% - 68px);padding:0}
-.page{position:absolute;inset:26px 30px;display:flex;flex-direction:column;gap:18px}
-.rules{position:absolute;left:1180px;top:200px;width:620px}
-.rules .row span:first-child{font-size:26px}
-.za{left:1400px;top:620px;--w:210px}
+/* week one: three lanes of how the work moves today, watched from above */
+.lane{position:absolute;left:60px;font-size:22px;font-weight:900;letter-spacing:.08em;background:var(--ink);color:var(--paper);border-radius:999px;padding:6px 18px;margin-top:-22px}
+.tool{width:280px;margin-left:-140px}
+.arrows{position:absolute;inset:0;width:1920px;height:1080px;z-index:0}
+.arrows path{fill:none;stroke:var(--ink);stroke-width:5;stroke-dasharray:12 12;opacity:0;animation:fade .4s ease both;animation-delay:calc(var(--o)*1s)}
+.seen{position:absolute;z-index:4;font-size:24px;font-weight:900;line-height:1.2;background:var(--lime2);border:4px solid var(--ink);border-radius:10px;padding:8px 14px;box-shadow:5px 5px 0 var(--ink);white-space:nowrap}
+.seen small{display:block;font-size:17px;font-weight:800;opacity:.6;text-transform:uppercase;letter-spacing:.06em}
+.watch{position:absolute;left:260px;top:36px;width:120px;height:120px;z-index:6;animation:walk 11s cubic-bezier(.45,0,.55,1) both;animation-delay:1.5s}
+@keyframes walk{0%{transform:none}30%{transform:translateX(560px)}55%{transform:translateX(560px)}100%{transform:translateX(1240px)}}
+.dim{animation:dim .6s ease both;animation-delay:calc(var(--o)*1s)}
+@keyframes dim{to{opacity:.22;filter:grayscale(1)}}
+/* week two: the first piece, built around it */
+.built{position:absolute;left:560px;top:230px;width:800px;z-index:5}
+.built .bd{display:flex;gap:30px;align-items:flex-end}
+.chart{flex:none;display:flex;gap:12px;align-items:flex-end;height:200px;padding-bottom:6px;border-bottom:4px solid var(--ink)}
+.chart i{display:block;width:40px;background:var(--lime);border:4px solid var(--ink);border-radius:6px 6px 0 0;transform-origin:bottom;animation:grow .6s cubic-bezier(.2,.9,.3,1.2) both;animation-delay:calc(var(--o)*1s)}
+@keyframes grow{from{transform:scaleY(0)}}
+.built .rows{flex:1}
+.built .row{font-size:25px}
+.live{animation:go .4s var(--pop) both;animation-delay:calc(var(--o)*1s)}
 </style>
 </head>
 <body>
 <section class="scene">
   <div class="step rise" style="--o:.2">01 · Set up</div>
+  <div class="watch"><div class="mascot" data-mascot style="--w:120px"></div></div>
 
-  <div class="chat card pop" style="--o:.4;--r0:-2deg">
-    <div class="hd"><i></i>Team chat<small>your company · 12 people</small></div>
+  <div class="dim" style="--o:14.2">
+    <svg class="arrows" viewBox="0 0 1920 1080">
+      <path style="--o:1.2" d="M620 260H760"/><path style="--o:1.4" d="M1040 260H1180"/>
+      <path style="--o:1.6" d="M620 470H760"/><path style="--o:1.8" d="M1040 470H1180"/>
+      <path style="--o:2" d="M620 680H760"/><path style="--o:2.2" d="M1040 680H1180"/>
+      <path style="--o:2.8" d="M1320 300V430"/>
+    </svg>
+    <div class="lane rise" style="--o:.5;top:260px">SALES</div>
+    <div class="lane rise" style="--o:.7;top:470px">OPS</div>
+    <div class="lane rise" style="--o:.9;top:680px">FINANCE</div>
+    <div class="tool pop" style="--o:.8;left:480px;top:260px">📥 Inbox</div>
+    <div class="tool pop" style="--o:1;left:900px;top:260px">💬 WhatsApp</div>
+    <div class="tool pop" style="--o:1.2;left:1320px;top:260px">📊 Sales sheet</div>
+    <div class="tool pop" style="--o:1.1;left:480px;top:470px">📅 Calendar</div>
+    <div class="tool pop" style="--o:1.3;left:900px;top:470px">📋 Crew list</div>
+    <div class="tool pop" style="--o:1.5;left:1320px;top:470px">📊 Ops sheet</div>
+    <div class="tool pop" style="--o:1.4;left:480px;top:680px">🧾 Accounting</div>
+    <div class="tool pop" style="--o:1.6;left:900px;top:680px">📈 Report</div>
+    <div class="tool pop" style="--o:1.8;left:1320px;top:680px">📧 Founder</div>
+
+    <div class="seen pop" style="--o:3.4;left:1365px;top:335px;--r:3deg"><small>seen</small>Copied by hand, every day</div>
+    <div class="seen pop" style="--o:5.6;left:990px;top:312px;--r:-3deg"><small>seen</small>Waits on the founder</div>
+    <div class="seen pop" style="--o:8.4;left:760px;top:524px;--r:2deg"><small>seen</small>“Who’s on shift?” asked 3×</div>
+  </div>
+  <div class="seen pop" style="--o:10.6;left:760px;top:735px;--r:-2deg;z-index:6"><small>seen</small>Same report every Monday · 3h</div>
+
+  <div class="built card pop" style="--o:15;--r0:-3deg">
+    <div class="hd"><i></i>Weekly report<small>built in week two</small></div>
     <div class="bd">
-      <div class="page out" style="--x:14">
-        <div class="sys pop" style="--o:1.4">Za3tar joined the chat</div>
-        <div class="msg z pop" style="--o:2.4">Hi all 👋 Tell me how things work here, and hand me anything.</div>
-        <div class="msg pop" style="--o:7.4"><b>ops</b>We call them guests, never customers.</div>
-        <div class="msg z pop" style="--o:8.6">Got it. Guests, never customers.</div>
-        <div class="msg pop" style="--o:10.2"><b>sales</b>Anything over 5k goes to the founder first.</div>
-        <div class="msg z pop" style="--o:11.6">Noted. I’ll check with the founder first.</div>
-      </div>
-      <div class="page">
-        <div class="msg pop" style="--o:14.4"><b>sales</b>Draft the reply to the new booking.</div>
-        <div class="msg z pop" style="--o:16">Hi! Your booking for 40 guests is confirmed for Thursday at 8. We can’t wait to host you.
-          <div class="btns"><span class="go" style="--o:18.2">Send</span><span>Edit</span></div></div>
-        <div class="sys pop" style="--o:18.8">Sent ✓</div>
+      <div class="chart"><i style="--o:15.6;height:90px"></i><i style="--o:15.8;height:140px"></i><i style="--o:16;height:115px"></i><i style="--o:16.2;height:175px"></i></div>
+      <div class="rows">
+        <div class="row rise" style="--o:16.4"><span>From accounting + sales sheet</span></div>
+        <div class="row rise" style="--o:16.8"><span>Ready every Monday, 8:00</span></div>
+        <div class="row rise" style="--o:17.2"><span>Nobody builds it by hand</span><span class="st live" style="--o:17.8">live</span></div>
       </div>
     </div>
   </div>
 
-  <div class="rules card pop" style="--o:7;--r0:3deg">
-    <div class="hd"><i></i>House rules</div>
-    <div class="bd">
-      <div class="row rise" style="--o:9"><span>Say guests, not customers</span><span class="st">✓</span></div>
-      <div class="row rise" style="--o:12"><span>Over 5k → founder signs off</span><span class="st">✓</span></div>
-      <div class="row rise" style="--o:13"><span>Warm, short replies</span><span class="st">✓</span></div>
-    </div>
-  </div>
-  <div class="mascot za pop" data-mascot style="--o:1;--r0:-14deg"></div>
+  <div class="cap" style="--o:.5;--x:6.8"><span>Week one. We sit with your team and see how the work really moves.</span></div>
+  <div class="cap" style="--o:7.2;--x:13.6"><span>We note where the time goes: the copying, the chasing, the weekly report.</span></div>
+  <div class="cap" style="--o:14;--x:19.6"><span>Then we build the first piece around how you already work.</span></div>
 
-  <div class="cap" style="--o:.5;--x:6.8"><span>Day one. Your teammate joins the chat you already use.</span></div>
-  <div class="cap" style="--o:7.2;--x:13.6"><span>Your team tells it how the company works, in their own words.</span></div>
-  <div class="cap" style="--o:14;--x:19.6"><span>By the end of week one, it writes like you.</span></div>
-
-  <div data-end="01 · SET UP|Set up.|A teammate that knows your company." style="--o:20"></div>
+  <div data-end="01 · SET UP|Set up.|Built around how your team already works." style="--o:20"></div>
 </section>
 <script src="common.js"></script>
 </body>

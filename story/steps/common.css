@@ -33,12 +33,7 @@ body{font-family:var(--sans);color:var(--ink);-webkit-font-smoothing:antialiased
 .card .hd small{margin-left:auto;font-size:20px;font-weight:700;opacity:.55}
 .card .bd{padding:22px 26px}
 
-/* chat */
-.chat .bd{display:flex;flex-direction:column;gap:18px}
-.msg{max-width:640px;font-size:29px;font-weight:700;line-height:1.25;padding:14px 22px;border:4px solid var(--ink);border-radius:22px 22px 22px 6px;background:var(--paper);align-self:flex-start}
-.msg b{display:block;font-size:19px;font-weight:900;text-transform:uppercase;letter-spacing:.07em;opacity:.5;margin-bottom:4px}
-.msg.z{align-self:flex-end;background:var(--lime);border-radius:22px 22px 6px 22px}
-.sys{align-self:center;font-size:22px;font-weight:800;opacity:.6;background:rgba(11,23,16,.07);border-radius:999px;padding:6px 18px}
+/* buttons */
 .btns{display:flex;gap:12px;margin-top:12px}
 .btns span{font-size:22px;font-weight:900;border:3px solid var(--ink);border-radius:999px;padding:4px 18px;background:#fff}
 .btns .go{animation:go .4s var(--pop) both;animation-delay:calc(var(--o)*1s)}

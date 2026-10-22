@@ -1,19 +1,19 @@
 # Step videos — Set up · Connect · Maintain · Grow
 
 Four short films, 24s each, one per step in "How it works". They play silent with captions on the homepage, under the demo.
-The company is generic on purpose: it is "your company", and people are labelled only by role (ops, sales). No names, no industry, no real clients or agents. The teammate is the Z mascot.
+The company is generic on purpose: it is "your company", and people are labelled only by role (ops, sales). No names, no industry, no real clients or agents. The Z mascot stands for za3tar. Nothing in the films is a chat: the work shows up as tools, notes, forms and the one place.
 Source: `story/steps/<step>.html` → `site/media/step-<step>.mp4` + `.jpg`. Render with
 `PLAYWRIGHT=/path/to/node_modules/playwright node story/steps/render.mjs [setup connect maintain grow]` (needs ffmpeg).
 Single frame: open `story/steps/<step>.html?t=12`.
 
-## 01 · Set up — "It joins your chat"
+## 01 · Set up — "We see how the work moves, then build"
 
 | Time | On screen | Caption |
 |---|---|---|
-| 0–7s | The team chat. "Za3tar joined the chat", and the mascot pops in. | Day one. Your teammate joins the chat you already use. |
-| 7–14s | Ops: "We call them guests, never customers." Sales: "Anything over 5k goes to the founder first." A "House rules" card fills in beside the chat. | Your team tells it how the company works, in their own words. |
-| 14–20s | Sales: "Draft the reply to the new booking." The draft comes back in the house voice, with Send / Edit. Send lights up. | By the end of week one, it writes like you. |
-| 20–24s | **Set up.** A teammate that knows your company. | |
+| 0–7s | Three lanes (sales, ops, finance), each a chain of the tools the work passes through. The mascot moves along the top, watching. | Week one. We sit with your team and see how the work really moves. |
+| 7–14s | "Seen" notes pop up where time goes: copied by hand every day, waits on the founder, "who's on shift?" asked 3×, same report every Monday · 3h. | We note where the time goes: the copying, the chasing, the weekly report. |
+| 14–20s | The lanes fade back. A "Weekly report · built in week two" card assembles: a chart, its sources, ready every Monday, live. | Then we build the first piece around how you already work. |
+| 20–24s | **Set up.** Built around how your team already works. | |
 
 ## 02 · Connect — "Your tools, in one place"
 
@@ -21,7 +21,7 @@ Single frame: open `story/steps/<step>.html?t=12`.
 |---|---|---|
 | 0–6s | Six tool tiles pop up around the screen: bookings sheet, accounting, calendar, inbox, CRM, drive. | Today your company lives in ten tools. |
 | 6–13s | "Your company, in one place" appears in the middle and wires draw from every tool into it. The tools stay where they are. | We connect them into one place. Nothing moves, nothing gets retyped. |
-| 13–20s | Sales asks "What did we spend on venues this month?" The answer comes back with a source tag: "from Accounting". | Now anyone can ask, and every answer shows where it came from. |
+| 13–20s | The accounting tile lights up and a number lands in the middle: venue spend this month, tagged "from Accounting". | Your team works from the same numbers, each with its source. |
 | 20–24s | **Connect.** Your tools stay. Everything meets in one place. | |
 
 ## 03 · Maintain — "It stays current"
@@ -37,7 +37,7 @@ Single frame: open `story/steps/<step>.html?t=12`.
 
 | Time | On screen | Caption |
 |---|---|---|
-| 0–7s | Ops: "Can you send me the guest list every Thursday?" Za3tar: "Every Thursday at 9, from bookings. Start this week?" Ops: "Yes." The job joins a "Running jobs" list. | Your team hands it new jobs, in plain words. |
+| 0–7s | Ops fills in a "New job" form: guest list, every Thursday 9:00, from bookings, to the ops team. Start. The job joins "Running jobs". | Your team adds new jobs as the work changes. |
 | 7–13s | A new tool, ticketing, flies in and connects. Tag: "added by sales". | New tools join as the company needs them. |
 | 13–20s | The jobs list fills up: weekly report, invoice reminders, new leads, month-end summary. | Month by month, the company runs from one place. |
 | 20–24s | **Grow.** The system grows with your company. | |

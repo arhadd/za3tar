@@ -9,9 +9,11 @@
 <link rel="stylesheet" href="common.css">
 <style>
 .hub .hd{font-size:26px}
-.ask{left:560px;top:650px}
-.ans{left:760px;top:790px;display:flex;align-items:center;gap:18px}
-.ans .tag{position:static}
+.num{position:absolute;left:640px;top:680px;width:640px;z-index:4}
+.num .bd{display:flex;align-items:center;justify-content:space-between;gap:18px}
+.num b{display:block;font-size:56px;font-weight:900;font-stretch:108%;letter-spacing:-.03em;line-height:1}
+.num small{display:block;font-size:22px;font-weight:800;opacity:.6;margin-bottom:6px}
+.num .tag{position:static}
 .hot{animation:pop .55s var(--pop) both,hot .9s ease both;animation-delay:calc(var(--o)*1s),calc(var(--h)*1s)}
 @keyframes hot{40%{background:var(--lime);transform:scale(1.08)}100%{background:var(--lime)}}
 </style>
@@ -48,12 +50,13 @@
       <div class="lines"><div class="gl fade" style="--o:9.6;width:92%"></div><div class="gl fade" style="--o:10;width:74%"></div><div class="gl fade" style="--o:10.4;width:86%"></div><div class="gl fade" style="--o:10.8;width:60%"></div></div></div>
   </div>
 
-  <div class="say ask pop" style="--o:13.6;--r0:-3deg"><b>sales</b>What did we spend on venues this month?</div>
-  <div class="say ans pop" style="--o:16.2;--r0:3deg;background:var(--lime)">AED 18,400 across 3 venues <span class="tag">from Accounting</span></div>
+  <div class="num card pop" style="--o:16;--r0:3deg">
+    <div class="bd"><div><small>Venue spend this month</small><b>AED 18,400</b></div><span class="tag">from Accounting</span></div>
+  </div>
 
   <div class="cap" style="--o:.5;--x:6.2"><span>Today your company lives in ten tools.</span></div>
   <div class="cap" style="--o:6.6;--x:13.2"><span>We connect them into one place. Nothing moves, nothing gets retyped.</span></div>
-  <div class="cap" style="--o:13.6;--x:19.6"><span>Now anyone can ask, and every answer shows where it came from.</span></div>
+  <div class="cap" style="--o:13.6;--x:19.6"><span>Your team works from the same numbers, each with its source.</span></div>
 
   <div data-end="02 · CONNECT|Connect.|Your tools stay. Everything meets in one place." style="--o:20"></div>
 </section>
