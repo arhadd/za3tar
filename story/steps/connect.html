@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Step 02 · Connect</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,100..900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="common.css">
+<style>
+.hub .hd{font-size:26px}
+.ask{left:560px;top:650px}
+.ans{left:760px;top:790px;display:flex;align-items:center;gap:18px}
+.ans .tag{position:static}
+.hot{animation:pop .55s var(--pop) both,hot .9s ease both;animation-delay:calc(var(--o)*1s),calc(var(--h)*1s)}
+@keyframes hot{40%{background:var(--lime);transform:scale(1.08)}100%{background:var(--lime)}}
+</style>
+</head>
+<body>
+<section class="scene">
+  <div class="step rise" style="--o:.2">02 · Connect</div>
+
+  <svg class="wires" viewBox="0 0 1920 1080">
+    <g style="--o:7.4"><path class="halo" d="M450 220C580 220 570 470 700 470"/><path id="w1" d="M450 220C580 220 570 470 700 470"/></g>
+    <g style="--o:7.7"><path class="halo" d="M450 470C560 470 590 470 700 470"/><path d="M450 470C560 470 590 470 700 470"/></g>
+    <g style="--o:8"><path class="halo" d="M450 720C580 720 570 470 700 470"/><path d="M450 720C580 720 570 470 700 470"/></g>
+    <g style="--o:8.3"><path class="halo" d="M1470 220C1340 220 1350 470 1220 470"/><path d="M1470 220C1340 220 1350 470 1220 470"/></g>
+    <g style="--o:8.6"><path class="halo" d="M1470 470C1360 470 1330 470 1220 470"/><path d="M1470 470C1360 470 1330 470 1220 470"/></g>
+    <g style="--o:8.9"><path class="halo" d="M1470 720C1340 720 1350 470 1220 470"/><path d="M1470 720C1340 720 1350 470 1220 470"/></g>
+  </svg>
+  <i class="pulse" style="--o:9.2;offset-path:path('M450 220C580 220 570 470 700 470')"></i>
+  <i class="pulse" style="--o:9.6;offset-path:path('M1470 720C1340 720 1350 470 1220 470')"></i>
+  <i class="pulse" style="--o:10;offset-path:path('M450 720C580 720 570 470 700 470')"></i>
+  <i class="pulse" style="--o:10.4;offset-path:path('M1470 220C1340 220 1350 470 1220 470')"></i>
+  <i class="pulse" style="--o:14.6;offset-path:path('M700 470C590 470 560 470 450 470')"></i>
+  <i class="pulse" style="--o:15.6;offset-path:path('M450 470C560 470 590 470 700 470')"></i>
+
+  <div class="tool pop" style="--o:1;left:300px;top:220px;--r:-3deg">📊 Bookings</div>
+  <div class="tool pop hot" style="--o:1.5;--h:15.2;left:300px;top:470px;--r:2deg">🧾 Accounting</div>
+  <div class="tool pop" style="--o:2;left:300px;top:720px;--r:-2deg">📅 Calendar</div>
+  <div class="tool pop" style="--o:2.5;left:1620px;top:220px;--r:3deg">📥 Inbox</div>
+  <div class="tool pop" style="--o:3;left:1620px;top:470px;--r:-3deg">👥 Clients</div>
+  <div class="tool pop" style="--o:3.5;left:1620px;top:720px;--r:2deg">📁 Files</div>
+
+  <div class="hub card pop" style="--o:6.6">
+    <div class="hd"><i></i>Your company, in one place</div>
+    <div class="bd"><div class="mascot inline" data-mascot style="--w:140px"></div>
+      <div class="lines"><div class="gl fade" style="--o:9.6;width:92%"></div><div class="gl fade" style="--o:10;width:74%"></div><div class="gl fade" style="--o:10.4;width:86%"></div><div class="gl fade" style="--o:10.8;width:60%"></div></div></div>
+  </div>
+
+  <div class="say ask pop" style="--o:13.6;--r0:-3deg"><b>sales</b>What did we spend on venues this month?</div>
+  <div class="say ans pop" style="--o:16.2;--r0:3deg;background:var(--lime)">AED 18,400 across 3 venues <span class="tag">from Accounting</span></div>
+
+  <div class="cap" style="--o:.5;--x:6.2"><span>Today your company lives in ten tools.</span></div>
+  <div class="cap" style="--o:6.6;--x:13.2"><span>We connect them into one place. Nothing moves, nothing gets retyped.</span></div>
+  <div class="cap" style="--o:13.6;--x:19.6"><span>Now anyone can ask, and every answer shows where it came from.</span></div>
+
+  <div data-end="02 · CONNECT|Connect.|Your tools stay. Everything meets in one place." style="--o:20"></div>
+</section>
+<script src="common.js"></script>
+</body>
+</html>

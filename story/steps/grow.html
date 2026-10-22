@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Step 04 · Grow</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,100..900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="common.css">
+<style>
+.chat{position:absolute;left:120px;top:140px;width:840px;height:560px}
+.jobs{position:absolute;left:1040px;top:140px;width:760px}
+.jobs .st{background:#fff}
+.jobs .new{background:var(--lime)}
+.jobs .hd .flip .b{background:var(--paper)}
+.tools{position:absolute;left:1040px;top:640px;width:760px}
+.tools .bd{display:flex;flex-wrap:wrap;gap:14px}
+.chipt{font-size:24px;font-weight:900;border:4px solid var(--ink);border-radius:999px;padding:6px 18px;background:#fff;white-space:nowrap}
+.chipt.in{background:var(--lime);animation:flyin .9s cubic-bezier(.2,.9,.3,1.2) both;animation-delay:calc(var(--o)*1s)}
+@keyframes flyin{from{opacity:0;transform:translate(420px,-160px) rotate(12deg) scale(1.3)}to{opacity:1;transform:none}}
+.za{left:790px;top:725px;--w:155px}
+</style>
+</head>
+<body>
+<section class="scene">
+  <div class="step rise" style="--o:.2">04 · Grow</div>
+
+  <div class="chat card">
+    <div class="hd"><i></i>Team chat<small>your company</small></div>
+    <div class="bd">
+      <div class="msg pop" style="--o:1"><b>ops</b>Can you send me the guest list every Thursday?</div>
+      <div class="msg z pop" style="--o:2.6">Every Thursday at 9, from bookings. Start this week?</div>
+      <div class="msg pop" style="--o:4.4"><b>ops</b>Yes 🙌</div>
+    </div>
+  </div>
+  <div class="mascot za" data-mascot></div>
+
+  <div class="jobs card">
+    <div class="hd"><i></i>Running jobs<small><span class="flip" style="--o:16.6"><span class="a">1 running</span><span class="b">5 running</span></span></small></div>
+    <div class="bd">
+      <div class="row rise" style="--o:5.4"><span>Guest list → ops · Thu 9:00</span><span class="st new">new</span></div>
+      <div class="row rise" style="--o:13.8"><span>Weekly report · Mondays</span><span class="st">on</span></div>
+      <div class="row rise" style="--o:14.6"><span>Invoice reminders · daily</span><span class="st">on</span></div>
+      <div class="row rise" style="--o:15.4"><span>New lead → clients</span><span class="st">on</span></div>
+      <div class="row rise" style="--o:16.2"><span>Month-end summary</span><span class="st">on</span></div>
+    </div>
+  </div>
+
+  <div class="tools card">
+    <div class="hd"><i></i>Connected tools</div>
+    <div class="bd">
+      <span class="chipt">📊 Bookings</span><span class="chipt">🧾 Accounting</span><span class="chipt">📅 Calendar</span><span class="chipt">📥 Inbox</span>
+      <span class="chipt in" style="--o:8.2">🎟 Ticketing</span>
+    </div>
+  </div>
+  <div class="tag pop" style="--o:9.4;left:1500px;top:600px;--r:3deg">added by sales</div>
+
+  <div class="cap" style="--o:.5;--x:6.8"><span>Your team hands it new jobs, in plain words.</span></div>
+  <div class="cap" style="--o:7.2;--x:13.2"><span>New tools join as the company needs them.</span></div>
+  <div class="cap" style="--o:13.6;--x:19.6"><span>Month by month, the company runs from one place.</span></div>
+
+  <div data-end="04 · GROW|Grow.|The system grows with your company." style="--o:20"></div>
+</section>
+<script src="common.js"></script>
+</body>
+</html>

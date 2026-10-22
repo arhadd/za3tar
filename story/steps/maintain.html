@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Step 03 · Maintain</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,100..900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="common.css">
+<style>
+.hub .hd{font-size:26px}
+.hub .bd{display:block;padding:10px 26px}
+.hub .row{font-size:25px;padding:11px 0}
+.hub .st{background:#fff}
+.hub .flip .b{background:var(--lime)}
+.week{position:absolute;left:1620px;top:50px;font-size:30px;font-weight:900;background:#fff;border:4px solid var(--ink);border-radius:14px;padding:6px 22px;box-shadow:5px 5px 0 var(--ink)}
+.week .b{background:#fff}
+.wires path.amber{stroke:var(--amber);stroke-dasharray:22 18;stroke-dashoffset:0;opacity:0;
+  animation:fade .3s ease both,out .3s ease forwards;animation-delay:calc(var(--o)*1s),calc(var(--x)*1s)}
+.za{left:870px;top:660px;--w:180px}
+.warn{background:var(--amber);color:var(--ink)}
+</style>
+</head>
+<body>
+<section class="scene">
+  <div class="step rise" style="--o:.2">03 · Maintain</div>
+  <div class="week rise" style="--o:.4">Week <span class="flip" style="--o:1.6"><span class="a">1</span><span class="b">6</span></span></div>
+
+  <svg class="wires" viewBox="0 0 1920 1080">
+    <g style="--o:.3"><path class="halo" d="M450 220C580 220 570 470 700 470"/><path d="M450 220C580 220 570 470 700 470"/></g>
+    <g style="--o:.4"><path class="halo" d="M450 470C560 470 590 470 700 470"/><path d="M450 470C560 470 590 470 700 470"/></g>
+    <g style="--o:.5"><path class="halo" d="M450 720C580 720 570 470 700 470"/><path d="M450 720C580 720 570 470 700 470"/></g>
+    <g style="--o:.6"><path class="halo" d="M1470 220C1340 220 1350 470 1220 470"/><path d="M1470 220C1340 220 1350 470 1220 470"/></g>
+    <g style="--o:.7"><path class="halo" d="M1470 470C1360 470 1330 470 1220 470"/><path d="M1470 470C1360 470 1330 470 1220 470"/></g>
+    <g style="--o:.8"><path class="halo" d="M1470 720C1340 720 1350 470 1220 470"/><path d="M1470 720C1340 720 1350 470 1220 470"/></g>
+    <path class="amber" style="--o:13.4;--x:16.6" d="M450 720C580 720 570 470 700 470"/>
+  </svg>
+  <i class="pulse" style="--o:6.6;offset-path:path('M450 220C580 220 570 470 700 470')"></i>
+  <i class="pulse" style="--o:7.6;offset-path:path('M450 470C560 470 590 470 700 470')"></i>
+  <i class="pulse" style="--o:8.6;offset-path:path('M1470 220C1340 220 1350 470 1220 470')"></i>
+  <i class="pulse" style="--o:9.6;offset-path:path('M1470 470C1360 470 1330 470 1220 470')"></i>
+  <i class="pulse" style="--o:17.2;offset-path:path('M450 720C580 720 570 470 700 470')"></i>
+
+  <div class="tool" style="left:300px;top:220px">📊 Bookings</div>
+  <div class="tool" style="left:300px;top:470px">🧾 Accounting</div>
+  <div class="tool" style="left:300px;top:720px">📅 Calendar</div>
+  <div class="tool" style="left:1620px;top:220px">📥 Inbox</div>
+  <div class="tool" style="left:1620px;top:470px">👥 Clients</div>
+  <div class="tool" style="left:1620px;top:720px">📁 Files</div>
+
+  <div class="out" style="--x:6.2">
+    <div class="tag pop" style="--o:2.6;left:220px;top:140px;--r:-3deg">+12 bookings</div>
+    <div class="tag pop" style="--o:3.4;left:210px;top:390px;--r:2deg">price changed</div>
+    <div class="tag pop" style="--o:4.2;left:1540px;top:140px;--r:3deg">3 new emails</div>
+    <div class="tag pop" style="--o:5;left:1550px;top:390px;--r:-2deg">new client</div>
+  </div>
+
+  <div class="hub card">
+    <div class="hd"><i></i>Your company, in one place</div>
+    <div class="bd">
+      <div class="row"><span>Bookings</span><span class="flip" style="--o:7.6"><span class="st a">6 weeks ago</span><span class="st b">just now</span></span></div>
+      <div class="row"><span>Accounting</span><span class="flip" style="--o:8.6"><span class="st a">6 weeks ago</span><span class="st b">just now</span></span></div>
+      <div class="row"><span>Inbox &amp; clients</span><span class="flip" style="--o:10.6"><span class="st a">6 weeks ago</span><span class="st b">just now</span></span></div>
+    </div>
+  </div>
+  <div class="mascot za" data-mascot></div>
+
+  <div class="tag warn" style="left:190px;top:790px;--r:-2deg;animation:pop .55s var(--pop) both,out .3s ease forwards;animation-delay:13.6s,16.6s">⚠ login expired</div>
+  <div class="tag pop" style="--o:16.8;left:180px;top:790px;--r:2deg">✓ fixed overnight</div>
+
+  <div class="cap" style="--o:.5;--x:6.2"><span>Companies change every day.</span></div>
+  <div class="cap" style="--o:6.6;--x:13.2"><span>We keep every tool connected, so everything stays current.</span></div>
+  <div class="cap" style="--o:13.6;--x:19.6"><span>When something breaks, we fix it before your team notices.</span></div>
+
+  <div data-end="03 · MAINTAIN|Maintain.|Always current. Nobody copies anything by hand." style="--o:20"></div>
+</section>
+<script src="common.js"></script>
+</body>
+</html>

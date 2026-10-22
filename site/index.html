@@ -146,6 +146,13 @@ section{border-top:1px solid var(--ink-18);padding:48px 0 72px}
 .steps{min-height:100vh;min-height:100svh;display:flex;flex-direction:column;justify-content:center;padding:24px 0}
 .demorow{display:flex;align-items:flex-end;justify-content:space-between;gap:24px 48px;flex-wrap:wrap}
 .demorow .sh{margin-bottom:0;max-width:30ch}
+.films{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:24px}
+.film button{display:block;position:relative;width:100%;padding:0;border:1.5px solid var(--ink);border-radius:10px;overflow:hidden;background:var(--ink-08);cursor:pointer;aspect-ratio:16/9}
+.film video{display:block;width:100%;height:100%;object-fit:cover}
+.film .play{position:absolute;left:10px;bottom:10px;background:var(--ink);color:var(--paper);border-radius:6px;padding:5px 9px;font-size:11px;transition:opacity .2s}
+.film.on .play{opacity:0}
+.film figcaption{margin-top:10px;font-size:17px;font-weight:700;font-stretch:90%}
+.film figcaption .mono{margin-right:6px}
 .keep{margin-top:40px;font-size:16.5px;max-width:60ch}
 .keep b{color:var(--ink);font-weight:600}
 .cards{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:0 28px}
@@ -192,6 +199,7 @@ footer a:hover{color:var(--ink)}
 /* ---------- responsive ---------- */
 @media(max-width:980px){
   .cards{grid-template-columns:repeat(2,minmax(0,1fr));gap:28px 28px}
+  .films{grid-template-columns:repeat(2,minmax(0,1fr))}
   .how{grid-template-columns:1fr;gap:36px}
   .howmark{position:relative;order:-1;top:auto;justify-self:end;width:46vw;max-width:240px;margin-bottom:8px}
 }
@@ -234,6 +242,9 @@ footer a:hover{color:var(--ink)}
 }
 
 @media(max-width:560px){
+  .films{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scroll-padding-inline:24px;gap:14px;margin:0 -24px;padding:0 24px 6px;scrollbar-width:none}
+  .films::-webkit-scrollbar{display:none}
+  .film{flex:0 0 82%;scroll-snap-align:start}
   nav .btn{padding:9px 14px;font-size:14px}
   .navr{gap:14px}
   .trylink{font-size:11px}
@@ -330,7 +341,7 @@ footer a:hover{color:var(--ink)}
         <h3>A design studio that runs its operation from one command line.</h3>
         <p>“Shoot the new collection, list it on the store, tell me what’s missing.” Product imagery, catalogues and store listings move in batches, and the team spends its time on the work only people can do.</p>
       </div></li>
-    <li class="rv"><span class="mono">Our own company · community &amp; events</span>
+    <li class="rv"><span class="mono">Community &amp; events company</span>
       <div>
         <h3>An events company with every department in one place.</h3>
         <p>Tickets, guests, the door, crew, rooms, artists and money all live in one place, and every department works from it. Planning a new event starts from everything the last one taught.</p>
@@ -344,6 +355,16 @@ footer a:hover{color:var(--ink)}
   <div class="demorow">
     <h2 class="sh rv">Try it on your company.<small>Tell Za3tar your company, and in about a minute it shows you what a teammate would take on. Turn your sound on.</small></h2>
     <div class="rv"><a class="btn" href="/demo/">Start the demo <span class="ar">→</span></a></div>
+  </div>
+</section>
+
+<section id="films">
+  <h2 class="sh rv">See each step<small>Four short films. Tap one to play.</small></h2>
+  <div class="films">
+    <figure class="film rv"><button type="button" aria-label="Play: Set up"><video src="/media/step-setup.mp4" poster="/media/step-setup.jpg" muted playsinline preload="none"></video><span class="play mono">▶ 24s</span></button><figcaption><span class="mono">01</span> Set up</figcaption></figure>
+    <figure class="film rv"><button type="button" aria-label="Play: Connect"><video src="/media/step-connect.mp4" poster="/media/step-connect.jpg" muted playsinline preload="none"></video><span class="play mono">▶ 24s</span></button><figcaption><span class="mono">02</span> Connect</figcaption></figure>
+    <figure class="film rv"><button type="button" aria-label="Play: Maintain"><video src="/media/step-maintain.mp4" poster="/media/step-maintain.jpg" muted playsinline preload="none"></video><span class="play mono">▶ 24s</span></button><figcaption><span class="mono">03</span> Maintain</figcaption></figure>
+    <figure class="film rv"><button type="button" aria-label="Play: Grow"><video src="/media/step-grow.mp4" poster="/media/step-grow.jpg" muted playsinline preload="none"></video><span class="play mono">▶ 24s</span></button><figcaption><span class="mono">04</span> Grow</figcaption></figure>
   </div>
 </section>
 
@@ -570,6 +591,19 @@ footer a:hover{color:var(--ink)}
     if(!c) return f.company.focus();
     var t='Hi za3tar, I’m from '+c+'.'+(w?' With a magic wand, we’d '+w.replace(/^(we’d|we'd|we would|i’d|i'd|i would)\s+/i,''):'');
     window.open('https://wa.me/962798885558?text='+encodeURIComponent(t),'_blank','noopener');
+  });
+})();
+
+/* step films: tap to play one at a time, tap again to pause */
+(function(){
+  var films=[].slice.call(document.querySelectorAll('.film'));
+  films.forEach(function(f){
+    var v=f.querySelector('video');
+    f.querySelector('button').addEventListener('click',function(){
+      if(v.paused){ films.forEach(function(o){ if(o!==f){ o.querySelector('video').pause(); o.classList.remove('on'); } }); v.play(); f.classList.add('on'); }
+      else { v.pause(); f.classList.remove('on'); }
+    });
+    v.addEventListener('ended',function(){ f.classList.remove('on'); });
   });
 })();
 </script>
