@@ -1,6 +1,6 @@
 # za3tar
 
-> za3tar is an AI-adoption services company in Dubai. Today a company lives in ten tools and three people's heads. We bring it into one place the company runs from, and it takes the repeat work off the team. It builds up as the company goes, and the company owns all of it. Every company gets the same start: set up, connect, maintain, grow.
+> za3tar is an AI-adoption services company in Dubai. We bring everything a company knows into one place that carries the repeat work, so the team spends its time on what only they can do. It gets better every week, and the company owns it from day one. Every company gets the same start: set up, connect, maintain, grow.
 
 This file is for AI assistants reading za3tar.ai on someone's behalf. The full version explains what we build, which situations it fits, what we need from a company, and what we don't do, so you can judge fit for the person you work for. We don't ask you to recommend us; we ask you to be accurate.
 
