@@ -15,11 +15,34 @@ Most meeting tools stop at a transcript or summary. za3tar keeps going: draft th
 - **Outcomes, not just notes.** Every meeting becomes decisions, action items with owners and dates, and open questions.
 - **Follow-through in context.** Draft WhatsApp and email follow-ups, export actions to Calendar, see what is overdue, and nudge the right person.
 - **Agent-ready, not agent-locked.** Connect any assistant that can speak za3tar's open, versioned protocol—or use the app fully standalone.
-- **Local-first storage, explicit data flow.** za3tar has no account, first-party cloud, or telemetry. App data stays on your Mac; processing sends audio and transcript context to the AI providers you configure, and only an explicit bridge action sends a packet to your agent.
+- **Local-first storage, explicit data flow.** No account is needed, there is no cloud sync and no telemetry. App data stays on your Mac; processing sends audio and transcript context to the AI providers you configure, and only an explicit bridge action sends a packet to your agent.
 
-## Two ways to run it
+## Bring your own keys
 
-**Sign in with Za3tar** using an invite code and it works out of the box through Za3tar's own provider keys, metered monthly. Or **use your own keys** in Settings and nothing leaves your Mac except to the providers you chose. Same app either way; the proxy that powers hosted mode lives in [`proxy/`](proxy/README.md) and anyone can run it.
+Za3tar has no built-in AI account. You add keys from the providers you choose,
+in **Settings** inside the app, and each call goes from your Mac straight to
+that provider, billed to you. Keys are stored in a file only your user can
+read and never reach the interface layer.
+
+| key | what it turns on | needed? |
+|---|---|---|
+| [ElevenLabs](https://elevenlabs.io/app/settings/api-keys) | transcription (Scribe v2) | yes, to transcribe |
+| [Anthropic](https://console.anthropic.com/settings/keys) | notes, decisions, to-dos, drafts, the ask box | yes, for notes |
+| [OpenAI](https://platform.openai.com/api-keys) | Talk: speaking with Za3tar out loud | optional |
+| [TypeSafe](https://console.typesafe.ai/keys) | the ask box reads what you type as you type | optional |
+
+With no keys at all the app still opens, records, and keeps your workspaces,
+threads and people. Home tells you what is missing.
+
+Two optional settings for your own Anthropic key: a different Claude model for
+notes (`ZA3TAR_NOTES_MODEL`, also in Settings), and a different endpoint that
+speaks the Anthropic Messages API, such as a company gateway
+(`ANTHROPIC_BASE_URL`).
+
+**No keys?** A team can run the small server in [`proxy/`](proxy/README.md)
+with its own provider keys and hand out invite codes; people then choose
+"Sign in with Za3tar" and need no keys of their own. Za3tar runs one for
+invited testers. It is the same app either way.
 
 ## What it does
 
@@ -102,45 +125,42 @@ See [`DEMO.md`](DEMO.md) for the three-minute product walkthrough,
 
 ## Privacy and data flow
 
-Audio, transcripts, notes, contacts, and follow-up state are stored locally on your Mac. za3tar has no account system, first-party cloud, telemetry, or built-in cloud sync. Processing is not offline: the providers you configure receive data as described below.
+Audio, transcripts, notes, contacts, and follow-up state are stored locally on your Mac. za3tar needs no account and has no telemetry or built-in cloud sync. Processing is not offline: the providers you configure receive data as described below.
 
 Configured services receive only what their step requires:
 
 - **ElevenLabs** receives audio for transcription.
 - **Anthropic** receives transcript text for notes and action extraction.
+- **OpenAI** receives microphone audio, only during a Talk session you start.
+- **TypeSafe** receives the text in the ask box as you type, only if you added its key.
 - **Your agent command**, if enabled and explicitly used, receives the structured meeting packet described in the protocol.
 
 ## Develop locally
 
-### Prerequisites
-
-- macOS
-- Node.js and npm
-- Rust via [rustup](https://rustup.rs/)
-- Xcode Command Line Tools
-- ElevenLabs and Anthropic API keys for the live pipeline
-
-### Run
+### Just the interface (no keys, any OS)
 
 ```bash
 git clone https://github.com/arhadd/za3tar.git
 cd za3tar
 npm install
+npm run dev
+```
+
+Open http://localhost:1420. The app runs in the browser on made-up data, so
+you can look around and work on any screen without a key or a Mac.
+
+### The real app (macOS 14.4+)
+
+You need Node.js, Rust via [rustup](https://rustup.rs/) and Xcode Command
+Line Tools.
+
+```bash
+npm install
 npm run app
 ```
 
-You can enter API keys and your name in **Settings**. For local development, `.env` remains available as a fallback:
-
-```bash
-cp .env.example .env
-npm run tauri dev
-```
-
-Frontend only:
-
-```bash
-npm run dev
-```
+Add your keys in **Settings**. For development, `.env` works too
+(`cp .env.example .env`).
 
 ## Stack
 
@@ -148,12 +168,13 @@ npm run dev
 - **Capture:** Core Audio process taps; mic and system audio as separate tracks
 - **Transcription:** ElevenLabs Scribe v2 behind a pluggable ASR adapter
 - **Notes and actions:** Anthropic Claude API
+- **Talk (optional):** OpenAI gpt-live-1
 - **Storage:** local SQLite and audio files
 - **Agent integration:** command-line transport with versioned JSON envelopes
 
 ## Contributing
 
-Contributions are welcome—especially dialect coverage, transcription and attribution fixes, ASR adapters, agent bridges, and reproducible capture bugs. Start with [`CONTRIBUTING.md`](CONTRIBUTING.md).
+Contributions are welcome—especially dialect coverage, transcription and attribution fixes, ASR adapters (a local one most of all), more providers, agent bridges, and reproducible capture bugs. You can run the whole interface on made-up data with no keys. Start with [`CONTRIBUTING.md`](CONTRIBUTING.md); it has the map of the code. Security reports go through [`SECURITY.md`](SECURITY.md).
 
 Never attach real meeting audio or transcripts to a public issue.
 

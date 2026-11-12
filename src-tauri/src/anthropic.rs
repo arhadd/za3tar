@@ -4,8 +4,31 @@
 
 use serde::Deserialize;
 
-const ANTHROPIC_URL: &str = "https://api.anthropic.com/v1/messages";
+const ANTHROPIC_BASE: &str = "https://api.anthropic.com";
 const MODEL: &str = "claude-sonnet-5";
+
+fn env_or(var: &str, default: &str) -> String {
+    std::env::var(var)
+        .ok()
+        .map(|v| v.trim().to_string())
+        .filter(|v| !v.is_empty())
+        .unwrap_or_else(|| default.to_string())
+}
+
+/// The model your own key is billed for. ZA3TAR_NOTES_MODEL (Settings or
+/// .env) overrides the default; hosted mode ignores it, because the host
+/// decides which models it serves.
+fn own_model() -> String {
+    env_or("ZA3TAR_NOTES_MODEL", MODEL)
+}
+
+/// Where your own key is sent. ANTHROPIC_BASE_URL points the app at any
+/// endpoint that speaks the Anthropic Messages API (a company gateway, a
+/// LiteLLM proxy); unset means Anthropic itself.
+fn own_url() -> String {
+    let base = env_or("ANTHROPIC_BASE_URL", ANTHROPIC_BASE);
+    format!("{}/v1/messages", base.trim_end_matches('/'))
+}
 
 #[derive(Deserialize)]
 struct AnthropicResponse {
@@ -32,7 +55,7 @@ struct AnthropicError {
 
 fn read_key() -> Result<String, String> {
     std::env::var("ANTHROPIC_API_KEY")
-        .map_err(|_| "ANTHROPIC_API_KEY not set (add it to .env)".to_string())
+        .map_err(|_| "no Anthropic API key yet — add one in Settings".to_string())
 }
 
 /// Optional user identity (ZA3TAR_USER in .env). Injected into prompt context
@@ -48,8 +71,14 @@ pub fn user_context_line() -> Option<String> {
 
 /// One completion. Returns (text, truncated).
 pub async fn complete(system: &str, user: &str, max_tokens: u32) -> Result<(String, bool), String> {
+    let hosted = crate::hosted::hosted();
+    let model = if hosted.is_some() {
+        MODEL.to_string()
+    } else {
+        own_model()
+    };
     let body = serde_json::json!({
-        "model": MODEL,
+        "model": model,
         "max_tokens": max_tokens,
         "system": system,
         "messages": [{ "role": "user", "content": user }],
@@ -57,14 +86,14 @@ pub async fn complete(system: &str, user: &str, max_tokens: u32) -> Result<(Stri
 
     let client = reqwest::Client::new();
     // signed in with Za3tar → through the proxy; otherwise your own key
-    let req = if let Some((base, token)) = crate::hosted::hosted() {
+    let req = if let Some((base, token)) = hosted {
         client
             .post(format!("{base}/v1/anthropic/messages"))
             .bearer_auth(token)
             .header("content-type", "application/json")
     } else {
         client
-            .post(ANTHROPIC_URL)
+            .post(own_url())
             .header("x-api-key", read_key()?)
             .header("anthropic-version", "2023-06-01")
             .header("content-type", "application/json")

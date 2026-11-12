@@ -1,0 +1,47 @@
+name: Idea or feature request
+description: Something za3tar should do, or do differently.
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Start from the situation, not the solution: what were you trying to get
+        done, and where did za3tar stop helping?
+
+        **Never paste real meeting audio, transcripts or notes.** Make up an
+        example if you need one.
+  - type: textarea
+    id: situation
+    attributes:
+      label: The situation
+      description: What were you doing, and what got in the way?
+    validations:
+      required: true
+  - type: textarea
+    id: idea
+    attributes:
+      label: What you would like
+      description: What should happen instead? A rough sketch is fine.
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Recording and capture
+        - Transcription and dialects
+        - Notes, decisions and to-dos
+        - Workspaces and threads
+        - Talk (voice)
+        - Assistants and the protocol
+        - Keys, providers and models
+        - Something else
+    validations:
+      required: true
+  - type: checkboxes
+    id: help
+    attributes:
+      label: Would you build it?
+      options:
+        - label: I would like to work on this myself.

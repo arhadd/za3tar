@@ -140,6 +140,8 @@ export type Settings = {
   anthropic_api_key: string;
   openai_api_key: string;
   typesafe_api_key: string;
+  /** own-key mode: Claude model for notes; empty = the app's default */
+  notes_model?: string;
   user_name: string;
   language: string;
   agent_name: string;

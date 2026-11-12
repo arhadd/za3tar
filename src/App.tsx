@@ -723,7 +723,7 @@ function App() {
       const segs = await invoke<Segment[]>("transcribe", { dir: d });
       setSegments(segs);
       setPhase("done");
-      // the whole point: stop → notes → actions → Jello, no clicks
+      // the whole point: stop → notes → actions → hand-off, no clicks
       await synthesize(d);
       await sendMeeting({ dir: d, created: Number(meetingIdOf(d)) }, true);
     } catch (e) {
@@ -1226,7 +1226,7 @@ function App() {
       try {
         const ack = parseEnvelope<RuntimeAck>(reply, "ZA3TAR_ACK");
         const line = ackLine(ack, false);
-        showFlash(auto ? `sent to Jello · ${line}` : line, 6000);
+        showFlash(auto ? `sent to your assistant · ${line}` : line, 6000);
       } catch {
         showFlash(`${reply.slice(0, 140)}${reply.length > 140 ? "…" : ""}`, 5000);
       }

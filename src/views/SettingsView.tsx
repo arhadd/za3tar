@@ -122,6 +122,15 @@ export function SettingsView({
           form={form}
           onChange={onChange}
         />
+        <label className="flex flex-col gap-1 text-[12px] text-olive">
+          Claude model for notes (optional, your own key only)
+          <Field
+            mono
+            value={form.notes_model ?? ""}
+            onChange={(e) => onChange({ ...form, notes_model: e.target.value })}
+            placeholder="claude-sonnet-5"
+          />
+        </label>
         <SecretField
           label="TypeSafe API key (optional — reads the ask box as you type)"
           field="typesafe_api_key"
