@@ -23,7 +23,7 @@ npm run app
 
 ## First run
 
-1. Open **Settings** and add your ElevenLabs and Anthropic keys plus your name.
+1. Open **Settings** and add your ElevenLabs and Anthropic keys plus your name. The README lists what each key turns on; OpenAI and TypeSafe are optional.
 2. Start a short test recording and allow microphone access.
 3. For calls, allow **System Audio Recording** when macOS asks.
 4. If call-side audio is silent, open **System Settings → Privacy & Security → Screen & System Audio Recording**, enable za3tar under **System Audio Recording Only**, and try again.

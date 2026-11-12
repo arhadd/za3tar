@@ -6,7 +6,7 @@ za3tar is local-first, not offline-only. This page explains what stays on your M
 
 za3tar stores meeting audio, transcripts, notes, extracted outcomes, contacts, settings, and follow-up state in the app’s local data directory on your Mac.
 
-za3tar does not provide an account, first-party cloud sync, or telemetry. Deleting local app data is therefore destructive unless you have made your own backup.
+za3tar needs no account and has no first-party cloud sync or telemetry (the optional hosted mode is described at the end). Deleting local app data is therefore destructive unless you have made your own backup.
 
 ## Configured AI providers
 
@@ -15,6 +15,10 @@ Processing a recording uses credentials you provide:
 - **ElevenLabs Scribe v2** receives recorded audio for transcription.
 - **Anthropic Claude** receives transcript text and relevant meeting context to produce notes, extract decisions/actions/questions, and draft follow-ups.
 - **OpenAI gpt-live-1** (optional, only during a Talk session) receives your microphone audio and speaks replies. Each spoken turn is delegated to Anthropic Claude with a snapshot of the current workspace so Za3tar can act on it. Nothing is sent when Talk is off, and no audio is stored by the app.
+
+- **TypeSafe Jev** (optional, only if you add its key) receives the text in the ask box as you type, plus the names and one-line descriptions of your workspaces, threads and assistants, so it can tell where the ask belongs.
+
+If you set `ANTHROPIC_BASE_URL`, the Anthropic calls go to that endpoint instead, with your key.
 
 The providers’ own terms, retention settings, and regional processing policies apply. Do not record or process material you are not permitted to share with those providers.
 
@@ -40,7 +44,7 @@ Recording laws and workplace policies vary. Get the required consent before reco
 
 ## Security reports
 
-If you find a vulnerability, contact the maintainer privately rather than opening a public issue with exploit details or sensitive data.
+If you find a vulnerability, report it privately as described in [`SECURITY.md`](../SECURITY.md) rather than opening a public issue with exploit details or sensitive data.
 
 ## Hosted mode (Sign in with Za3tar)
 

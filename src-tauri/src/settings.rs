@@ -23,6 +23,9 @@ pub struct Settings {
     /// TypeSafe (Jev) — fast typed judgments; optional
     #[serde(default)]
     pub typesafe_api_key: String,
+    /// own-key mode: which Claude model writes the notes (empty = default)
+    #[serde(default)]
+    pub notes_model: String,
     #[serde(default)]
     pub user_name: String,
     /// "english" (default) | "match" | "arabic" — what Za3tar writes in
@@ -54,7 +57,7 @@ type VarBinding = (
     fn(&mut Settings) -> &mut String,
 );
 
-const VARS: [VarBinding; 11] = [
+const VARS: [VarBinding; 12] = [
     (
         "ELEVENLABS_API_KEY",
         |s| &s.elevenlabs_api_key,
@@ -74,6 +77,11 @@ const VARS: [VarBinding; 11] = [
         "TYPESAFE_API_KEY",
         |s| &s.typesafe_api_key,
         |s| &mut s.typesafe_api_key,
+    ),
+    (
+        "ZA3TAR_NOTES_MODEL",
+        |s| &s.notes_model,
+        |s| &mut s.notes_model,
     ),
     ("ZA3TAR_USER", |s| &s.user_name, |s| &mut s.user_name),
     ("ZA3TAR_LANGUAGE", |s| &s.language, |s| &mut s.language),
@@ -212,6 +220,10 @@ pub(crate) fn write(app: &AppHandle, settings: &Settings) -> Result<(), String> 
     let json = serde_json::to_string_pretty(settings).map_err(|e| e.to_string())?;
     write_private(&path, json.as_bytes())?;
     apply(settings, false);
+    // an emptied model box means "back to the default", not "keep the last one"
+    if settings.notes_model.trim().is_empty() {
+        std::env::remove_var("ZA3TAR_NOTES_MODEL");
+    }
     Ok(())
 }
 

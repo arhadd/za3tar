@@ -165,7 +165,7 @@ fn error_chain(e: &dyn std::error::Error) -> String {
 
 fn read_key() -> Result<String, String> {
     std::env::var("ELEVENLABS_API_KEY")
-        .map_err(|_| "ELEVENLABS_API_KEY not set (add it to .env)".to_string())
+        .map_err(|_| "no ElevenLabs API key yet — add one in Settings".to_string())
 }
 
 async fn transcribe_track(
