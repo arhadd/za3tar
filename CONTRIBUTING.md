@@ -91,7 +91,7 @@ is a small team.
 - Keys live in the Rust core and are read from env/settings; they must never
   reach the webview.
 - Rust: `cargo fmt` + `cargo clippy`. TS: `tsc` clean.
-- Meeting audio and transcripts are private by design (local SQLite + files,
+- Meeting audio and transcripts are private by design (local files,
   no telemetry). Don't add network calls beyond the user's own configured
   APIs and agent command.
 - No real people, companies or meetings in code, tests, mock data or
