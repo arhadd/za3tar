@@ -45,23 +45,13 @@ there is no telemetry.
 
 ## What you can do with it
 
-<table>
-<tr>
-<td width="50%" valign="top">
-
 ### Keep each workspace in view
 
 A workspace holds its projects, notes, people, to-dos and decisions. Each
 project carries one line on where it stands, so you can read the state of a
 whole company in a minute.
 
-</td>
-<td width="50%">
-<img src="docs/media/workspace.png" alt="A workspace: projects with where each stands, to-dos, recent notes and people">
-</td>
-</tr>
-<tr>
-<td width="50%" valign="top">
+<img src="docs/media/workspace.png" width="900" alt="A workspace: projects with where each stands, to-dos, recent notes and people">
 
 ### Record a meeting, get what came out of it
 
@@ -73,12 +63,9 @@ From there: draft the WhatsApp follow-up or recap email the way the meeting
 was spoken, add dated to-dos to Calendar, or send the whole thing to your
 assistant.
 
-</td>
-<td width="50%">
-<img src="docs/media/meeting.png" alt="A meeting: decisions to confirm, to-dos with owners and dates, open questions, follow-up buttons">
-</td>
-</tr>
-</table>
+<img src="docs/media/meeting.png" width="900" alt="A meeting: decisions to confirm, to-dos with owners and dates, open questions, follow-up buttons">
+
+### And the rest
 
 **Ask.** Type or say what you need: "where does the launch stand?", "what's
 on me today?", "write an update on pricing". Za3tar answers from your own
