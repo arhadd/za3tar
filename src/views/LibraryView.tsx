@@ -156,10 +156,10 @@ export function LibraryView({
               : `No meetings in ${wsName(ws)} yet.`}
         </Empty>
       ) : (
-        groups.map((g) => (
+        groups.map((g, gi) => (
           <section key={g.label} className="flex flex-col gap-1">
             <h3 className="eyebrow px-1 pb-0.5 text-olive">{g.label}</h3>
-            {g.rows.map((s) => {
+            {g.rows.map((s, ri) => {
               const was = sent[s.dir];
               const sentHere = !!was && was.thread === s.thread;
               return (
@@ -168,6 +168,7 @@ export function LibraryView({
                   className="flex flex-wrap items-center gap-x-3 gap-y-2 rounded-xl border border-line bg-paper px-4 py-2.5"
                 >
                   <button
+                    data-tour={gi === 0 && ri === 0 ? "meeting-first" : undefined}
                     onClick={() => onOpen(s)}
                     className="flex min-w-[200px] flex-1 flex-col gap-0.5 text-left"
                   >

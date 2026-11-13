@@ -293,7 +293,7 @@ export function HomeView({
           ))}
 
           {/* what needs you: short, with the way to all of it */}
-          <section className="flex flex-col gap-2">
+          <section data-tour="needs-you" className="flex flex-col gap-2">
             <div className="flex items-baseline gap-2 px-1">
               <Eyebrow>Needs you</Eyebrow>
               <button

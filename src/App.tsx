@@ -34,6 +34,7 @@ import {
   type RouteSession,
 } from "./routes";
 import { SettingsView } from "./views/SettingsView";
+import { Tour } from "./views/Tour";
 import { Button, Card, Eyebrow } from "./ui";
 import {
   bridgeId,
@@ -181,6 +182,15 @@ function App() {
     }
   });
   const [view, setView] = useState<View>("home");
+  // the guided walk-through: only in a browser (za3tar.ai/app). ?tour=0 turns
+  // it off for anyone who just wants to poke at the thing, and it never starts
+  // itself for someone who asked their system for less motion — the strip's
+  // "Show me around" is there either way.
+  const [tour, setTour] = useState(() => {
+    if (inTauri || typeof window === "undefined") return false;
+    if (new URLSearchParams(location.search).get("tour") === "0") return false;
+    return !window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+  });
   const [wsEdit, setWsEdit] = useState<Workspace | null>(null);
   const [userName, setUserName] = useState("");
   const [caps, setCaps] = useState<{
@@ -2297,7 +2307,7 @@ function App() {
 
   const recordButton =
     phase === "recording" ? (
-      <Button tone="accent" size="lg" onClick={stop}>
+      <Button tone="accent" size="lg" data-tour="record" onClick={stop}>
         <span className="pulse inline-block h-2.5 w-2.5 rounded-full bg-ink" />
         Stop · {mmss(elapsed)}
       </Button>
@@ -2307,7 +2317,7 @@ function App() {
         Working…
       </Button>
     ) : (
-      <Button tone="primary" size="lg" onClick={start}>
+      <Button tone="primary" size="lg" data-tour="record" onClick={start}>
         <span className="inline-block h-2.5 w-2.5 rounded-full bg-thyme" />
         Record
       </Button>
@@ -2374,7 +2384,10 @@ function App() {
 
   return (
     <div className="flex h-full flex-col">
-      {!inTauri && <DemoStrip />}
+      {!inTauri && (
+        <DemoStrip tourOver={!tour} onReplay={() => setTour(true)} />
+      )}
+      {tour && <Tour key="tour" onEnd={() => setTour(false)} />}
       <div className="flex min-h-0 flex-1">
       {switcherOpen && (
         <Switcher
@@ -2873,12 +2886,26 @@ function App() {
 
 /** Shown only in a browser (za3tar.ai/app): this is the real interface running
  *  on a made-up company, so nobody mistakes it for their own data. */
-function DemoStrip() {
+function DemoStrip({
+  tourOver,
+  onReplay,
+}: {
+  tourOver: boolean;
+  onReplay: () => void;
+}) {
   return (
-    <div className="flex flex-wrap items-center justify-center gap-x-2 gap-y-0.5 bg-ink px-4 py-1.5 text-center text-[12px] leading-snug text-limestone">
+    <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-0.5 bg-ink px-4 py-1.5 text-center text-[12px] leading-snug text-limestone">
       <span>
         A demo of the real app, on a made-up company. Nothing is saved.
       </span>
+      {tourOver && (
+        <button
+          onClick={onReplay}
+          className="underline decoration-thyme underline-offset-2 hover:text-thyme"
+        >
+          Show me around
+        </button>
+      )}
       <a
         className="underline decoration-thyme underline-offset-2 hover:text-thyme"
         href="https://github.com/arhadd/za3tar"

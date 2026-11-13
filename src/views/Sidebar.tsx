@@ -103,12 +103,14 @@ export function Sidebar({
           <span className="ml-auto text-[11px] text-limestone/35">⌘K</span>
         </button>
         <button
+          data-tour="nav-home"
           onClick={onHome}
           className={item(!inSettings && view === "home")}
         >
           Home
         </button>
         <button
+          data-tour="nav-meetings"
           onClick={onMeetings}
           className={item(!inSettings && view === "library")}
         >
@@ -123,6 +125,7 @@ export function Sidebar({
           )}
         </button>
         <button
+          data-tour="nav-todos"
           onClick={onTodos}
           className={item(!inSettings && view === "todos")}
         >
@@ -159,6 +162,7 @@ export function Sidebar({
             return (
               <div key={w.id} className="flex flex-col gap-0.5">
                 <button
+                  data-tour={`ws-${w.id}`}
                   onClick={() =>
                     single ? onOpenProject(single.id) : onSelectWorkspace(w.id)
                   }
