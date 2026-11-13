@@ -36,6 +36,10 @@ deployment only and is **not licensed for reuse** (all rights reserved). Neither
 the AGPL-3.0 nor the Apache-2.0 grant above applies to it. The brand marks are
 also covered by the brand-rights note below.
 
+`site/app/` is the exception inside that directory. It is a generated build of
+the application in `src/`, committed so the site can serve it, and it stays
+**AGPL-3.0-only** like the source it is built from.
+
 ## Commercial services
 
 A hosted or managed Za3tar service can be offered separately. This repository

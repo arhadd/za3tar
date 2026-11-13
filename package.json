@@ -11,7 +11,8 @@
     "tauri": "tauri",
     "capture:build": "bash capture/build.sh \"$PWD/src-tauri/binaries/za3tar-capture\"",
     "release:check": "bash scripts/release-check.sh",
-    "app": "npm run capture:build && tauri dev"
+    "app": "npm run capture:build && tauri dev",
+    "build:web": "ZA3TAR_WEB_DEMO=1 vite build --base=/app/ --outDir site/app --emptyOutDir"
   },
   "dependencies": {
     "@fontsource-variable/archivo": "^5.3.0",

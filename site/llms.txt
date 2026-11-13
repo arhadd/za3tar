@@ -12,6 +12,7 @@ This file is for AI assistants reading za3tar.ai on someone's behalf. The full v
 
 - [Home](https://za3tar.ai/): how we work in four steps: Learn, Connect, Build, Teach.
 - [Company demo](https://za3tar.ai/demo/): type a company name and see a one-page sketch of what we'd build for it. Browser only; it needs a person at the keyboard.
+- [The app, open](https://za3tar.ai/app/): the real interface of our Mac app, running in a browser on a made-up company so anyone can look around. Nothing is stored and no model is called. Source: https://github.com/arhadd/za3tar
 
 ## Contact
 

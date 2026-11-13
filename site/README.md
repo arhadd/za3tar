@@ -23,11 +23,21 @@ only does so on a yes (or the "Walk me through it" button), one job at a time.
 `/demo/?q=<company>` (the homepage hand-off) starts the build on load; the voice
 is one tap away.
 
+`app/` is **generated**, not written here: it is a production build of the
+app's own interface (`src/`), served at za3tar.ai/app so anyone can open the
+real thing on a made-up company without a download or a key. In a browser the
+app falls back to `src/devMock.ts`, so nothing is stored and no provider is
+called. Refresh it with `npm run build:web` from the repository root, and
+commit the result — the site deploys the files as they are, with no build step.
+
 ## Licence
 
 **Not licensed for reuse. All rights reserved.** The site copy, design, brand
 marks, images and video in this directory are not covered by the repository's
 AGPL-3.0 or Apache-2.0 licences. See [`../LICENSES/README.md`](../LICENSES/README.md).
+
+The one exception is `app/`: it is a build of the application in `src/`, so it
+carries the application's **AGPL-3.0-only** licence, not this notice.
 
 ## Deploy
 
