@@ -53,3 +53,15 @@ Use a separate macOS account or Mac that has never run the development build.
 Do not publish if Gatekeeper fails, the capture helper is unsigned, a fresh
 install cannot request permissions, provider keys leak, or the live demo needs
 the development checkout to work.
+
+## The web demo at /app
+
+`site/app/` is a committed build of the app's own interface, served so anyone
+can open the real thing on a made-up company without a download or a key.
+It does not rebuild itself. After a change to `src/`, refresh it with:
+
+```bash
+npm run build:web
+```
+
+and commit the result, or za3tar.ai/app keeps showing the previous interface.

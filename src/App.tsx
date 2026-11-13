@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { invoke, listen } from "./ipc";
+import { invoke, listen, inTauri } from "./ipc";
 import { Sidebar } from "./views/Sidebar";
 import { MeetingsView } from "./views/MeetingsView";
 import { MeetingDetail } from "./views/MeetingDetail";
@@ -2373,7 +2373,9 @@ function App() {
     );
 
   return (
-    <div className="flex h-full">
+    <div className="flex h-full flex-col">
+      {!inTauri && <DemoStrip />}
+      <div className="flex min-h-0 flex-1">
       {switcherOpen && (
         <Switcher
           workspaces={workspaces}
@@ -2864,6 +2866,27 @@ function App() {
           </div>
         </main>
       </div>
+      </div>
+    </div>
+  );
+}
+
+/** Shown only in a browser (za3tar.ai/app): this is the real interface running
+ *  on a made-up company, so nobody mistakes it for their own data. */
+function DemoStrip() {
+  return (
+    <div className="flex flex-wrap items-center justify-center gap-x-2 gap-y-0.5 bg-ink px-4 py-1.5 text-center text-[12px] leading-snug text-limestone">
+      <span>
+        A demo of the real app, on a made-up company. Nothing is saved.
+      </span>
+      <a
+        className="underline decoration-thyme underline-offset-2 hover:text-thyme"
+        href="https://github.com/arhadd/za3tar"
+        target="_blank"
+        rel="noreferrer"
+      >
+        Read the code
+      </a>
     </div>
   );
 }

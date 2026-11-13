@@ -128,7 +128,7 @@ const recsSeed: Rec[] = [
       { speaker: "me", start: 24.6, text: "Bilingual من أول يوم، خلص قررنا." },
     ],
     notes:
-      "## Summary\n- Reviewed the Madar onboarding flow: design is done, Stripe is not wired yet.\n- Demo on Thursday once Stripe is wired.\n\n## Decisions\n- Launch bilingual from day one.\n\n## Actions\n- **Ala:** wire Stripe and prepare the demo.\n- **Lina:** send the final onboarding copy.",
+      "## Summary\n- Reviewed the Madar onboarding flow: design is done, Stripe is not wired yet.\n- Demo on Thursday once Stripe is wired.\n\n## Decisions\n- Launch bilingual from day one.\n\n## Actions\n- **Me:** wire Stripe and prepare the demo.\n- **Lina:** send the final onboarding copy.",
     actions: {
       decisions: [
         dec(1, "Launch bilingual from day one", "confirmed"),
@@ -221,7 +221,7 @@ const threadsSeed: Thread[] = [
     summary:
       "Design done, Stripe not wired. Demo Thursday. Bilingual from day one is decided.",
     status: "active",
-    owner: "Ala",
+    owner: "me",
     created: now - 12 * day,
     updated: now - 2 * 3600,
   },
@@ -305,7 +305,7 @@ let settings: Settings = {
   anthropic_api_key: "",
   openai_api_key: "",
   typesafe_api_key: "",
-  user_name: "Ala",
+  user_name: "",
   language: "english",
   agent_name: "",
   agent_command: "~/bin/za3tar-runtime",
@@ -586,7 +586,7 @@ export async function mockInvoke<T>(
               notes: true,
               talk: false,
               fast: true,
-              user_name: "Ala",
+              user_name: "",
               language: "english",
               hosted: false,
               onboarded: true,
@@ -794,14 +794,14 @@ export async function mockInvoke<T>(
               workspace: "madar",
               title: "Onboarding launch",
               summary: "Design done, Stripe not wired, demo Thursday.",
-              owner: "Ala",
+              owner: "me",
             },
             {
               op: "create_thread",
               workspace: "personal",
               title: "Interview prep",
               summary: "One timed attempt owed.",
-              owner: "Ala",
+              owner: "me",
             },
           ],
         });

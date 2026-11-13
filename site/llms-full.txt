@@ -21,6 +21,8 @@ In practice that becomes:
 - Connections between the tools already in use, so information stops being copied by hand.
 - A team that uses AI on its own, without us, after we leave.
 
+We also publish our own tooling. The Mac workspace we built for this work is open source (AGPL-3.0, https://github.com/arhadd/za3tar), it runs on the company's own provider keys, and its interface can be opened in a browser on fictional data at https://za3tar.ai/app/ — no download, no key, nothing stored. The protocol it uses to hand work to an agent is Apache-2.0, so any agent can implement it.
+
 Where the teammate lives: the chat the team already uses. Today that is WhatsApp, Slack or Telegram; other chat tools on request. We work in English and Arabic. Mostly remote, with on-site time when it helps.
 
 When a tool has no API (a carrier portal, a government site, a legacy system), a person keeps that step, or we automate the browser where the tool's terms allow. We say which before we build.
