@@ -191,6 +191,14 @@ function App() {
     if (new URLSearchParams(location.search).get("tour") === "0") return false;
     return !window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
   });
+  // za3tar.ai shows this page in a frame on its homepage: ?embed=1 drops the
+  // strip (the page around it says what it is) and ?tour=loop starts the
+  // walk-through over from a clean copy each time it ends.
+  const [embed, tourLoops] = useMemo(() => {
+    if (inTauri || typeof window === "undefined") return [false, false];
+    const q = new URLSearchParams(location.search);
+    return [q.get("embed") === "1", q.get("tour") === "loop"];
+  }, []);
   const [wsEdit, setWsEdit] = useState<Workspace | null>(null);
   const [userName, setUserName] = useState("");
   const [caps, setCaps] = useState<{
@@ -2384,10 +2392,16 @@ function App() {
 
   return (
     <div className="flex h-full flex-col">
-      {!inTauri && (
+      {!inTauri && !embed && (
         <DemoStrip tourOver={!tour} onReplay={() => setTour(true)} />
       )}
-      {tour && <Tour key="tour" onEnd={() => setTour(false)} />}
+      {tour && (
+        <Tour
+          key="tour"
+          quiet={embed}
+          onEnd={() => (tourLoops ? location.reload() : setTour(false))}
+        />
+      )}
       <div className="flex min-h-0 flex-1">
       {switcherOpen && (
         <Switcher

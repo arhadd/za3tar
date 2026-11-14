@@ -3,16 +3,16 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>za3tar — we supercharge your team’s ability to work</title>
-<meta name="description" content="Everything your company knows, in one place, working alongside your team. The repeat work runs itself, so your team can work, build and sell faster than ever. It gets better every week, and it’s yours from day one.">
-<meta property="og:title" content="za3tar — we supercharge your team’s ability to work">
-<meta property="og:description" content="Everything your company knows, in one place, working alongside your team. The repeat work runs itself, so your team can work, build and sell faster than ever. It gets better every week, and it’s yours from day one.">
+<title>za3tar — small teams can do a lot now</title>
+<meta name="description" content="za3tar is the setup we use to run a lot with a small team, and we put the same setup inside other companies. A few agents that know the business, the tools already in use, and whatever is missing, built.">
+<meta property="og:title" content="za3tar — small teams can do a lot now">
+<meta property="og:description" content="za3tar is the setup we use to run a lot with a small team, and we put the same setup inside other companies. A few agents that know the business, the tools already in use, and whatever is missing, built.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://za3tar.ai/">
 <meta property="og:image" content="https://za3tar.ai/og.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="za3tar — we supercharge your team’s ability to work">
+<meta property="og:image:alt" content="za3tar — small teams can do a lot now">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:image" content="https://za3tar.ai/og.png">
 <link rel="canonical" href="https://za3tar.ai/">
@@ -29,7 +29,7 @@
       "name": "za3tar",
       "url": "https://za3tar.ai/",
       "logo": "https://za3tar.ai/brand/mark.svg",
-      "description": "za3tar brings everything a company knows into one place that works alongside the team. The repeat work runs itself, so the team can work, build and sell faster. It gets better every week, and the company owns it from day one.",
+      "description": "za3tar is the setup we use to run a lot with a small team, and we put the same setup inside other companies. A few agents that know the business, the tools already in use, and whatever is missing, built.",
       "address": { "@type": "PostalAddress", "addressLocality": "Dubai", "addressCountry": "AE" },
       "areaServed": "Middle East",
       "knowsAbout": ["AI adoption", "AI agents", "workflow automation", "tool integration", "hands-on AI training"],
@@ -189,6 +189,16 @@ body.fx.held .howmark svg.wand{opacity:1;transform:none}
 @keyframes twinkle{0%,100%{opacity:.25;transform:scale(.6)}50%{opacity:1;transform:scale(1)}}
 
 
+/* the app, playing itself: a real page in a frame, scaled to fit; the link over it opens the app */
+.appframe{display:block;position:relative;margin-top:36px;border:1.5px solid var(--ink);border-radius:12px;overflow:hidden;background:#101e17;aspect-ratio:16/10}
+.appframe iframe{position:absolute;left:0;top:0;border:0;transform-origin:0 0;pointer-events:none;width:1280px;height:800px}
+.appopen{position:absolute;right:12px;top:12px;background:var(--paper);color:var(--ink);border:1.5px solid var(--ink);border-radius:6px;padding:7px 11px}
+.appframe:hover .appopen{background:var(--ink);color:var(--paper)}
+.story{margin-top:18px;font-size:clamp(22px,2.6vw,36px);font-weight:600;font-stretch:90%;letter-spacing:-.02em;line-height:1.22;max-width:30ch;text-wrap:pretty}
+#story .story{max-width:none}
+.why{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px 28px}
+.why p{border-top:1.5px solid var(--ink);padding-top:16px;font-size:17px;line-height:1.5;text-wrap:pretty}
+@media(max-width:820px){.why{grid-template-columns:1fr}.appframe{aspect-ratio:4/3;margin-top:24px}}
 /* ---------- close / footer ---------- */
 footer{border-top:1px solid var(--ink-18);padding:24px 0 40px}
 .fbar{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
@@ -280,11 +290,11 @@ footer a:hover{color:var(--ink)}
 
 <header class="hero">
   <div>
-    <h1 class="display">We supercharge your team’s ability to <span class="flip" id="flip"><span class="fw">work</span></span></h1>
-    <p>Everything your company knows, in one place, working alongside your team. The repeat work runs itself, so your team can work, build and sell faster than ever. It gets better every week, and it’s yours from day one.</p>
+    <h1 class="display">Small teams can do a lot now.</h1>
+    <p>Za3tar is the setup we use to run a lot with a small team. We put the same setup inside other companies.</p>
   </div>
 
-  <a class="cue" href="#steps" aria-label="See how it works"><span>See how it works</span><span class="arr">↓</span></a>
+  <a class="cue" href="#see" aria-label="See it"><span>See it</span><span class="arr">↓</span></a>
 
   <!-- za3tar mark, mono variant (BRAND.md) — geometry verbatim; the dot is the eye -->
   <div class="markwrap" aria-hidden="true">
@@ -304,8 +314,61 @@ footer a:hover{color:var(--ink)}
   </div>
 </header>
 
+<section id="see">
+  <div class="demorow">
+    <h2 class="sh rv">Open it. The work is already done.<small>This is the real app, showing itself around on a made-up company. A meeting becomes decisions and to-dos, each project says where it stands, and what is left is what needs a person.</small></h2>
+    <div class="rv"><a class="btn" href="/app/">Open the app <span class="ar">→</span></a> <a class="btn ghost" href="https://github.com/arhadd/za3tar" target="_blank" rel="noopener">Read the code <span class="ar">→</span></a></div>
+  </div>
+  <a class="appframe rv" href="/app/" aria-label="Open the app and try it yourself">
+    <iframe id="appdemo" data-src="/app/?tour=loop&amp;embed=1" title="The Za3tar app showing itself around" loading="lazy" tabindex="-1" aria-hidden="true"></iframe>
+    <span class="appopen mono">Take over →</span>
+  </a>
+</section>
+
+<section id="story">
+  <span class="mono rv">Where this came from</span>
+  <p class="story rv">This started with one person trying to run too many things at once. An assistant in WhatsApp turned into a way of working: a few agents that know the business, the tools already in use, and whatever was missing, built. Today a vinyl factory, a community that throws events in three countries, a gaming marketplace and a football league all run on it, with a handful of people.</p>
+</section>
+
+<section id="why">
+  <h2 class="sh rv">It knows the company, and it keeps knowing more.</h2>
+  <div class="why">
+    <p class="rv">One teammate for the whole company, not a chat login each. What one person teaches it, the next person gets, and the house rules become everyone’s defaults.</p>
+    <p class="rv">That is why it is worth more in month six than in month one, and why twenty separate chat subscriptions never add up to the same thing.</p>
+    <p class="rv">A person approves anything that is hard to undo. It drafts, gathers and chases; people decide.</p>
+  </div>
+</section>
+
+<section id="proof">
+  <h2 class="sh rv">Where it runs<small>Some are ours. Some are clients who let us say so.</small></h2>
+  <ul class="proof">
+    <!-- one block per company, so any one can be pulled in a minute -->
+    <li class="rv"><span class="mono">Vinyl pressing &amp; fulfilment, Amman</span>
+      <div>
+        <h3>MAKBAS</h3>
+        <p>An order carries itself from the first enquiry to shipped, and the factory can answer “where is it” without anyone going to look.</p>
+      </div></li>
+    <li class="rv"><span class="mono">Community &amp; events, three countries</span>
+      <div>
+        <h3>By Jello</h3>
+        <p>Tickets, guests, the door, crew, rooms and the money live in one place, from the first announcement to the last payout. Planning a new event starts from everything the last one taught.</p>
+      </div></li>
+    <li class="rv"><span class="mono">Clipping marketplace, Arab gaming</span>
+      <div>
+        <h3>GLG</h3>
+        <p>Clips are checked against the platforms and ranked on their own, and a person approves the payouts.</p>
+      </div></li>
+    <li class="rv"><span class="mono">Neighbourhood football league</span>
+      <div>
+        <h3>nady3ady</h3>
+        <p>Fixtures, the draft and the table keep themselves current, so the page is what people check instead of asking.</p>
+      </div></li>
+  </ul>
+  <p class="keep muted rv">We work in Arabic and English, usually both in the same sentence, because that is how the work is actually spoken.</p>
+</section>
+
 <section class="steps" id="steps">
-  <h2 class="sh rv">How it works<small>The same start for every company. Your team takes it from there.</small></h2>
+  <h2 class="sh rv">Every company starts the same way<small>Your team decides what it takes on from there.</small></h2>
   <div class="cards">
   <div class="card4">
     <div class="slot s-eye" data-piece="eye"><svg viewBox="113 23 26 26"><circle cx="126" cy="36" r="13" fill="#0B1710"/><circle cx="126" cy="36" r="11" fill="#F2EEE2"/><circle cx="126" cy="36" r="5" fill="#0B1710"/></svg></div>
@@ -327,44 +390,10 @@ footer a:hover{color:var(--ink)}
   <p class="keep muted rv"><b>Yours to keep.</b> The system, the agents and your data stay with you.</p>
 </section>
 
-
-<section id="proof">
-  <h2 class="sh rv">What teams use it for<small>Each company ends up with its own operating system.</small></h2>
-  <ul class="proof">
-    <li class="rv"><span class="mono">Marketing &amp; events agency</span>
-      <div>
-        <h3>An agency with its own operating system.</h3>
-        <p>Every client, project, vendor and deadline in one place, from first brief to final invoice. Meetings turn into tasks, the schedule keeps itself, and the weekly report is already written on Monday. The founder stops being where everything meets.</p>
-      </div></li>
-    <li class="rv"><span class="mono">Brand &amp; e-commerce studio</span>
-      <div>
-        <h3>A design studio that runs its operation from one command line.</h3>
-        <p>“Shoot the new collection, list it on the store, tell me what’s missing.” Product imagery, catalogues and store listings move in batches, and the team spends its time on the work only people can do.</p>
-      </div></li>
-    <li class="rv"><span class="mono">Community &amp; events company</span>
-      <div>
-        <h3>An events company with every department in one place.</h3>
-        <p>Tickets, guests, the door, crew, rooms, artists and money all live in one place, and every department works from it. Planning a new event starts from everything the last one taught.</p>
-      </div></li>
-  </ul>
-</section>
-
-
-
 <section id="demo" class="demo">
   <div class="demorow">
     <h2 class="sh rv">See what we’d build for you.<small>Give it your company’s name and, in about a minute, Za3tar talks you through what it would run for you. Turn your sound on.</small></h2>
-    <div class="rv"><a class="btn" href="/demo/">Start the demo <span class="ar">→</span></a> <a class="btn ghost" href="/app/">Open the app <span class="ar">→</span></a></div>
-  </div>
-</section>
-
-<section id="films">
-  <h2 class="sh rv">See each step<small>Four short films. Tap one to play.</small></h2>
-  <div class="films">
-    <figure class="film rv"><button type="button" aria-label="Play: Set up"><video src="/media/step-setup.mp4" poster="/media/step-setup.jpg" muted playsinline preload="none"></video><span class="play mono">▶ 24s</span></button><figcaption><span class="mono">01</span> Set up</figcaption></figure>
-    <figure class="film rv"><button type="button" aria-label="Play: Connect"><video src="/media/step-connect.mp4" poster="/media/step-connect.jpg" muted playsinline preload="none"></video><span class="play mono">▶ 24s</span></button><figcaption><span class="mono">02</span> Connect</figcaption></figure>
-    <figure class="film rv"><button type="button" aria-label="Play: Maintain"><video src="/media/step-maintain.mp4" poster="/media/step-maintain.jpg" muted playsinline preload="none"></video><span class="play mono">▶ 24s</span></button><figcaption><span class="mono">03</span> Maintain</figcaption></figure>
-    <figure class="film rv"><button type="button" aria-label="Play: Grow"><video src="/media/step-grow.mp4" poster="/media/step-grow.jpg" muted playsinline preload="none"></video><span class="play mono">▶ 24s</span></button><figcaption><span class="mono">04</span> Grow</figcaption></figure>
+    <div class="rv"><a class="btn" href="/demo/">Start the demo <span class="ar">→</span></a></div>
   </div>
 </section>
 
@@ -430,28 +459,6 @@ footer a:hover{color:var(--ink)}
 </svg>
 <script>
 (function(){
-  var words=['work','build','experiment','sell','plan','ship','hire','grow'];
-  var box=document.getElementById('flip'), w=box&&box.querySelector('.fw');
-  if(!box||!w||matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-  // the word sits on its own line, so its width never moves the rest of the headline
-  // split-flap: each letter runs through random characters, then settles left to right
-  var chars='abcdefghijklmnopqrstuvwxyz', i=0, busy=false;
-  function scramble(next){
-    busy=true; var t0=performance.now(), dur=560, tick=0;
-    (function frame(now){
-      var p=Math.min(1,(now-t0)/dur), out='';
-      for(var k=0;k<next.length;k++){
-        var settle=0.25+(k/next.length)*0.7;
-        out+= p>=settle ? next[k] : chars[Math.random()*26|0];
-      }
-      if((tick++%2)===0||p>=1) w.textContent=out;
-      if(p<1) requestAnimationFrame(frame); else { w.textContent=next; busy=false;
-        var r=w.getBoundingClientRect(); dispatchEvent(new CustomEvent('za3tar:look',{detail:{x:r.left+r.width/2,y:r.top+r.height/2}})); }
-    })(t0);
-  }
-  setInterval(function(){ if(busy) return; i=(i+1)%words.length; scramble(words[i]); },2600);
-})();
-(function(){
   var reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
   var noHover=matchMedia('(hover: none)').matches;
   var hero=document.querySelector('.markwrap svg');
@@ -483,6 +490,8 @@ footer a:hover{color:var(--ink)}
     var firstSlot=pieces[0].slot.querySelector('svg').getBoundingClientRect();
     var phone=innerWidth<=700;
     var start=vh*(phone?.08:.14), end=(firstSlot.top+y)-vh*(phone?.42:.58);
+    // the steps sit further down the page now: start the flight one screen before them
+    start=Math.max(start, end-vh*(phone?1.2:1));
     if(end<start+(phone?360:240)) end=start+(phone?360:240);
     var p1=clamp((y-start)/(end-start));
     // intro: pieces fly in and assemble on first paint
@@ -581,6 +590,22 @@ footer a:hover{color:var(--ink)}
   tick();
 })();
 
+/* the app in a frame: laid out at laptop width, scaled down to the box it sits in */
+(function(){
+  var f=document.getElementById('appdemo'); if(!f) return;
+  var box=f.parentNode;
+  function fit(){
+    var w=box.clientWidth, base=w<560?960:1280, h=Math.round(base*box.clientHeight/w);
+    f.style.width=base+'px'; f.style.height=h+'px'; f.style.transform='scale('+(w/base)+')';
+  }
+  fit(); addEventListener('resize',fit);
+  function load(){ if(!f.src) f.src=f.getAttribute('data-src'); }
+  if('IntersectionObserver' in window){
+    var io=new IntersectionObserver(function(es){ if(es[0].isIntersecting){ load(); io.disconnect(); } },{rootMargin:'600px 0px'});
+    io.observe(box);
+  } else load();
+})();
+
 /* the closing box writes a WhatsApp message; the visitor sends it themselves */
 (function(){
   var f=document.getElementById('startform');
@@ -591,19 +616,6 @@ footer a:hover{color:var(--ink)}
     if(!c) return f.company.focus();
     var t='Hi za3tar, I’m from '+c+'.'+(w?' With a magic wand, we’d '+w.replace(/^(we’d|we'd|we would|i’d|i'd|i would)\s+/i,''):'');
     window.open('https://wa.me/962798885558?text='+encodeURIComponent(t),'_blank','noopener');
-  });
-})();
-
-/* step films: tap to play one at a time, tap again to pause */
-(function(){
-  var films=[].slice.call(document.querySelectorAll('.film'));
-  films.forEach(function(f){
-    var v=f.querySelector('video');
-    f.querySelector('button').addEventListener('click',function(){
-      if(v.paused){ films.forEach(function(o){ if(o!==f){ o.querySelector('video').pause(); o.classList.remove('on'); } }); v.play(); f.classList.add('on'); }
-      else { v.pause(); f.classList.remove('on'); }
-    });
-    v.addEventListener('ended',function(){ f.classList.remove('on'); });
   });
 })();
 </script>

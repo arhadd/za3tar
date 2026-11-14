@@ -86,7 +86,14 @@ async function waitFor(name: string, ms = 2500) {
   }
 }
 
-export function Tour({ onEnd }: { onEnd: () => void }) {
+export function Tour({
+  onEnd,
+  quiet = false,
+}: {
+  onEnd: () => void;
+  /** framed on another page: nobody can click "skip", so don't offer it */
+  quiet?: boolean;
+}) {
   const [say, setSay] = useState("");
   const [at, setAt] = useState<{ x: number; y: number } | null>(null);
   const [down, setDown] = useState(false);
@@ -217,15 +224,17 @@ export function Tour({ onEnd }: { onEnd: () => void }) {
           <p dir="auto" className="text-[13px] leading-snug">
             {say}
           </p>
-          <button
-            onClick={() => {
-              live.current = false;
-              end.current();
-            }}
-            className="pointer-events-auto ml-auto shrink-0 rounded-md px-2 py-1 text-[12px] text-limestone/60 hover:text-thyme"
-          >
-            skip
-          </button>
+          {!quiet && (
+            <button
+              onClick={() => {
+                live.current = false;
+                end.current();
+              }}
+              className="pointer-events-auto ml-auto shrink-0 rounded-md px-2 py-1 text-[12px] text-limestone/60 hover:text-thyme"
+            >
+              skip
+            </button>
+          )}
         </div>
       </div>
     </>
