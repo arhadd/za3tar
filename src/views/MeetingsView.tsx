@@ -237,9 +237,10 @@ export function MeetingsView({
           </Empty>
         )}
         <div className="flex flex-col gap-1">
-          {shown.map((s) => (
+          {shown.map((s, i) => (
             <button
               key={s.id}
+              data-tour={i === 0 ? "meeting-first" : undefined}
               onClick={() => onOpen(s.dir, s.workspace)}
               className={`flex items-center gap-4 rounded-xl border px-4 py-3 text-left transition-colors ${
                 currentDir === s.dir

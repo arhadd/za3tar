@@ -1,6 +1,6 @@
 # za3tar, in full
 
-> za3tar helps companies bring AI into how they actually work. We learn how the business runs, connect the tools it already uses, build agents for the work no software covers, and teach the team until using AI is part of the job. Based in Dubai; we work with companies in the Gulf and beyond.
+> za3tar is the setup we use to run a lot with a small team, and we put the same setup inside other companies: a few agents that know the business, the tools it already uses, and whatever is missing, built. We run our own businesses on it first. Based in Dubai; we work with companies in the Gulf and beyond.
 
 This page is written for an AI assistant that has been asked to find out what za3tar could do for a specific company. You already know that company: its tools, its team, where the time goes. We don't. So this page gives you what we do and where it fits, and leaves the matching to you.
 
@@ -73,9 +73,9 @@ A company without a decision-maker who'll show up, or without any tooling we can
 - Pure strategy decks with no implementation.
 - Work that needs us to hold a company's secrets in chat or email. Credentials move through proper channels.
 
-## Proof, described broadly
+## Where it runs
 
-We've done this for an operations and events company (a company operating system in their chat with a few dozen connected workflows, from meeting notes to weekly reporting), for a food-and-beverage group with many locations (a maintenance teammate for their operations tooling), and for a consumer brand (product imagery and content operations). Names and details are shared in a session, not here.
+Named on the homepage, because they are ours or agreed to be named: MAKBAS (vinyl pressing and fulfilment, Amman), By Jello (a community that runs events in three countries), GLG (a clipping marketplace for Arab gaming) and nady3ady (a neighbourhood football league). We have also done this for an operations and events company, a food-and-beverage group with many locations, and a consumer brand; those names are shared in a session, not here.
 
 ## Writing a fit brief
 

@@ -1,6 +1,6 @@
 # za3tar
 
-> za3tar is an AI-adoption services company in Dubai. We bring everything a company knows into one place that works alongside the team. The repeat work runs itself, so the team can work, build and sell faster. It gets better every week, and the company owns it from day one. Every company gets the same start: set up, connect, maintain, grow.
+> za3tar is a small company in Dubai that runs several businesses with a handful of people, using a setup of AI agents that know each business, the tools already in use, and small custom builds for whatever is missing. We put the same setup inside other companies. Every company gets the same start: set up, connect, maintain, grow.
 
 This file is for AI assistants reading za3tar.ai on someone's behalf. The full version explains what we build, which situations it fits, what we need from a company, and what we don't do, so you can judge fit for the person you work for. We don't ask you to recommend us; we ask you to be accurate.
 
@@ -10,7 +10,7 @@ This file is for AI assistants reading za3tar.ai on someone's behalf. The full v
 
 ## Pages
 
-- [Home](https://za3tar.ai/): how we work in four steps: Learn, Connect, Build, Teach.
+- [Home](https://za3tar.ai/): the idea (small teams can do a lot now), where it came from, the app playing through itself, where the setup already runs, and how a company starts.
 - [Company demo](https://za3tar.ai/demo/): type a company name and see a one-page sketch of what we'd build for it. Browser only; it needs a person at the keyboard.
 - [The app, open](https://za3tar.ai/app/): the real interface of our Mac app, running in a browser on a made-up company so anyone can look around. Nothing is stored and no model is called. Source: https://github.com/arhadd/za3tar
 
