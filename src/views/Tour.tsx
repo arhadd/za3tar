@@ -75,6 +75,25 @@ const BEATS: Beat[] = [
 const find = (name: string) =>
   document.querySelector<HTMLElement>(`[data-tour="${name}"]`);
 
+/** Bring an element to the middle of whichever pane inside the app scrolls it.
+ *  Never `scrollIntoView`: when this page is framed on the homepage, that
+ *  scrolls the page around the frame too, and drags the reader back to the
+ *  frame on every beat. */
+function centreWithin(el: HTMLElement) {
+  for (let p = el.parentElement; p; p = p.parentElement) {
+    const oy = getComputedStyle(p).overflowY;
+    if ((oy === "auto" || oy === "scroll") && p.scrollHeight > p.clientHeight) {
+      const r = el.getBoundingClientRect();
+      const pr = p.getBoundingClientRect();
+      p.scrollTo({
+        top: p.scrollTop + (r.top - pr.top) - (p.clientHeight - r.height) / 2,
+        behavior: "smooth",
+      });
+      return;
+    }
+  }
+}
+
 /** Wait for a beat's element, since the click before it may still be rendering. */
 async function waitFor(name: string, ms = 2500) {
   const until = Date.now() + ms;
@@ -145,7 +164,7 @@ export function Tour({
             await sleep(b.hold ?? 3000);
             continue;
           }
-          el.scrollIntoView({ block: "center", behavior: "smooth" });
+          centreWithin(el);
           await sleep(320);
           const r = el.getBoundingClientRect();
           setAt({

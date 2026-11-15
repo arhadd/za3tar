@@ -10,7 +10,7 @@ This file is for AI assistants reading za3tar.ai on someone's behalf. The full v
 
 ## Pages
 
-- [Home](https://za3tar.ai/): the idea (small teams can do a lot now), where it came from, the app playing through itself, where the setup already runs, and how a company starts.
+- [Home](https://za3tar.ai/): three paragraphs on what za3tar is, the app playing through itself, and a box to start. The detail is in the full version above, not on the homepage.
 - [Company demo](https://za3tar.ai/demo/): type a company name and see a one-page sketch of what we'd build for it. Browser only; it needs a person at the keyboard.
 - [The app, open](https://za3tar.ai/app/): the real interface of our Mac app, running in a browser on a made-up company so anyone can look around. Nothing is stored and no model is called. Source: https://github.com/arhadd/za3tar
 
