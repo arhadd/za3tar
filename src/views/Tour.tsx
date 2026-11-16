@@ -24,50 +24,26 @@ type Beat = {
 
 const BEATS: Beat[] = [
   {
-    say: "This is Za3tar: everything your company is doing, in one place.",
-    hold: 3200,
-  },
-  {
-    point: "needs-you",
-    say: "You open it and the work is already done. What is left is what needs you.",
-    hold: 4000,
-  },
-  {
-    click: "ws-madar",
-    say: "A workspace per part of the business — its own projects, people and decisions.",
-    hold: 3800,
-  },
-  {
-    say: "Every project carries one line on where it stands, so you can read the week in a minute.",
+    say: "A three-person agency and its three clients, on one screen.",
     hold: 4200,
   },
   {
-    click: "nav-meetings",
-    say: "Meetings are the main way work gets in.",
-    hold: 2800,
+    point: "assistant",
+    say: "Most of the work happened in chat. The assistant answered Noor on WhatsApp and wrote up this morning's call.",
+    hold: 5200,
   },
   {
-    click: "meeting-first",
-    say: "Talk normally. The decisions, the to-dos and who owns them come out the other side.",
-    hold: 4400,
-  },
-  {
-    click: "record",
-    say: "Recording puts no bot in the call: your microphone and their side, both on this Mac.",
+    point: "needs-you",
+    say: "What is left is two things that need a yes.",
     hold: 3800,
   },
   {
-    click: "record",
-    say: "Stop, and the rest happens without you — in Arabic, English, or the mix you actually spoke.",
-    hold: 5000,
+    click: "ws-noor",
+    say: "Each client has one line on where it stands.",
+    hold: 4200,
   },
   {
-    click: "nav-todos",
-    say: "And everything still open, across every workspace, with who owes it.",
-    hold: 4000,
-  },
-  {
-    say: "Your turn — click anywhere. It is a made-up company, and nothing is saved.",
+    say: "Your turn. It is a made-up company, and nothing is saved.",
     hold: 6000,
   },
 ];

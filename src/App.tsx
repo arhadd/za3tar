@@ -2899,7 +2899,7 @@ function App() {
 }
 
 /** Shown only in a browser (za3tar.ai/app): this is the real interface running
- *  on a made-up company, so nobody mistakes it for their own data. */
+ *  on a made-up agency, so nobody mistakes it for their own data. */
 function DemoStrip({
   tourOver,
   onReplay,
@@ -2910,7 +2910,7 @@ function DemoStrip({
   return (
     <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-0.5 bg-ink px-4 py-1.5 text-center text-[12px] leading-snug text-limestone">
       <span>
-        A demo of the real app, on a made-up company. Nothing is saved.
+        A demo of the real app, on a made-up agency. Nothing is saved.
       </span>
       {tourOver && (
         <button

@@ -34,32 +34,41 @@ const iso = (d: number) => new Date(d * 1000).toISOString().slice(0, 10);
 
 const workspaces: Workspace[] = [
   {
-    id: "personal",
-    name: "Personal",
-    created: 0,
+    id: "noor",
+    name: "Noor Coffee",
+    created: now - 60 * day,
+    description:
+      "Noor Coffee's second branch. Yousef runs the branch; done means opening day on the 28th with the launch posts out.",
+    links: [
+      { kind: "source", label: "Noor Coffee WhatsApp group", target: "" },
+      { kind: "source", label: "weekly check-in notes", target: "~/Documents/noor/notes.md" },
+      { kind: "folder", label: "launch photos", target: "~/Documents/noor/photos" },
+      { kind: "url", label: "content calendar", target: "https://calendar.example.com/noor" },
+      { kind: "url", label: "menu page", target: "https://noor.example.com/menu" },
+    ],
+    runtime_command: "my-agent --profile noor",
+  },
+  {
+    id: "sama",
+    name: "Sama Skincare",
+    created: now - 120 * day,
     description: "",
     links: [],
     runtime_command: "",
   },
   {
-    id: "madar",
-    name: "Madar",
-    created: now - 20 * day,
-    description:
-      "Madar's onboarding and pricing work. Lina is the product lead; done means a bilingual launch with Stripe live.",
-    links: [
-      { kind: "source", label: "Madar x Za3tar WhatsApp group", target: "" },
-      { kind: "source", label: "weekly sync notes", target: "~/Documents/madar/notes.md" },
-      { kind: "repo", label: "madar/app", target: "https://github.com/example/madar" },
-      { kind: "folder", label: "design files", target: "~/Documents/madar" },
-      { kind: "url", label: "staging", target: "https://staging.example.com" },
-    ],
-    runtime_command: "my-agent --profile madar",
+    id: "bayt",
+    name: "Bayt Hotels",
+    created: now - 3 * day,
+    description: "",
+    links: [],
+    runtime_command: "",
   },
+  // the app's built-in default workspace; in this demo it holds the agency's own work
   {
-    id: "house",
-    name: "The House",
-    created: now - 9 * day,
+    id: "personal",
+    name: "Studio",
+    created: 0,
     description: "",
     links: [],
     runtime_command: "",
@@ -99,76 +108,67 @@ const recsSeed: Rec[] = [
     dir: "/mock/1",
     id: "1",
     created: now - 2 * 3600,
-    title: "Madar — onboarding kickoff",
-    person: "Lina",
-    workspace: "madar",
-    thread: "madar-onboarding",
+    title: "Bayt Hotels — kickoff",
+    person: "Rana",
+    workspace: "bayt",
+    thread: "bayt-start",
     duration_secs: 41 * 60 + 12,
     segments: [
       {
         speaker: "me",
         start: 0.2,
-        text: "طيب خلينا نبدأ بالـ onboarding flow، وين واقفين؟",
+        text: "أهلاً رنا، خلينا نبدأ: شو أهم إشي بدكم إياه أول شهر؟",
       },
       {
         speaker: "them",
         start: 6.1,
-        text: "الـ design جاهز، بس الـ backend لسا ما ربطنا الـ Stripe.",
+        text: "بصراحة الـ bookings المباشرة. أغلب الحجوزات لسا بتيجي من الـ platforms.",
       },
       {
         speaker: "me",
         start: 12.4,
-        text: "تمام، بنخلص الربط هالأسبوع وبنعمل demo يوم الخميس.",
+        text: "تمام، بنبدأ بفندق واحد وبنشوف الأرقام قبل ما نكبّر.",
       },
       {
         speaker: "them",
         start: 18.0,
-        text: "Perfect. بدنا كمان نقرر إذا بنطلق بالعربي بس ولا bilingual.",
+        text: "Perfect, let's start with the Aqaba property. ببعتلكم الـ brand guidelines بكرا.",
       },
-      { speaker: "me", start: 24.6, text: "Bilingual من أول يوم، خلص قررنا." },
+      { speaker: "me", start: 24.6, text: "ممتاز، وأنا ببعت ملخص الاجتماع اليوم." },
     ],
     notes:
-      "## Summary\n- Reviewed the Madar onboarding flow: design is done, Stripe is not wired yet.\n- Demo on Thursday once Stripe is wired.\n\n## Decisions\n- Launch bilingual from day one.\n\n## Actions\n- **Me:** wire Stripe and prepare the demo.\n- **Lina:** send the final onboarding copy.",
+      "## Summary\n- Kickoff with Rana: the first goal is more direct bookings.\n- Start with one property and read the numbers before adding more.\n\n## Decisions\n- Start with the Aqaba property.\n\n## Actions\n- **Me:** send the kickoff recap.\n- **Rana:** share the brand guidelines.",
     actions: {
-      decisions: [
-        dec(1, "Launch bilingual from day one", "confirmed"),
-        dec(2, "Demo on Thursday"),
-      ],
+      decisions: [dec(1, "Start with the Aqaba property", "confirmed")],
       actions: [
-        act(1, "Wire Stripe to the backend", "me", "this week", iso(now + 3 * day)),
-        act(
-          2,
-          "Send the final onboarding copy",
-          "Lina",
-          "tomorrow",
-          iso(now + day),
-        ),
-        act(3, "Prepare the demo", "me", "Thursday", iso(now + 2 * day)),
+        act(1, "Send the kickoff recap to Bayt Hotels", "me", "today", iso(now)),
+        act(2, "Share the brand guidelines", "Rana", "tomorrow", iso(now + day)),
       ],
-      questions: ["Who pays the Stripe fees in phase one?"],
+      questions: ["Who signs off on posts on their side?"],
     },
   },
   {
     dir: "/mock/2",
     id: "2",
-    created: now - 3 * day,
-    title: "Madar — pricing follow-up",
-    person: "Lina",
-    workspace: "madar",
-    thread: "madar-pricing",
+    created: now - 2 * day,
+    title: "Noor Coffee — launch check-in",
+    person: "Yousef",
+    workspace: "noor",
+    thread: "noor-launch",
     duration_secs: 18 * 60 + 5,
     segments: [
-      { speaker: "me", start: 0, text: "خلينا نراجع الـ pricing tiers." },
+      { speaker: "me", start: 0, text: "خلينا نراجع الـ launch posts وموعد التصوير." },
+      { speaker: "them", start: 5.2, text: "الـ posts تمام، approved. بس التصوير يمكن نحتاج نأجله." },
     ],
     notes:
-      "## Summary\n- Reviewed the three pricing tiers.\n\n## Decisions\n- One free tier, no card needed.",
+      "## Summary\n- Reviewed the launch posts for the second branch: approved.\n- The shoot may need to move; menu photos are still owed.\n\n## Decisions\n- Launch posts approved as they are.",
     actions: {
       decisions: [
-        dec(1, "Free tier with no card", "confirmed"),
-        dec(2, "Price in dollars, not dinars", "superseded"),
+        dec(1, "Launch posts approved as they are", "confirmed"),
+        dec(2, "Shoot moves to Wednesday 10am"),
       ],
       actions: [
-        act(1, "Publish the pricing page", "Lina", "next week", iso(now - day)),
+        act(1, "Send the menu photos", "Yousef", "last week", iso(now - day)),
       ],
       questions: [],
     },
@@ -177,103 +177,81 @@ const recsSeed: Rec[] = [
     dir: "/mock/3",
     id: "3",
     created: now - 5 * day,
-    title: "The House — contractor walkthrough",
-    person: "Samer",
-    workspace: "house",
-    duration_secs: 52 * 60,
+    title: "Sama Skincare — November review",
+    person: "Hala",
+    workspace: "sama",
+    thread: "sama-december",
+    duration_secs: 32 * 60,
     segments: [
       {
-        speaker: "voice1",
+        speaker: "them",
         start: 0,
-        text: "الجدار الشمالي بده عزل قبل الشتا.",
+        text: "الـ report واضح، شكراً. خلوني أراجع خطة December وبرجعلكم.",
       },
     ],
     notes:
-      "## Summary\n- Site walk with Samer: insulation before winter.\n\n## Actions\n- **Samer:** quote for the insulation.",
+      "## Summary\n- Walked Hala through the November report.\n- December plan is with her for a yes.\n\n## Actions\n- **Hala:** approve the December plan.",
     actions: {
-      decisions: [dec(1, "Insulation before any interior work")],
+      decisions: [dec(1, "Keep the weekly reel", "confirmed")],
       actions: [
-        act(1, "Quote for the insulation", "Samer", "in two days", iso(now - 3 * day)),
+        act(1, "Approve the December plan", "Hala", "this week", iso(now + 2 * day)),
       ],
-      questions: ["Does the permit cover the extension?"],
+      questions: [],
     },
-  },
-  {
-    dir: "/mock/4",
-    id: "4",
-    created: now - 8 * day,
-    title: "coffee with Dana",
-    person: "Dana",
-    workspace: "personal",
-    duration_secs: 27 * 60,
-    segments: [],
-    notes: null,
-    actions: null,
   },
 ];
 
 const recs: Rec[] = FRESH ? [] : recsSeed;
 const threadsSeed: Thread[] = [
   {
-    id: "madar-onboarding",
-    workspace: "madar",
-    title: "Onboarding launch",
-    summary:
-      "Design done, Stripe not wired. Demo Thursday. Bilingual from day one is decided.",
+    id: "noor-launch",
+    workspace: "noor",
+    title: "Second branch launch",
+    summary: "Opens on the 28th. Launch posts approved, menu photos late.",
     status: "active",
     owner: "me",
-    created: now - 12 * day,
+    created: now - 20 * day,
+    updated: now - 2 * day,
+  },
+  {
+    id: "sama-december",
+    workspace: "sama",
+    title: "December plan",
+    summary: "November report sent. Waiting on their yes for the December plan.",
+    status: "active",
+    owner: "me",
+    created: now - 10 * day,
+    updated: now - 5 * day,
+  },
+  {
+    id: "bayt-start",
+    workspace: "bayt",
+    title: "Getting started",
+    summary: "New client. Kickoff call was this morning.",
+    status: "active",
+    owner: "me",
+    created: now - 3 * day,
     updated: now - 2 * 3600,
   },
   {
-    id: "madar-pricing",
-    workspace: "madar",
-    title: "Pricing",
-    summary: "Free tier without a card is confirmed; pricing page still not published.",
-    status: "parked",
-    owner: "Lina",
-    created: now - 10 * day,
-    updated: now - 3 * day,
-  },
-  {
-    id: "madar-arabic-content",
-    workspace: "madar",
-    title: "Arabic help centre",
-    summary: "Lina has the first 12 articles; translation brief not sent.",
+    id: "studio-new-business",
+    workspace: "personal",
+    title: "New business",
+    summary: "Two enquiries this week. Proposals not started.",
     status: "active",
-    owner: "Lina",
+    owner: "me",
     created: now - 6 * day,
     updated: now - 1 * day,
   },
   {
-    id: "house-build",
-    workspace: "house",
-    title: "Winter-proofing",
-    summary: "",
-    status: "active",
-    owner: "",
-    created: now - 5 * day,
-    updated: now - 5 * day,
-  },
-  {
-    id: "madar-referrals",
-    workspace: "madar",
-    title: "Referral credit for teams that bring a team",
+    id: "noor-loyalty",
+    workspace: "noor",
+    title: "Loyalty card for the second branch",
     summary: "",
     status: "idea",
     owner: "",
     created: now - 2 * day,
     updated: now - 2 * day,
-  },
-  {
-    id: "personal-supper-club",
-    workspace: "personal",
-    title: "Monthly supper club for founders",
-    summary: "",
-    status: "idea",
-    owner: "",
-    created: now - 4 * 3600,
-    updated: now - 4 * 3600,
   },
 ];
 
@@ -282,24 +260,39 @@ const contactsSeed: Record<
   string,
   { phone: string; email: string; org: string; role: string; aliases: string[] }
 > = {
-  Lina: {
+  Yousef: {
     phone: "+962 79 000 0000",
-    email: "lina@madar.example",
-    org: "Madar",
-    role: "Product lead",
-    aliases: ["لينا"],
+    email: "yousef@noor.example",
+    org: "Noor Coffee",
+    role: "Branch manager",
+    aliases: ["يوسف"],
   },
-  Samer: {
+  Hala: {
     phone: "+962 77 000 0000",
-    email: "",
-    org: "Samer & Sons",
-    role: "Contractor",
-    aliases: [],
+    email: "hala@sama.example",
+    org: "Sama Skincare",
+    role: "Marketing lead",
+    aliases: ["هلا"],
+  },
+  Rana: {
+    phone: "+962 78 000 0000",
+    email: "rana@bayt.example",
+    org: "Bayt Hotels",
+    role: "Brand manager",
+    aliases: ["رنا"],
   },
 };
 
 const contacts: typeof contactsSeed = FRESH ? {} : contactsSeed;
-if (FRESH) workspaces.splice(1);
+if (FRESH)
+  workspaces.splice(0, workspaces.length, {
+    id: "personal",
+    name: "Personal",
+    created: 0,
+    description: "",
+    links: [],
+    runtime_command: "",
+  });
 let settings: Settings = {
   elevenlabs_api_key: "",
   anthropic_api_key: "",
@@ -698,12 +691,12 @@ export async function mockInvoke<T>(
       const r = byDir(args.dir)!;
       if (FRESH) {
         r.actions = {
-          decisions: [dec(1, "Demo moves to Thursday", "proposed")],
+          decisions: [dec(1, "Shoot moves to Wednesday", "proposed")],
           actions: [
-            act(1, "Wire up Stripe", "me", "this week", iso(now + 3 * day)),
-            act(2, "Send the final copy", "Lina", "tomorrow", iso(now + day)),
+            act(1, "Send the recap", "me", "today", iso(now)),
+            act(2, "Share the brand guidelines", "Rana", "tomorrow", iso(now + day)),
           ],
-          questions: ["Who covers the fees in phase one?"],
+          questions: ["Who signs off on posts on their side?"],
         };
         return out(r.actions);
       }
@@ -717,12 +710,12 @@ export async function mockInvoke<T>(
     case "draft_followup":
       return out({
         subject: args.kind === "email" ? "ملخص اجتماعنا" : null,
-        body: "هلا، شكراً على وقتك اليوم. باختصار اتفقنا على:\n- ربط Stripe هالأسبوع\n- demo يوم الخميس\nبخبرك أول ما يجهز 🙌",
+        body: "هلا، شكراً على وقتك اليوم. باختصار اتفقنا على:\n- نبدأ بفندق العقبة\n- الـ brand guidelines بتوصلنا بكرا\nبخبرك أول ما تجهز الخطة 🙌",
       });
     case "draft_nudge":
       return out({
         subject: null,
-        body: "هلا، بس بحب أتأكد من عرض السعر للعزل من اجتماعنا، إذا بدك إشي مني قلي.",
+        body: "هلا يوسف، بس بحب أتأكد من صور الـ menu من اجتماعنا، إذا بدك إشي مني قلي.",
       });
     case "export_calendar":
       return out("/mock/actions.ics");
@@ -761,7 +754,7 @@ export async function mockInvoke<T>(
         return out(
           'ZA3TAR_SCHEDULE v1\n{"date":"' +
             iso(now) +
-            '","events":[{"start":"10:00","end":"10:45","title":"Madar weekly","attendees":["Lina"]},{"start":"15:30","end":"16:00","title":"Interview with Samer","attendees":["Samer"]}]}',
+            '","events":[{"start":"10:00","end":"10:45","title":"Bayt Hotels kickoff","attendees":["Rana"]},{"start":"15:30","end":"16:00","title":"Noor Coffee check-in","attendees":["Yousef"]}]}',
         );
       if (msg.includes('"type":"followups"'))
         return out(
@@ -788,26 +781,26 @@ export async function mockInvoke<T>(
         return out({
           say: "Got it — set those up. Anything else, or shall we look at what I made?",
           ops: [
-            { op: "create_workspace", name: "Madar", description: "client work" },
+            { op: "create_workspace", name: "Noor Coffee", description: "client work" },
             {
               op: "create_thread",
-              workspace: "madar",
-              title: "Onboarding launch",
-              summary: "Design done, Stripe not wired, demo Thursday.",
+              workspace: "noor-coffee",
+              title: "Second branch launch",
+              summary: "Opens on the 28th. Launch posts approved, menu photos late.",
               owner: "me",
             },
             {
               op: "create_thread",
               workspace: "personal",
-              title: "Interview prep",
-              summary: "One timed attempt owed.",
+              title: "New business",
+              summary: "Two enquiries this week. Proposals not started.",
               owner: "me",
             },
           ],
         });
       if (/\bwhere are we\b|\bcatch me up\b/.test(t))
         return out({
-          say: "Design is done, Stripe is not wired yet, and the demo is Thursday. Bilingual from day one is decided.",
+          say: "Noor Coffee opens its second branch on the 28th and the menu photos are late. Sama Skincare owes a yes on the December plan. Bayt Hotels kicked off this morning.",
           ops: [],
         });
       return out({ say: "mock brain: heard you.", ops: [] });
@@ -821,8 +814,8 @@ export async function mockInvoke<T>(
       return out([
         {
           id: "ops",
-          label: "Ops agent",
-          description: "an always-on agent on a server (mock)",
+          label: "Assistant",
+          description: "an always-on assistant on a server (demo)",
           kind: "acp",
           command: "mock",
           cwd: "",
@@ -841,9 +834,9 @@ export async function mockInvoke<T>(
         // tidy up: a verdict per item, cycling through the kinds
         const q = JSON.parse(String(args.text).split("ZA3TAR_QUERY v1\n").pop() || "{}");
         const kinds = [
-          { verdict: "done", why: "The demo happened on Thursday; the group thanked you after.", evidence: "WhatsApp with Lina, Thu", next: null, can_do: false },
-          { verdict: "drop", why: "Pricing moved to dollars, so this step no longer applies.", evidence: "Madar pricing note", next: null, can_do: false },
-          { verdict: "keep", why: "Still open: nothing sent yet.", evidence: "No reply in the thread", next: "Send Lina the final copy for sign-off", can_do: true },
+          { verdict: "done", why: "The posts went out on Thursday; the group thanked you after.", evidence: "WhatsApp with Yousef, Thu", next: null, can_do: false },
+          { verdict: "drop", why: "The shoot moved, so this step no longer applies.", evidence: "Noor Coffee check-in note", next: null, can_do: false },
+          { verdict: "keep", why: "Still open: nothing sent yet.", evidence: "No reply in the thread", next: "Send Hala the December plan for sign-off", can_do: true },
           { verdict: "unsure", why: "No later trace of this anywhere.", evidence: null, next: null, can_do: false },
         ];
         emit("acp-event", { route: r, kind: "status", status: "working" });
@@ -859,17 +852,17 @@ export async function mockInvoke<T>(
         emit("acp-event", { route: r, kind: "status", status: "ready" });
         const first = threads.find((t) => t.status === "active");
         const text = first
-          ? JSON.stringify({ [first.id]: `${first.summary} Mock agent adds: the group confirmed the date this morning.`.trim() })
+          ? JSON.stringify({ [first.id]: `${first.summary} Their manager asked to move the shoot.`.trim() })
           : "{}";
         return out({ stopReason: "end_turn", text });
       }
       emit("acp-event", { route: r, kind: "status", status: "working" });
       setTimeout(() => emit("acp-event", { route: r, kind: "update", update: { sessionUpdate: "tool_call", toolCallId: "t1", title: "read: notes/status.md", kind: "read", status: "in_progress" } }), 200);
       setTimeout(() => emit("acp-event", { route: r, kind: "update", update: { sessionUpdate: "tool_call_update", toolCallId: "t1", status: "completed" } }), 700);
-      setTimeout(() => emit("acp-event", { route: r, kind: "update", update: { sessionUpdate: "agent_message_chunk", content: { type: "text", text: "Mock agent: read it, nothing moved since yesterday." } } }), 900);
+      setTimeout(() => emit("acp-event", { route: r, kind: "update", update: { sessionUpdate: "agent_message_chunk", content: { type: "text", text: "Read it. Nothing has moved since yesterday." } } }), 900);
       await new Promise((res) => setTimeout(res, 1100));
       emit("acp-event", { route: r, kind: "status", status: "ready" });
-      return out({ stopReason: "end_turn", text: "Mock agent: read it, nothing moved since yesterday." });
+      return out({ stopReason: "end_turn", text: "Read it. Nothing has moved since yesterday." });
     }
     case "acp_permission":
     case "acp_cancel":
@@ -891,13 +884,12 @@ export async function mockInvoke<T>(
       return out(null);
     case "feed_get": {
       const now = Date.now() / 1000;
+      // the WhatsApp line is always there; a few seconds in it becomes the one moving now
       const s = [
-        { id: "m1", title: "Venue options for the retreat", preview: "", source: "whatsapp", is_active: false, last_active: now - 600, message_count: 14 },
-        { id: "m2", title: "Morning brief", preview: "", source: "cron", is_active: false, last_active: now - 3 * 3600, message_count: 2 },
-        { id: "m3", title: "", preview: "can you check who still owes the deposit?", source: "slack", is_active: false, last_active: now - 26 * 3600, message_count: 6 },
+        { id: "m1", title: "Noor Coffee: moving the shoot", preview: "", source: "whatsapp", is_active: feedMoved, last_active: feedMoved ? now - 5 : now - 12 * 60, message_count: 5 },
+        { id: "m2", title: "Bayt Hotels: kickoff recap", preview: "", source: "slack", is_active: false, last_active: now - 40 * 60, message_count: 6 },
+        { id: "m3", title: "Morning brief to the team", preview: "", source: "cron", is_active: false, last_active: now - 3 * 3600, message_count: 2 },
       ];
-      if (feedMoved)
-        s.unshift({ id: "m0", title: "Supplier asked to move Thursday", preview: "", source: "whatsapp", is_active: true, last_active: now - 5, message_count: 3 });
       return out({ sessions: s });
     }
     default:
