@@ -77,7 +77,7 @@ export function Sidebar({
   }
 
   const item = (active: boolean) =>
-    `flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-[13px] transition-colors ${
+    `flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-[13px] transition-colors max-[700px]:w-auto max-[700px]:shrink-0 max-[700px]:whitespace-nowrap max-[700px]:px-2.5 ${
       active
         ? "bg-limestone/10 text-limestone"
         : "text-limestone/70 hover:bg-limestone/5 hover:text-limestone"
@@ -86,18 +86,20 @@ export function Sidebar({
   const activeIn = (id: string) =>
     threads.filter((t) => t.workspace === id && t.status === "active");
 
+  // under 700px (a phone on the web demo; the Mac window never gets this narrow)
+  // the sidebar turns into one row across the top that scrolls sideways
   return (
-    <aside className="flex w-[232px] shrink-0 flex-col bg-panel text-limestone">
-      <div className="flex items-center gap-2.5 px-4 pt-5 pb-4">
+    <aside className="flex w-[232px] shrink-0 flex-col bg-panel text-limestone max-[700px]:w-full max-[700px]:flex-row max-[700px]:items-center max-[700px]:gap-1 max-[700px]:overflow-x-auto max-[700px]:px-2 max-[700px]:py-1.5 max-[700px]:[scrollbar-width:none]">
+      <div className="flex items-center gap-2.5 px-4 pt-5 pb-4 max-[700px]:hidden">
         <Mark size={22} className="text-limestone" />
         <span className="wordmark text-[19px] leading-none">Za3tar</span>
       </div>
 
-      <nav className="flex flex-col gap-0.5 px-3 pb-5">
+      <nav className="flex flex-col gap-0.5 px-3 pb-5 max-[700px]:shrink-0 max-[700px]:flex-row max-[700px]:p-0">
         <button
           onClick={onJump}
           title="jump to a project, or jot an idea"
-          className="mb-2 flex w-full items-center gap-2 rounded-md border border-hairline px-2 py-1.5 text-left text-[12px] text-limestone/45 transition-colors hover:border-limestone/30 hover:text-limestone"
+          className="mb-2 flex w-full items-center gap-2 rounded-md border border-hairline px-2 py-1.5 text-left text-[12px] text-limestone/45 transition-colors hover:border-limestone/30 hover:text-limestone max-[700px]:hidden"
         >
           Jump to…
           <span className="ml-auto text-[11px] text-limestone/35">⌘K</span>
@@ -152,15 +154,15 @@ export function Sidebar({
         </button>
       </nav>
 
-      <div className="min-h-0 flex-1 overflow-y-auto px-3 pb-3">
-        <div className="eyebrow px-1 pb-1.5 text-limestone/45">Workspaces</div>
-        <div className="flex flex-col gap-0.5">
+      <div className="min-h-0 flex-1 overflow-y-auto px-3 pb-3 max-[700px]:flex-none max-[700px]:overflow-visible max-[700px]:border-l max-[700px]:border-hairline max-[700px]:p-0 max-[700px]:pl-1">
+        <div className="eyebrow px-1 pb-1.5 text-limestone/45 max-[700px]:hidden">Workspaces</div>
+        <div className="flex flex-col gap-0.5 max-[700px]:flex-row">
           {workspaces.map((w) => {
             const on = inWorkspace && w.id === wsId;
             const projects = activeIn(w.id);
             const single = projects.length === 1 ? projects[0] : null;
             return (
-              <div key={w.id} className="flex flex-col gap-0.5">
+              <div key={w.id} className="flex flex-col gap-0.5 max-[700px]:shrink-0">
                 <button
                   data-tour={`ws-${w.id}`}
                   onClick={() =>
@@ -191,7 +193,7 @@ export function Sidebar({
                         dir="auto"
                         onClick={() => onOpenProject(t.id)}
                         title={t.title}
-                        className={`arabic ml-3.5 truncate rounded-md px-2 py-1 text-start text-[12px] transition-colors ${
+                        className={`arabic ml-3.5 truncate rounded-md px-2 py-1 text-start text-[12px] transition-colors max-[700px]:hidden ${
                           here
                             ? "bg-limestone/10 text-limestone"
                             : "text-limestone/55 hover:bg-limestone/5 hover:text-limestone"
@@ -223,7 +225,7 @@ export function Sidebar({
           ) : (
             <button
               onClick={() => setAdding(true)}
-              className="mt-0.5 rounded-md px-2 py-1.5 text-left text-[12px] text-limestone/45 transition-colors hover:text-limestone"
+              className="mt-0.5 rounded-md px-2 py-1.5 text-left text-[12px] text-limestone/45 transition-colors hover:text-limestone max-[700px]:hidden"
             >
               + New workspace
             </button>
@@ -231,7 +233,7 @@ export function Sidebar({
         </div>
       </div>
 
-      <div className="mt-auto flex flex-col gap-1 border-t border-hairline px-3 py-3">
+      <div className="mt-auto flex flex-col gap-1 border-t border-hairline px-3 py-3 max-[700px]:hidden">
         {assistant && (
           <button
             onClick={onAssistant}
