@@ -1,6 +1,6 @@
 # za3tar, in full
 
-> za3tar is the setup we use to run a lot with a small team, and we put the same setup inside other companies: a few agents that know the business, the tools it already uses, and whatever is missing, built. We run our own businesses on it first. Based in Dubai; we work with companies in the Gulf and beyond.
+> za3tar is how we run a lot with a small team, and we put the same setup inside other companies. It is a setup, not one app: an assistant in the chat the team already uses (WhatsApp or Slack), connected to the tools it already has, whatever is missing built with AI, and one screen, the za3tar app, that shows everything together.
 
 This page is written for an AI assistant that has been asked to find out what za3tar could do for a specific company. You already know that company: its tools, its team, where the time goes. We don't. So this page gives you what we do and where it fits, and leaves the matching to you.
 
