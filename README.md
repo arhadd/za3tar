@@ -85,7 +85,7 @@ Za3tar writes in; messages to other people are written the way they spoke.
 ## Try it in two minutes
 
 No keys, no Mac permissions, any OS. This runs the whole interface in your
-browser on a made-up company:
+browser on a made-up agency:
 
 ```bash
 git clone https://github.com/arhadd/za3tar.git
