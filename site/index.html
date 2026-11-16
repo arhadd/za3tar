@@ -4,9 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>za3tar — small teams can do a lot now</title>
-<meta name="description" content="za3tar is the setup we use to run a lot with a small team, and we put the same setup inside other companies. A few agents that know the business, the tools already in use, and whatever is missing, built.">
+<meta name="description" content="za3tar is how we run a lot with a small team: an assistant in the chat we already use, connected to the tools we already have, and one screen that shows everything together. We put the same setup inside other companies.">
 <meta property="og:title" content="za3tar — small teams can do a lot now">
-<meta property="og:description" content="za3tar is the setup we use to run a lot with a small team, and we put the same setup inside other companies. A few agents that know the business, the tools already in use, and whatever is missing, built.">
+<meta property="og:description" content="za3tar is how we run a lot with a small team: an assistant in the chat we already use, connected to the tools we already have, and one screen that shows everything together. We put the same setup inside other companies.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://za3tar.ai/">
 <meta property="og:image" content="https://za3tar.ai/og.png">
@@ -29,7 +29,7 @@
       "name": "za3tar",
       "url": "https://za3tar.ai/",
       "logo": "https://za3tar.ai/brand/mark.svg",
-      "description": "za3tar is the setup we use to run a lot with a small team, and we put the same setup inside other companies. A few agents that know the business, the tools already in use, and whatever is missing, built.",
+      "description": "za3tar is how we run a lot with a small team: an assistant in the chat we already use, connected to the tools we already have, and one screen that shows everything together. We put the same setup inside other companies.",
       "address": { "@type": "PostalAddress", "addressLocality": "Dubai", "addressCountry": "AE" },
       "areaServed": "Middle East",
       "knowsAbout": ["AI adoption", "AI agents", "workflow automation", "tool integration", "hands-on AI training"],
@@ -197,14 +197,20 @@ body.fx.held .howmark svg.wand{opacity:1;transform:none}
 /* the app, playing itself: a real page in a frame, scaled to fit; the link over it opens the app */
 .appframe{display:block;position:relative;margin-top:0;border:1.5px solid var(--ink);border-radius:12px;overflow:hidden;background:#101e17;aspect-ratio:16/10}
 .appframe iframe{position:absolute;left:0;top:0;border:0;transform-origin:0 0;pointer-events:none;width:1280px;height:800px}
-.appopen{position:absolute;right:12px;top:12px;background:var(--paper);color:var(--ink);border:1.5px solid var(--ink);border-radius:6px;padding:7px 11px}
-.appframe:hover .appopen{background:var(--ink);color:var(--paper)}
+.usehead{font-size:clamp(26px,3.4vw,44px);font-weight:700;font-stretch:88%;letter-spacing:-.025em;line-height:1.05;margin-bottom:28px}
+.use{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:28px 28px;margin-bottom:22px}
+.use>div{border-top:1.5px solid var(--ink);padding-top:16px}
+.use .wide{grid-column:1/-1}
+.use h3{font-size:19px;font-weight:700;font-stretch:92%;letter-spacing:-.01em;line-height:1.25}
+.use p{margin-top:8px;font-size:17px;line-height:1.5;max-width:62ch;text-wrap:pretty}
+.openlink{font-weight:600;font-size:17px;border-bottom:1.5px solid var(--ink);padding-bottom:1px}
+.openlink .ar{font-family:var(--mono);font-size:.8em}
 .story{margin-top:18px;font-size:clamp(22px,2.6vw,36px);font-weight:600;font-stretch:90%;letter-spacing:-.02em;line-height:1.22;max-width:30ch;text-wrap:pretty}
 #story .story{max-width:none}
 .why{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px 28px}
 .why p{border-top:1.5px solid var(--ink);padding-top:16px;font-size:17px;line-height:1.5;text-wrap:pretty}
 .framecap{margin-top:14px}
-@media(max-width:820px){.why{grid-template-columns:1fr}.appframe{aspect-ratio:4/3}}
+@media(max-width:820px){.why,.use{grid-template-columns:1fr}.use{gap:22px}.appframe{aspect-ratio:4/3}}
 /* ---------- close / footer ---------- */
 footer{border-top:1px solid var(--ink-18);padding:24px 0 40px}
 .fbar{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
@@ -296,10 +302,11 @@ footer a:hover{color:var(--ink)}
 
 <header class="hero">
   <div>
-    <h1>Za3tar is the setup we use to run a lot with a small team.</h1>
+    <h1>Za3tar is how we run a lot with a small team.</h1>
     <div class="lede">
-      <p>You learn it by working. It lives in the chat your team already uses and works with the tools you already have, so you pick up new ways of working in the middle of your normal day.</p>
-      <p>It is yours. Your data stays in your own tools, you choose which models it runs on and can change them, and it can run on your own servers. It is built on open-source software, so nothing locks you in, and nothing important goes out without you.</p>
+      <p>It is a setup, not one app: an assistant in the chat we already use, connected to the tools we already have, and one screen that shows everything together.</p>
+      <p>You learn it by using it. You ask for things the way you would ask a colleague, and you pick up new ways of working in the middle of a normal day.</p>
+      <p>It is yours. Your data stays in your own tools, you choose the models and can change them, and it can run on your own servers. It is built on open-source software, so nothing locks you in, and nothing important goes out without your yes.</p>
       <p>It runs our own business, By Jello, among other businesses.</p>
       <p class="links"><a href="/app/">Open the app <span class="ar">→</span></a><a href="#start">Start your setup <span class="ar">→</span></a></p>
     </div>
@@ -324,11 +331,17 @@ footer a:hover{color:var(--ink)}
 </header>
 
 <section id="see">
+  <h2 class="usehead rv">How we use it</h2>
+  <div class="use">
+    <div class="rv"><h3>WhatsApp is where we talk to it.</h3><p>We message our assistant like a teammate: “what’s still open on the event?”, “chase the venue”, or a voice note after a call. It is always on, it remembers, and it answers in the same chat. Teams that live in Slack use Slack.</p></div>
+    <div class="rv"><h3>We build what’s missing.</h3><p>When we need something that doesn’t exist yet, such as a booking page, a report or a small internal tool, we build it with AI and it joins the setup.</p></div>
+    <div class="rv"><h3>Our tools stay where they are.</h3><p>Calendar, email, spreadsheets, payments, the shop. The assistant reads from them and writes to them, with our permission.</p></div>
+    <div class="rv wide"><h3>The Za3tar app is where we see it together.</h3><p>Meetings become decisions and to-dos. Every project has one line on where it stands. You can see what the assistant is doing, and the few things waiting for your yes.</p></div>
+  </div>
   <a class="appframe rv" href="/app/" aria-label="Open the app and try it yourself">
     <iframe id="appdemo" data-src="/app/?tour=loop&amp;embed=1" title="The Za3tar app showing itself around" loading="lazy" tabindex="-1" aria-hidden="true"></iframe>
-    <span class="appopen mono">Take over →</span>
   </a>
-  <p class="framecap mono rv">The app we use, showing itself around on a made-up company.</p>
+  <p class="framecap rv"><a class="openlink" href="/app/">Open the app <span class="ar">→</span></a></p>
 </section>
 
 <div class="page3">
