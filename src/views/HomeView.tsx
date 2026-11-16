@@ -288,9 +288,13 @@ export function HomeView({
           and what needs you on the right. Narrow, "now" comes first. */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
         <aside className="flex min-w-0 flex-col gap-6 lg:col-start-2 lg:row-start-1">
-          {liveFeeds.map((l) => (
-            <LiveCard key={l.id} label={l.label} feed={l.feed} />
-          ))}
+          {liveFeeds.length > 0 && (
+            <div data-tour="assistant" className="flex flex-col gap-6">
+              {liveFeeds.map((l) => (
+                <LiveCard key={l.id} label={l.label} feed={l.feed} />
+              ))}
+            </div>
+          )}
 
           {/* what needs you: short, with the way to all of it */}
           <section data-tour="needs-you" className="flex flex-col gap-2">
