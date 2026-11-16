@@ -2402,7 +2402,7 @@ function App() {
           onEnd={() => (tourLoops ? location.reload() : setTour(false))}
         />
       )}
-      <div className="flex min-h-0 flex-1">
+      <div className="flex min-h-0 flex-1 max-[700px]:flex-col">
       {switcherOpen && (
         <Switcher
           workspaces={workspaces}

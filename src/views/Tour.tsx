@@ -56,16 +56,27 @@ const find = (name: string) =>
  *  scrolls the page around the frame too, and drags the reader back to the
  *  frame on every beat. */
 function centreWithin(el: HTMLElement) {
-  for (let p = el.parentElement; p; p = p.parentElement) {
-    const oy = getComputedStyle(p).overflowY;
-    if ((oy === "auto" || oy === "scroll") && p.scrollHeight > p.clientHeight) {
-      const r = el.getBoundingClientRect();
-      const pr = p.getBoundingClientRect();
+  let doneX = false;
+  let doneY = false;
+  for (let p = el.parentElement; p && !(doneX && doneY); p = p.parentElement) {
+    const cs = getComputedStyle(p);
+    const r = el.getBoundingClientRect();
+    const pr = p.getBoundingClientRect();
+    const scrolls = (o: string) => o === "auto" || o === "scroll";
+    if (!doneY && scrolls(cs.overflowY) && p.scrollHeight > p.clientHeight) {
       p.scrollTo({
         top: p.scrollTop + (r.top - pr.top) - (p.clientHeight - r.height) / 2,
         behavior: "smooth",
       });
-      return;
+      doneY = true;
+    }
+    // on a phone the sidebar is one row that scrolls sideways
+    if (!doneX && scrolls(cs.overflowX) && p.scrollWidth > p.clientWidth) {
+      p.scrollTo({
+        left: p.scrollLeft + (r.left - pr.left) - (p.clientWidth - r.width) / 2,
+        behavior: "smooth",
+      });
+      doneX = true;
     }
   }
 }
