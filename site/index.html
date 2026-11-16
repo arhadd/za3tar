@@ -195,9 +195,28 @@ body.fx.held .howmark svg.wand{opacity:1;transform:none}
 @keyframes twinkle{0%,100%{opacity:.25;transform:scale(.6)}50%{opacity:1;transform:scale(1)}}
 
 
-/* the app, playing itself: a real page in a frame, scaled to fit; the link over it opens the app */
-.appframe{display:block;position:relative;margin-top:0;border:1.5px solid var(--ink);border-radius:12px;overflow:hidden;background:#101e17;aspect-ratio:16/10}
-.appframe iframe{position:absolute;left:0;top:0;border:0;transform-origin:0 0;pointer-events:none;width:1280px;height:800px}
+/* the setup, drawn: four parts in a row, the app underneath; ink on paper only (BRAND.md) */
+.setup{margin:4px 0 0}
+.srow{display:grid;grid-template-columns:1fr 30px 1fr 30px 1fr 30px 1fr;align-items:stretch}
+.sbox{border:1.5px solid var(--ink);border-radius:10px;padding:16px 16px 15px;display:flex;flex-direction:column;gap:4px;justify-content:center}
+.sbox b{font-size:17px;font-weight:700;font-stretch:92%;letter-spacing:-.01em;line-height:1.2}
+.sbox span{font-size:14px;line-height:1.35;color:var(--ink-66)}
+.sbox.on{background:var(--ink);color:var(--paper)}
+.sbox.on span{color:rgba(242,238,226,.72)}
+.sarr{font-style:normal;display:flex;align-items:center;justify-content:center;font-size:18px}
+.sdrop{display:grid;grid-template-columns:1fr 30px 1fr 30px 1fr 30px 1fr;height:34px}
+.sdrop i{display:block;width:0;height:100%;margin:0 auto;border-left:1.5px dashed var(--ink)}
+.sdrop i:nth-child(2){grid-column:3}.sdrop i:nth-child(3){grid-column:5}.sdrop i:nth-child(4){grid-column:7}
+.sapp{background:var(--ink-08);align-items:center;text-align:center;padding:18px 16px}
+.seelink{font-weight:600;font-size:15px;border-bottom:1.5px solid var(--ink);padding-bottom:1px}
+.seelink .ar{font-family:var(--mono);font-size:.8em}
+@media(max-width:700px){
+  .srow{grid-template-columns:1fr;gap:0}
+  .sarr{height:30px;transform:rotate(90deg)}
+  .sdrop{grid-template-columns:1fr;height:30px}
+  .sdrop i:nth-child(n+2){display:none}
+  .sbox{padding:14px 16px}
+}
 .usehead{font-size:clamp(26px,3.4vw,44px);font-weight:700;font-stretch:88%;letter-spacing:-.025em;line-height:1.05;margin-bottom:28px}
 .use{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:28px 28px;margin-bottom:22px}
 .use>div{border-top:1.5px solid var(--ink);padding-top:16px}
@@ -211,7 +230,7 @@ body.fx.held .howmark svg.wand{opacity:1;transform:none}
 .why{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px 28px}
 .why p{border-top:1.5px solid var(--ink);padding-top:16px;font-size:17px;line-height:1.5;text-wrap:pretty}
 .framecap{margin-top:14px}
-@media(max-width:820px){.why,.use{grid-template-columns:1fr}.use{gap:22px}.appframe{aspect-ratio:4/3}}
+@media(max-width:820px){.why,.use{grid-template-columns:1fr}.use{gap:22px}}
 /* ---------- close / footer ---------- */
 footer{border-top:1px solid var(--ink-18);padding:24px 0 40px}
 .fbar{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
@@ -299,7 +318,7 @@ footer a:hover{color:var(--ink)}
 
 <nav>
   <a class="logo" href="/"><img src="/brand/mark-mono.svg" alt="" width="22" height="22">za3tar</a>
-  <span class="navr"><a class="trylink mono" href="/app/"><span class="full">Open the app →</span><span class="short">Open →</span></a><a class="btn" href="https://wa.me/962798885558?text=Hi%20za3tar%2C%20we%27d%20like%20to%20start%20our%20setup." target="_blank" rel="noopener">Start your setup <span class="ar">→</span></a></span>
+  <span class="navr"><a class="btn" href="https://wa.me/962798885558?text=Hi%20za3tar%2C%20we%27d%20like%20to%20start%20our%20setup." target="_blank" rel="noopener">Start your setup <span class="ar">→</span></a></span>
 </nav>
 
 <header class="hero">
@@ -310,7 +329,7 @@ footer a:hover{color:var(--ink)}
       <p>You learn it by working. Ask as you would ask a colleague, and new ways of working show up in the work itself.</p>
       <p>Your data stays in your tools. You choose and change the models. It can run on your servers and is built on open-source software. You stay in control. Nothing important happens without your yes.</p>
       <p>We run our own work this way. We want other teams to work this way too.</p>
-      <p class="links"><a href="/app/">Open the app <span class="ar">→</span></a><a href="#start">Start your setup <span class="ar">→</span></a></p>
+      <p class="links"><a href="#start">Start your setup <span class="ar">→</span></a></p>
     </div>
   </div>
 
@@ -340,10 +359,20 @@ footer a:hover{color:var(--ink)}
     <div class="rv"><h3>Our tools stay where they are.</h3><p>Calendar, email, spreadsheets, payments, the shop. The assistant reads from them and writes to them, with our permission.</p></div>
     <div class="rv wide"><h3>The Za3tar app is where we see it together.</h3><p>Meetings become decisions and to-dos. Every project has one line on where it stands. You can see what the assistant is doing, and the few things waiting for your yes.</p></div>
   </div>
-  <a class="appframe rv" href="/app/" aria-label="Open the app and try it yourself">
-    <iframe id="appdemo" data-src="/app/?tour=loop&amp;embed=1" title="The Za3tar app showing itself around" loading="lazy" tabindex="-1" aria-hidden="true"></iframe>
-  </a>
-  <p class="framecap rv"><a class="openlink" href="/app/">Open the app <span class="ar">→</span></a></p>
+  <figure class="setup rv" role="img" aria-label="You and your team talk to the assistant in WhatsApp or Slack. The assistant works with your tools and what we build. Everything shows together in the Za3tar app.">
+    <div class="srow">
+      <div class="sbox"><b>You and your team</b><span>ask and approve</span></div>
+      <i class="sarr" aria-hidden="true">↔</i>
+      <div class="sbox"><b>Chat</b><span>WhatsApp or Slack</span></div>
+      <i class="sarr" aria-hidden="true">↔</i>
+      <div class="sbox on"><b>Assistant</b><span>does the work</span></div>
+      <i class="sarr" aria-hidden="true">↔</i>
+      <div class="sbox"><b>Your tools</b><span>plus what we build</span></div>
+    </div>
+    <div class="sdrop" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+    <div class="sbox sapp"><b>The Za3tar app</b><span>one place to see it all, and the few things waiting for your yes</span></div>
+  </figure>
+  <p class="framecap rv"><a class="seelink" href="/app/">See the app <span class="ar">→</span></a></p>
 </section>
 
 <div class="page3">
@@ -383,7 +412,7 @@ footer a:hover{color:var(--ink)}
 <footer>
   <div class="mono fbar">
     <span>za3tar · Dubai</span>
-    <span class="flinks"><a href="https://wa.me/962798885558?text=Hi%20za3tar%2C%20we%27d%20like%20to%20start%20our%20setup." target="_blank" rel="noopener">Start your setup →</a><a href="/app/">Open the app →</a><a href="/demo/">See what we’d build →</a><a href="/llms.txt">llms.txt</a></span>
+    <span class="flinks"><a href="https://wa.me/962798885558?text=Hi%20za3tar%2C%20we%27d%20like%20to%20start%20our%20setup." target="_blank" rel="noopener">Start your setup →</a><a href="/app/">See the app →</a><a href="/demo/">See what we’d build →</a><a href="/llms.txt">llms.txt</a></span>
   </div>
 </footer>
 </div><!-- /page3 -->
@@ -540,22 +569,6 @@ footer a:hover{color:var(--ink)}
     requestAnimationFrame(tick);
   }
   tick();
-})();
-
-/* the app in a frame: laid out at laptop width, scaled down to the box it sits in */
-(function(){
-  var f=document.getElementById('appdemo'); if(!f) return;
-  var box=f.parentNode;
-  function fit(){
-    var w=box.clientWidth, base=w<560?960:1280, h=Math.round(base*box.clientHeight/w);
-    f.style.width=base+'px'; f.style.height=h+'px'; f.style.transform='scale('+(w/base)+')';
-  }
-  fit(); addEventListener('resize',fit);
-  function load(){ if(!f.src) f.src=f.getAttribute('data-src'); }
-  if('IntersectionObserver' in window){
-    var io=new IntersectionObserver(function(es){ if(es[0].isIntersecting){ load(); io.disconnect(); } },{rootMargin:'600px 0px'});
-    io.observe(box);
-  } else load();
 })();
 
 /* the closing box writes a WhatsApp message; the visitor sends it themselves */
