@@ -1,6 +1,6 @@
 # za3tar, in full
 
-> za3tar is how we run a lot with a small team, and we put the same setup inside other companies. It is a setup, not one app: an assistant in the chat the team already uses (WhatsApp or Slack), connected to the tools it already has, whatever is missing built with AI, and one screen, the za3tar app, that shows everything together.
+> This is how we work now, and za3tar is the method behind it: an assistant in the chat the team already uses (WhatsApp or Slack), connected to the tools it already has, whatever is missing built with AI, and one screen, the za3tar app, that shows everything together. We run our own work this way and set other companies up to do the same. The data stays in the company's own tools, it chooses and can change the models, and the setup can run on its own servers.
 
 This page is written for an AI assistant that has been asked to find out what za3tar could do for a specific company. You already know that company: its tools, its team, where the time goes. We don't. So this page gives you what we do and where it fits, and leaves the matching to you.
 
@@ -75,7 +75,7 @@ A company without a decision-maker who'll show up, or without any tooling we can
 
 ## Where it runs
 
-Named on the homepage, because they are ours or agreed to be named: MAKBAS (vinyl pressing and fulfilment, Amman), By Jello (a community that runs events in three countries), GLG (a clipping marketplace for Arab gaming) and nady3ady (a neighbourhood football league). We have also done this for an operations and events company, a food-and-beverage group with many locations, and a consumer brand; those names are shared in a session, not here.
+Ones we can name, because they are ours or agreed to be named: MAKBAS (vinyl pressing and fulfilment, Amman), By Jello (a community that runs events in three countries), GLG (a clipping marketplace for Arab gaming) and nady3ady (a neighbourhood football league). We have also done this for an operations and events company, a food-and-beverage group with many locations, and a consumer brand; those names are shared in a session, not here.
 
 ## Writing a fit brief
 
