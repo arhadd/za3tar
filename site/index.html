@@ -65,6 +65,9 @@ a{color:inherit;text-decoration:none}
 /* one screen on a laptop: nav, two columns, the ask along the bottom */
 .page{min-height:100vh;min-height:100svh;display:grid;grid-template-rows:auto 1fr auto;padding:0 var(--pad)}
 nav{display:flex;align-items:center;justify-content:space-between;height:clamp(52px,8vh,68px)}
+.navlinks{display:flex;gap:clamp(18px,2.4vw,32px);font-weight:600;font-size:16px}
+.navlinks a{border-bottom:1.5px solid transparent;padding-bottom:1px}
+.navlinks a:hover{border-bottom-color:var(--ink)}
 .logo{display:flex;align-items:center;gap:9px;font-weight:700;font-stretch:78%;font-size:20px}
 .logo img{width:20px;height:20px}
 .btn{display:inline-flex;align-items:center;gap:8px;border:1.5px solid var(--ink);background:var(--ink);color:var(--paper);font-size:14px;font-weight:600;padding:9px 15px;border-radius:6px;font-family:inherit;cursor:pointer}
@@ -226,7 +229,7 @@ main{padding:clamp(4px,1vh,14px) 0}
 <div class="page">
 <nav>
   <a class="logo" href="/"><img src="/brand/mark-mono.svg" alt="">za3tar</a>
-  <a class="btn" href="https://wa.me/962798885558?text=Hi%20za3tar%2C%20we%27d%20like%20to%20start%20our%20setup." target="_blank" rel="noopener">Start your setup →</a>
+  <span class="navlinks"><a href="/app/">app</a><a href="https://github.com/arhadd/za3tar" target="_blank" rel="noopener">github</a></span>
 </nav>
 
 <main>
