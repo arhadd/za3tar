@@ -3,16 +3,16 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>za3tar — this is how we work now</title>
-<meta name="description" content="This is how we work now. za3tar is the method behind it: an assistant in the chat you already use, connected to your tools, with one place to see it all. We run our own work this way and set other teams up to do the same.">
-<meta property="og:title" content="za3tar — this is how we work now">
-<meta property="og:description" content="This is how we work now. za3tar is the method behind it: an assistant in the chat you already use, connected to your tools, with one place to see it all. We run our own work this way and set other teams up to do the same.">
+<title>za3tar — AI changed how we work</title>
+<meta name="description" content="AI changed how we work. za3tar is the method we built around it: an assistant in the chat you already use, connected to your tools, with one place that connects it all. We run our own work this way and set other teams up to do the same.">
+<meta property="og:title" content="za3tar — AI changed how we work">
+<meta property="og:description" content="AI changed how we work. za3tar is the method we built around it: an assistant in the chat you already use, connected to your tools, with one place that connects it all. We run our own work this way and set other teams up to do the same.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://za3tar.ai/">
 <meta property="og:image" content="https://za3tar.ai/og.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="za3tar — this is how we work now">
+<meta property="og:image:alt" content="za3tar — AI changed how we work">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:image" content="https://za3tar.ai/og.png">
 <link rel="canonical" href="https://za3tar.ai/">
@@ -29,7 +29,7 @@
       "name": "za3tar",
       "url": "https://za3tar.ai/",
       "logo": "https://za3tar.ai/brand/mark.svg",
-      "description": "This is how we work now. za3tar is the method behind it: an assistant in the chat you already use, connected to your tools, with one place to see it all. We run our own work this way and set other teams up to do the same.",
+      "description": "AI changed how we work. za3tar is the method we built around it: an assistant in the chat you already use, connected to your tools, with one place that connects it all. We run our own work this way and set other teams up to do the same.",
       "address": { "@type": "PostalAddress", "addressLocality": "Dubai", "addressCountry": "AE" },
       "areaServed": "Middle East",
       "knowsAbout": ["AI adoption", "AI agents", "workflow automation", "tool integration", "hands-on AI training"],
@@ -55,557 +55,213 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,100..900&display=swap" rel="stylesheet">
 <style>
-:root{
-  /* mono: thyme black on limestone, nothing else (BRAND.md) */
-  --ink:#0B1710;
-  --paper:#F2EEE2;
-  --ink-66:rgba(11,23,16,.66);
-  --ink-18:rgba(11,23,16,.18);
-  --ink-08:rgba(11,23,16,.08);
-  --sans:"Archivo",ui-sans-serif,system-ui,-apple-system,"Helvetica Neue",Arial,sans-serif;
-  --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
-}
+:root{--ink:#0B1710;--paper:#F2EEE2;--ink-66:rgba(11,23,16,.66);--ink-18:rgba(11,23,16,.18);--ink-08:rgba(11,23,16,.08);
+  --sans:"Archivo",ui-sans-serif,system-ui,-apple-system,"Helvetica Neue",Arial,sans-serif;--mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  --pad:clamp(20px,4vw,56px)}
 *{box-sizing:border-box;margin:0}
-html{scroll-behavior:smooth}
-@media(min-width:821px){html{scroll-snap-type:y proximity}.steps,.page3{scroll-snap-align:start}}
-body{background:var(--paper);color:var(--ink);font-family:var(--sans);font-stretch:100%;line-height:1.5;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+body{background:var(--paper);color:var(--ink);font-family:var(--sans);line-height:1.45;-webkit-font-smoothing:antialiased}
 a{color:inherit;text-decoration:none}
-.wrap{max-width:1200px;margin:0 auto;padding:0 max(24px,env(safe-area-inset-right)) 0 max(24px,env(safe-area-inset-left))}
-
-/* ---------- type ---------- */
-.mono{font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-66)}
-.display{font-stretch:88%;font-weight:800;letter-spacing:-.035em;line-height:.94;text-wrap:balance}
-.muted{color:var(--ink-66)}
-
-/* ---------- nav ---------- */
-nav{display:flex;align-items:center;justify-content:space-between;height:72px}
-.logo{display:flex;align-items:center;gap:10px;font-stretch:78%;font-weight:700;font-size:22px;letter-spacing:-.01em}
-.navr{display:flex;align-items:center;gap:22px;flex-wrap:nowrap;white-space:nowrap}
-.trylink{color:var(--ink);padding:8px 0}
-.trylink:hover{color:var(--olive)}
-.trylink .short{display:none}
-.logo img{width:22px;height:22px;display:block}
-.btn{display:inline-flex;align-items:center;gap:10px;border:1.5px solid var(--ink);background:var(--ink);color:var(--paper);font-size:15px;font-weight:600;padding:11px 18px;border-radius:6px;transition:background .15s,color .15s}
-.btn:hover{background:var(--paper);color:var(--ink)}
-.btn.ghost{background:transparent;color:var(--ink)}
-.btn.ghost:hover{background:var(--ink);color:var(--paper)}
-.btn .ar{font-family:var(--mono);font-size:14px}
-
-/* ---------- hero ---------- */
-.hero{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr);gap:32px;align-items:center;min-height:calc(100vh - 72px);min-height:calc(100svh - 72px);padding:0 0 48px}
-/* sized from the shorter of width and height, so headline, four paragraphs and links fit the first screen */
-.hero h1,.hero .lede p{font-size:clamp(16px,min(1.9vw,3vh),28px);line-height:1.3;letter-spacing:-.015em;font-stretch:94%;max-width:40ch;text-wrap:pretty}
-.hero h1{font-weight:600;color:var(--ink)}
-.hero .lede p{margin-top:.8em;font-weight:400;color:var(--ink)}
-.hero .lede .links{display:flex;flex-wrap:wrap;gap:8px 28px;font-weight:600}
-.hero .lede .links a{border-bottom:1.5px solid var(--ink);padding-bottom:1px}
-.hero .lede .links .ar{font-family:var(--mono);font-size:.8em}
-.hero p{margin-top:26px;font-size:clamp(17px,1.5vw,20px);max-width:56ch;color:var(--ink-66);text-wrap:pretty;line-height:1.55}
-.ctas{display:flex;gap:12px;margin-top:34px;flex-wrap:wrap}
-.cue{display:none}
-@keyframes cue{0%,100%{transform:translateY(0)}50%{transform:translateY(5px)}}
-.flip{display:block;white-space:nowrap;line-height:1.08;margin-top:.04em}
-.flip .fw{font-family:var(--mono);font-weight:700;font-stretch:100%;letter-spacing:-.03em;color:#6F7F5A;font-size:.9em}
-.markwrap{justify-self:end;width:100%;max-width:min(560px,62vh)}
-.markwrap svg{width:100%;height:auto;display:block}
-.eye{transform-box:fill-box;transform-origin:center;transition:transform .11s ease-in}
-.eye.blink{transform:scaleY(.06)}
-/* the mark disintegrates on scroll: pieces are drawn in a fixed overlay,
-   the in-flow svgs below only reserve layout and serve as no-js fallback */
-#overlay{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:5;display:none}
-body.fx #overlay{display:block}
-body.fx .markwrap svg,body.fx .howmark svg{visibility:hidden}
-body.fx .slot svg{visibility:visible;transition:opacity .25s}
-body.fx .slot svg rect,body.fx .slot svg path,body.fx .slot svg circle{fill:rgba(11,23,16,.05);stroke:rgba(11,23,16,.45);stroke-width:1.5px;stroke-dasharray:4 3;vector-effect:non-scaling-stroke}
-body.fx .slot.s-eye svg circle:not(:first-child){display:none}
-body.fx .slot.filled svg{opacity:0}
-.slot{height:76px;display:flex;align-items:flex-end;margin-bottom:14px}
-.slot svg{display:block}
-.slot.s-bar svg{width:118px;height:39px}
-.slot.s-leaf svg{width:66px;height:66px}
-.slot.s-eye svg{width:50px;height:50px}
-
-
-/* ---------- reveals ---------- */
-body.fx .rv{opacity:0;transform:translateY(14px);transition:opacity .6s ease,transform .6s cubic-bezier(.2,.8,.2,1)}
-body.fx .rv.in{opacity:1;transform:none}
-body.fx .card4:nth-child(2) .rv{transition-delay:.06s}
-body.fx .card4:nth-child(3) .rv{transition-delay:.12s}
-body.fx .card4:nth-child(4) .rv{transition-delay:.18s}
-.markwrap,.howmark{cursor:pointer}
-
-/* ---------- sections ---------- */
-section{border-top:1px solid var(--ink-18);padding:48px 0 72px}
-.sh{font-size:clamp(26px,3vw,38px);font-weight:700;font-stretch:90%;letter-spacing:-.025em;line-height:1.1;margin-bottom:36px;text-wrap:balance}
-.sh small{display:block;font-size:15px;font-weight:400;font-stretch:100%;letter-spacing:0;color:var(--ink-66);margin-top:8px}
-
-
-
-
-/* proof, described broadly: how each team runs, with numbers from the live setups */
-.proof{list-style:none;padding:0}
-.proof li{display:grid;grid-template-columns:minmax(0,4fr) minmax(0,7fr);gap:10px 28px;border-top:1.5px solid var(--ink);padding:22px 0 30px}
-.proof li>.mono{color:var(--ink);padding-top:6px}
-.proof h3{font-size:clamp(22px,2vw,28px);font-weight:700;font-stretch:88%;letter-spacing:-.02em;line-height:1.1;margin-bottom:10px;text-wrap:balance}
-.proof li p{font-size:16.5px;line-height:1.5;color:var(--ink-66);text-wrap:pretty;max-width:62ch}
-
-.steps{min-height:100vh;min-height:100svh;display:flex;flex-direction:column;justify-content:center;padding:24px 0}
-.demorow{display:flex;align-items:flex-end;justify-content:space-between;gap:24px 48px;flex-wrap:wrap}
-.demorow .sh{margin-bottom:0;max-width:30ch}
-.films{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:24px}
-.film button{display:block;position:relative;width:100%;padding:0;border:1.5px solid var(--ink);border-radius:10px;overflow:hidden;background:var(--ink-08);cursor:pointer;aspect-ratio:16/9}
-.film video{display:block;width:100%;height:100%;object-fit:cover}
-.film .play{position:absolute;left:10px;bottom:10px;background:var(--ink);color:var(--paper);border-radius:6px;padding:5px 9px;font-size:11px;transition:opacity .2s}
-.film.on .play{opacity:0}
-.film figcaption{margin-top:10px;font-size:17px;font-weight:700;font-stretch:90%}
-.film figcaption .mono{margin-right:6px}
-.keep{margin-top:40px;font-size:16.5px;max-width:60ch}
-.keep b{color:var(--ink);font-weight:600}
-.cards{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:0 28px}
-.card4{border-top:1.5px solid var(--ink);padding:20px 0 8px;display:flex;flex-direction:column}
-.card4 .slot{height:66px;margin:0 0 18px;align-items:flex-end}
-.card4 h3{font-size:clamp(26px,2.4vw,34px);font-weight:700;font-stretch:88%;letter-spacing:-.025em;line-height:1;margin-bottom:12px}
-.card4 p{font-size:16.5px;line-height:1.45;text-wrap:pretty}
-.how{display:grid;grid-template-columns:minmax(0,6fr) minmax(0,5fr);gap:64px;align-items:center}
-.page3{min-height:100vh;min-height:100svh;display:flex;flex-direction:column}
-.cta{flex:1;display:flex;align-items:center;padding:48px 0}
-.cta>.how{width:100%}
-.ctacopy h2{font-size:clamp(32px,3.6vw,54px);max-width:18ch}
-.ctacopy p{margin-top:20px;font-size:clamp(17px,1.5vw,20px);color:var(--ink-66);max-width:44ch;text-wrap:pretty}
-.ctacopy .ctas{margin-top:26px}
-.tryform{display:flex;flex-wrap:wrap;gap:10px;margin-top:22px;max-width:560px}
-.tryform .btn{cursor:pointer;font-family:inherit}
-.tryform input{flex:1;min-width:0;font:inherit;font-size:17px;color:var(--ink);background:transparent;border:1.5px solid var(--ink);border-radius:8px;padding:13px 14px;outline:none}
-.tryform input::placeholder{color:var(--ink-40,rgba(11,23,16,.4))}
-.tryform input:focus{box-shadow:0 0 0 3px rgba(11,23,16,.08)}
-.tryform input{flex:1 1 100%}
-.tryform .btn{white-space:nowrap}
-.trynote{margin-top:12px!important;font-size:14px!important}
-.person{margin-top:26px!important;font-size:15.5px!important}
-.person a{font-weight:600;color:var(--ink);border-bottom:1.5px solid var(--ink);padding-bottom:1px}
-.howmark{justify-self:end;width:100%;max-width:400px;position:sticky;top:96px}
-.howmark svg{width:100%;height:auto;display:block}
-/* the reassembled Z holds a magic wand, cast toward the question */
-.howmark svg.wand{position:absolute;width:46%;right:84%;bottom:-6%;overflow:visible;visibility:visible!important;transform-origin:100% 100%;transition:opacity .4s ease,transform .5s cubic-bezier(.2,.8,.2,1)}
-body.fx .howmark svg.wand{opacity:0;transform:rotate(18deg) scale(.85)}
-body.fx.held .howmark svg.wand{opacity:1;transform:none}
-.wand .spark{transform-box:fill-box;transform-origin:center;animation:twinkle 1.8s ease-in-out infinite}
-.wand .spark:nth-of-type(2){animation-delay:.5s}
-.wand .spark:nth-of-type(3){animation-delay:1s}
-@keyframes twinkle{0%,100%{opacity:.25;transform:scale(.6)}50%{opacity:1;transform:scale(1)}}
-
-
-/* the setup, drawn: four parts in a row, the app underneath; ink on paper only (BRAND.md) */
-.setup{margin:4px 0 0}
-.srow{display:grid;grid-template-columns:1fr 30px 1fr 30px 1fr 30px 1fr;align-items:stretch}
-.sbox{border:1.5px solid var(--ink);border-radius:10px;padding:16px 16px 15px;display:flex;flex-direction:column;gap:4px;justify-content:center}
-.sbox b{font-size:17px;font-weight:700;font-stretch:92%;letter-spacing:-.01em;line-height:1.2}
-.sbox span{font-size:14px;line-height:1.35;color:var(--ink-66)}
-.sbox.on{background:var(--ink);color:var(--paper)}
-.sbox.on span{color:rgba(242,238,226,.72)}
-.sarr{font-style:normal;display:flex;align-items:center;justify-content:center;font-size:18px}
-.sdrop{display:grid;grid-template-columns:1fr 30px 1fr 30px 1fr 30px 1fr;height:34px}
+.mono{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-66)}
+/* one screen on a laptop: nav, two columns, the ask along the bottom */
+.page{min-height:100vh;min-height:100svh;display:grid;grid-template-rows:auto 1fr auto;padding:0 var(--pad)}
+nav{display:flex;align-items:center;justify-content:space-between;height:clamp(52px,8vh,68px)}
+.logo{display:flex;align-items:center;gap:9px;font-weight:700;font-stretch:78%;font-size:20px}
+.logo img{width:20px;height:20px}
+.btn{display:inline-flex;align-items:center;gap:8px;border:1.5px solid var(--ink);background:var(--ink);color:var(--paper);font-size:14px;font-weight:600;padding:9px 15px;border-radius:6px;font-family:inherit;cursor:pointer}
+main{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:clamp(28px,4vw,64px);align-items:center;padding:clamp(8px,2vh,24px) 0}
+h1{font-size:clamp(34px,min(4.4vw,7vh),64px);font-weight:800;font-stretch:88%;letter-spacing:-.035em;line-height:.98}
+.lede p{margin-top:clamp(10px,1.8vh,18px);font-size:clamp(15px,min(1.35vw,2.2vh),19px);max-width:44ch;text-wrap:pretty}
+.lede p.muted{color:var(--ink-66)}
+.lede p.go a{font-weight:600;border-bottom:1.5px solid var(--ink);padding-bottom:1px}
+/* the setup, drawn */
+.srow{display:grid;grid-template-columns:1fr 18px 1fr 18px 1fr 18px 1fr}
+.sbox{border:1.5px solid var(--ink);border-radius:8px;padding:clamp(7px,1.2vh,11px) 10px;display:flex;flex-direction:column;gap:1px;justify-content:center}
+.sbox b{font-size:clamp(12.5px,min(1.1vw,1.9vh),15px);font-weight:700;font-stretch:92%;line-height:1.15}
+.sbox span{font-size:clamp(11px,min(.9vw,1.6vh),12.5px);color:var(--ink-66);line-height:1.25}
+.sbox.on{background:var(--ink);color:var(--paper)}.sbox.on span{color:rgba(242,238,226,.72)}
+.sarr{font-style:normal;display:flex;align-items:center;justify-content:center;font-size:13px}
+.sdrop{display:grid;grid-template-columns:1fr 18px 1fr 18px 1fr 18px 1fr;height:clamp(12px,2.2vh,20px)}
 .sdrop i{display:block;width:0;height:100%;margin:0 auto;border-left:1.5px dashed var(--ink)}
 .sdrop i:nth-child(2){grid-column:3}.sdrop i:nth-child(3){grid-column:5}.sdrop i:nth-child(4){grid-column:7}
-.sapp{background:var(--ink-08);align-items:center;text-align:center;padding:18px 16px}
-/* the agents are the one place colour comes in: their own characters */
-#agents .use>div{border-top:0;padding-top:0}
-.agentpic{display:block;height:190px;width:auto;margin:0 0 14px}
-.use p.built{margin-top:16px}
-.builtlist{list-style:none;padding:0;margin:6px 0 0;display:flex;flex-direction:column;gap:6px}
-.builtlist a{font-weight:600;font-size:17px;border-bottom:1.5px solid var(--ink);padding-bottom:1px}
-.builtlist .ar{font-family:var(--mono);font-size:.8em}
-.seelink{font-weight:600;font-size:15px;border-bottom:1.5px solid var(--ink);padding-bottom:1px}
-.seelink .ar{font-family:var(--mono);font-size:.8em}
-@media(max-width:700px){
-  .srow{grid-template-columns:1fr;gap:0}
-  .sarr{height:30px;transform:rotate(90deg)}
-  .sdrop{grid-template-columns:1fr;height:30px}
-  .sdrop i:nth-child(n+2){display:none}
-  .sbox{padding:14px 16px}
-}
-.usehead{font-size:clamp(26px,3.4vw,44px);font-weight:700;font-stretch:88%;letter-spacing:-.025em;line-height:1.05;margin-bottom:28px}
-.use{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:28px 28px;margin-bottom:22px}
-.use>div{border-top:1.5px solid var(--ink);padding-top:16px}
-.use .wide{grid-column:1/-1}
-.use h3{font-size:19px;font-weight:700;font-stretch:92%;letter-spacing:-.01em;line-height:1.25}
-.use p{margin-top:8px;font-size:17px;line-height:1.5;max-width:62ch;text-wrap:pretty}
-.openlink{font-weight:600;font-size:17px;border-bottom:1.5px solid var(--ink);padding-bottom:1px}
-.openlink .ar{font-family:var(--mono);font-size:.8em}
-.story{margin-top:18px;font-size:clamp(22px,2.6vw,36px);font-weight:600;font-stretch:90%;letter-spacing:-.02em;line-height:1.22;max-width:30ch;text-wrap:pretty}
-#story .story{max-width:none}
-.why{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px 28px}
-.why p{border-top:1.5px solid var(--ink);padding-top:16px;font-size:17px;line-height:1.5;text-wrap:pretty}
-.framecap{margin-top:14px}
-@media(max-width:820px){.why,.use{grid-template-columns:1fr}.use{gap:22px}}
-/* ---------- close / footer ---------- */
-footer{border-top:1px solid var(--ink-18);padding:24px 0 40px}
-.fbar{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
-.flinks{display:flex;gap:22px;flex-wrap:wrap}
-.flinks a{white-space:nowrap}
-footer a:hover{color:var(--ink)}
-
-/* ---------- responsive ---------- */
-@media(max-width:980px){
-  .cards{grid-template-columns:repeat(2,minmax(0,1fr));gap:28px 28px}
-  .films{grid-template-columns:repeat(2,minmax(0,1fr))}
-  .how{grid-template-columns:1fr;gap:36px}
-  .howmark{position:relative;order:-1;top:auto;justify-self:end;width:46vw;max-width:240px;margin-bottom:8px}
-}
+.sapp{background:var(--ink);color:var(--paper);flex-direction:row;align-items:center;justify-content:center;gap:12px;text-align:left;padding-top:clamp(10px,1.8vh,16px);padding-bottom:clamp(10px,1.8vh,16px)}
+.sapp b{font-size:clamp(16px,min(1.5vw,2.6vh),21px);font-stretch:78%}
+.sapp span{color:rgba(242,238,226,.72)}
+.sapp>div{display:flex;flex-direction:column;gap:2px}
+.appmark{width:clamp(26px,4vh,36px);height:auto;flex:none}
+.see{display:inline-block;margin-top:8px;font-size:13px;font-weight:600;border-bottom:1.5px solid var(--ink)}
+/* the agents */
+.agents{margin-top:clamp(14px,3vh,30px)}
+.agents .mono{display:block;margin-bottom:clamp(6px,1.2vh,10px)}
+.arow{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.agent{display:flex;flex-direction:column;gap:6px}
+.agent img{height:clamp(54px,10vh,96px);width:auto;align-self:flex-start}
+.zpic{height:clamp(54px,10vh,96px);width:auto;padding:8% 0}
+.agent b{display:block;font-size:clamp(13px,min(1.15vw,2vh),15.5px);font-weight:700;font-stretch:92%;line-height:1.2}
+.agent p{font-size:clamp(11.5px,min(.95vw,1.7vh),13px);color:var(--ink-66);line-height:1.3;margin-top:2px}
+.agent .built a{color:var(--ink);font-weight:600;border-bottom:1px solid var(--ink)}
+.foot{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;border-top:1px solid var(--ink-18);padding:clamp(10px,2vh,16px) 0 clamp(12px,2.4vh,20px)}
+.foot a{margin-left:22px}
+.foot a:hover{color:var(--ink)}
+/* phone and narrow windows: one column, it scrolls */
 @media(max-width:820px){
-  .hero{grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr);gap:24px;min-height:calc(100vh - 64px);min-height:calc(100svh - 64px);padding:0 0 36px}
-  .markwrap{max-width:320px}
-  .hero p{margin-top:16px;font-size:17px}
-  .steps{min-height:0;padding:20px 0 40px}
-  .page3{min-height:100vh}
-  .ctas{margin-top:22px}
-  section{padding:36px 0 48px}
-  .cta{padding:64px 0 72px}
-}
-@media(max-width:700px){
-  /* phone: headline left, Z to its right, sub-line full width beneath */
-  /* phone: like the close. headline left, the Z beside it, the line and buttons right under, no gap */
-  .hero{grid-template-columns:minmax(0,1fr) 30vw;grid-template-rows:auto auto auto auto;gap:0 14px;align-items:center;align-content:start;padding:28px 0 12px;min-height:0}
-  .hero>div:first-child{display:contents}
-  .hero h1{grid-row:1;grid-column:1}
-  .hero .lede{grid-row:2;grid-column:1/-1}
-  .hero h1,.hero .lede p{font-size:clamp(16px,2.4vh,20px);max-width:none}
-  .markwrap{grid-row:1;grid-column:2;order:0;justify-self:end;align-self:center;width:100%;max-width:220px;margin:0}
-  .hero p{grid-row:2;grid-column:1/-1;margin-top:22px;line-height:1.55}
-  .cue{grid-row:4;grid-column:1/-1;align-self:end;display:flex;align-items:center;gap:10px;font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-66);padding:18px 0 6px}
-  .cue .arr{display:inline-block;font-size:16px;color:var(--ink);animation:cue 1.6s ease-in-out infinite}
-  /* phone: closing heading left, reassembled Z to its right */
-  .how{grid-template-columns:minmax(0,1fr) 34vw;gap:0 12px;align-items:center}
-  .ctacopy{display:contents}
-  .ctacopy h2{grid-column:1;grid-row:1;font-size:clamp(22px,6vw,30px);max-width:none}
-  .howmark{grid-column:2;grid-row:1;order:0;position:relative;top:auto;justify-self:end;width:100%;max-width:none;margin:0}
-  /* phone: the wand points down at the question */
-  .howmark svg.wand{width:36%;right:auto;left:-8%;bottom:-30%;transform-origin:100% 0}
-  .wand .wg{transform:scaleY(-1);transform-origin:50% 50%;transform-box:view-box}
-  .tryform{grid-column:1/-1;grid-row:2}
-  .tryform .btn{justify-content:center}
-  .trynote{grid-column:1/-1;grid-row:3}
-  .person{grid-column:1/-1;grid-row:4}
-  .fbar{gap:10px 22px}
-  .fbar a{display:inline-block;padding:10px 0;font-size:13px}
-  .flinks{gap:26px}
+  main{grid-template-columns:1fr;align-items:start}
+  .srow{grid-template-columns:1fr 1fr;gap:8px}.sarr,.sdrop{display:none}.sapp{margin-top:8px}
+  .arow{grid-template-columns:1fr;gap:12px}
+  .zpic{height:60px}.agent{display:grid;grid-template-columns:72px 1fr;gap:12px}.agent img{height:72px}.zpic{height:52px;padding:0;margin:10px 0 0 6px}.arow{grid-template-columns:1fr}.sapp{justify-content:flex-start}
+  .lede p{font-size:16px}.sbox b{font-size:14px}.sbox span{font-size:12px}.agent p{font-size:13px}.agent b{font-size:15px}
 }
 
-@media(max-width:560px){
-  .films{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scroll-padding-inline:24px;gap:14px;margin:0 -24px;padding:0 24px 6px;scrollbar-width:none}
-  .films::-webkit-scrollbar{display:none}
-  .film{flex:0 0 82%;scroll-snap-align:start}
-  nav .btn{padding:9px 14px;font-size:14px}
-  .navr{gap:14px}
-  .trylink{font-size:11px}
-  .trylink .full{display:none!important}
-  .trylink .short{display:inline!important}
-  footer{padding:32px 0 56px}
-  .cards{grid-template-columns:1fr;gap:8px}
-  .proof li{grid-template-columns:1fr}
-  .card4{display:grid;grid-template-columns:56px minmax(0,1fr);gap:0 16px;padding:22px 0 18px}
-  .card4 .slot{height:auto;margin:4px 0 0;align-items:flex-start}
-  .card4 h3{font-size:26px}
-  .slot.s-bar svg{width:64px;height:21px}
-  .slot.s-leaf svg{width:44px;height:44px}
-  .slot.s-eye svg{width:36px;height:36px}
-  .ctacopy p{font-size:17px}
-  nav{height:64px}
-  .logo{font-size:20px}
-}
-@media(prefers-reduced-motion:reduce){
-  .eye,.pupil{transition:none!important}
-  .cue .arr{animation:none}
-  .wand .spark{animation:none}
-}
+/* v3: the method, animated; the agents small underneath */
+@media(min-width:821px){.srow{grid-template-columns:1fr 34px 1fr 34px 1fr 34px 1fr}.sdrop{grid-template-columns:1fr 34px 1fr 34px 1fr 34px 1fr;height:clamp(18px,3vh,28px)}}
+.sbox{transition:background .35s,color .35s,border-color .35s;padding-top:clamp(10px,1.8vh,15px);padding-bottom:clamp(10px,1.8vh,15px)}
+.sbox b{font-size:clamp(13px,min(1.2vw,2.1vh),16px)}
+.sbox.on{background:var(--ink);color:var(--paper)}
+.sbox.on span{color:rgba(242,238,226,.72)}
+.sarr{position:relative;font-size:0}
+.sarr::before{content:"";position:absolute;left:4px;right:4px;top:50%;border-top:1.5px solid var(--ink)}
+.sarr em{position:absolute;top:50%;left:4px;width:7px;height:7px;margin-top:-3.5px;border-radius:50%;background:var(--ink);opacity:0}
+.sdrop i{position:relative}
+.sapp{background:var(--paper);color:var(--ink);border-width:1.5px;padding-top:clamp(12px,2.2vh,20px);padding-bottom:clamp(12px,2.2vh,20px)}
+.sapp span{color:var(--ink-66)}
+.sapp .appmark rect,.sapp .appmark path{fill:var(--ink)}
+.sapp .appmark circle:first-of-type{fill:var(--paper)}
+.sapp .appmark circle:last-of-type{fill:var(--ink)}
+.sapp.on .appmark rect,.sapp.on .appmark path,.sapp.on .appmark circle:last-of-type{fill:var(--paper)}
+.sapp.on .appmark circle:first-of-type{fill:var(--ink)}
+.cap{display:flex;align-items:baseline;gap:12px;margin-top:clamp(10px,1.8vh,16px);min-height:1.5em;font-size:clamp(14px,min(1.3vw,2.2vh),17px);font-weight:600}
+.agents{margin-top:clamp(18px,3.6vh,36px);border-top:1px solid var(--ink-18);padding-top:clamp(10px,2vh,18px)}
+.arow{gap:10px}
+.agent{display:grid;grid-template-columns:auto 1fr;gap:8px;align-items:center}
+.agent img{height:clamp(34px,6vh,54px)}
+.zpic{height:clamp(26px,4.4vh,40px);padding:0;margin:0 4px}
+.agent b{font-size:clamp(12.5px,min(1vw,1.8vh),14px)}
+.agent p{font-size:clamp(11px,min(.85vw,1.55vh),12.5px)}
+.agents .see{margin-top:clamp(10px,1.8vh,16px)}
+@media(max-width:820px){.sarr{display:none}.agent{grid-template-columns:56px 1fr}.agent img{height:52px}.zpic{height:36px}}
+
+/* the steps run on CSS alone: six beats of 2.6s, looping */
+.sbox[data-s]{animation:lit 15.6s infinite}
+.sbox[data-s="1"]{animation-delay:2.6s}.sbox[data-s="2"]{animation-delay:5.2s}.sbox[data-s="3"]{animation-delay:7.8s}
+.sbox[data-s="0"]{animation-name:lit0}
+.sbox.sapp{animation-name:litapp}
+@keyframes lit{0%,15.5%{background:var(--ink);color:var(--paper)}17%,100%{background:var(--paper);color:var(--ink)}}
+@keyframes lit0{0%,15.5%,84%,99%{background:var(--ink);color:var(--paper)}17%,82.5%,100%{background:var(--paper);color:var(--ink)}}
+@keyframes litapp{0%,65.5%{background:var(--paper);color:var(--ink)}67%,99%{background:var(--ink);color:var(--paper)}100%{background:var(--paper);color:var(--ink)}}
+.sbox[data-s] span{color:inherit;opacity:.72}
+.sapp .appmark{animation:markinv 15.6s infinite}
+@keyframes markinv{0%,65.5%{filter:none}67%,99%{filter:invert(1) hue-rotate(180deg)}100%{filter:none}}
+.sarr em{opacity:0;animation:hop 15.6s infinite}
+.sarr.a1 em{animation-delay:2.6s}.sarr.a2 em{animation-delay:5.2s}.sarr.a3 em{animation-delay:7.8s}
+@keyframes hop{0%{left:4px;opacity:1}4.5%{left:calc(100% - 11px);opacity:1}5.5%,100%{left:calc(100% - 11px);opacity:0}}
+.sdrop i::after{content:"";position:absolute;left:-4.25px;top:0;width:7px;height:7px;border-radius:50%;background:var(--ink);opacity:0;animation:drop 15.6s infinite 10.4s}
+@keyframes drop{0%{top:0;opacity:1}4.5%{top:calc(100% - 7px);opacity:1}5.5%,100%{opacity:0}}
+.cap{position:relative;display:block;height:1.6em}
+.cap .c{position:absolute;left:0;top:0;display:flex;align-items:baseline;gap:12px;opacity:0;animation:capf 15.6s infinite}
+.cap .c1{animation-delay:2.6s}.cap .c2{animation-delay:5.2s}.cap .c3{animation-delay:7.8s}.cap .c4{animation-delay:10.4s}.cap .c5{animation-delay:13.0s}
+.cap .c0{opacity:1}
+@keyframes capf{0%{opacity:0}1.5%,15%{opacity:1}16.6%,100%{opacity:0}}
+@media(prefers-reduced-motion:reduce){.sbox[data-s],.sapp .appmark,.sarr em,.sdrop i::after,.cap .c{animation:none}.cap .c{display:none}.cap .c0{display:flex}}
+
+/* v4: the big Z in the middle at the bottom, the agents around it */
+.page{grid-template-rows:auto 1fr auto auto}
+main{padding:clamp(4px,1vh,14px) 0}
+.cast{border-top:1px solid var(--ink-18);padding:clamp(10px,1.8vh,18px) 0 clamp(8px,1.6vh,16px)}
+.castlabel{display:block;text-align:center;margin-bottom:clamp(6px,1.2vh,12px)}
+.ring{position:relative;display:grid;grid-template-columns:1fr 1fr 1.25fr 1fr 1fr;align-items:end;gap:clamp(10px,2vw,28px)}
+.ring::before{content:"";position:absolute;left:8%;right:8%;top:calc(clamp(52px,9vh,88px) / 2);border-top:1.5px dashed var(--ink-18);z-index:0}
+.ag{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;text-align:center;gap:3px;color:var(--ink)}
+.ag img{height:clamp(52px,9vh,88px);width:auto;background:var(--paper);padding:0 6px}
+.ag b{font-size:clamp(13px,min(1.1vw,1.9vh),15px);font-weight:700;font-stretch:92%;margin-top:4px}
+.ag p{font-size:clamp(11px,min(.9vw,1.6vh),12.5px);color:var(--ink-66);line-height:1.3;max-width:24ch}
+.ag p a{color:var(--ink);font-weight:600;border-bottom:1px solid var(--ink)}
+.ag.mid{align-self:end}
+.bigz{height:clamp(86px,16vh,160px);width:auto;background:var(--paper);padding:0 10px}
+.ag.mid b{font-size:clamp(17px,min(1.6vw,2.8vh),22px);font-stretch:78%}
+.ag.next .ghost{display:flex;align-items:center;justify-content:center;height:clamp(52px,9vh,88px);aspect-ratio:3/4;border:1.5px dashed var(--ink);border-radius:999px 999px 18px 18px;font-weight:800;font-size:clamp(20px,3vh,30px);background:var(--paper)}
+.ag.next:hover .ghost{background:var(--ink);color:var(--paper)}
+.see{display:inline-block;margin-top:clamp(10px,1.8vh,16px)}
+@media(max-width:820px){.ring{grid-template-columns:1fr 1fr;align-items:start;gap:18px 12px}.ring::before{display:none}.ag.mid{grid-column:1/-1;order:-1}.bigz{height:110px}.ag img,.ag.next .ghost{height:72px}}
+
+/* v5: the four pieces of the Z are the four parts of the method; they come together */
+.assemble{margin:0}
+.assemble svg{display:block;width:100%;height:auto;max-height:40vh;overflow:visible;font-family:var(--sans)}
+.assemble .pc{transform-box:view-box}
+.assemble .p-top rect,.assemble .p-bot rect,.assemble .p-blade path{stroke:#0B1710;stroke-width:.8}
+.assemble .ln{font-size:10.5px;font-weight:700;fill:var(--ink)}
+.assemble .ls{font-size:8.5px;fill:var(--ink-66)}
+.assemble .cn{font-size:13px;font-weight:800;font-stretch:78%;fill:var(--ink)}
+/* settled by default; comes together once on load; hover or tap breaks it back into its parts */
+.assemble{cursor:help;outline:none}
+.assemble .pc{transition:transform .7s cubic-bezier(.6,0,.2,1)}
+.p-top{--apart:translate(-40px,-20px)}
+.p-bot{--apart:translate(44px,26px)}
+.p-blade{--apart:translate(-36px,22px) rotate(-6deg)}
+.p-eye{--apart:translate(58px,-34px)}
+.assemble .pc{animation:come 1.6s cubic-bezier(.6,0,.2,1) .5s backwards}
+@keyframes come{from{transform:var(--apart)}to{transform:none}}
+.assemble:hover .pc,.assemble:focus-within .pc,.assemble:focus .pc{transform:var(--apart)}
+.lb{opacity:0;transition:opacity .35s;animation:lbin 2.1s ease .5s backwards}
+@keyframes lbin{0%,40%{opacity:1}100%{opacity:0}}
+.assemble:hover .lb,.assemble:focus .lb{opacity:1;transition-delay:.3s}
+.cap2{transition:opacity .3s;animation:capin .6s ease 1.9s backwards}
+@keyframes capin{from{opacity:0}to{opacity:1}}
+.assemble:hover .cap2,.assemble:focus .cap2{opacity:0}
+.hint{margin-top:2px;text-align:center}
+.hint .tap{display:none}
+@media(hover:none){.hint .hov{display:none}.hint .tap{display:inline}}
+@media(max-width:820px){.assemble .ln{font-size:14px}.assemble .ls{font-size:11px}.assemble .cn{font-size:16px}.assemble svg{max-height:none}}
+@media(prefers-reduced-motion:reduce){.assemble .pc,.lb,.cap2{animation:none;transition:none}}
 </style>
 </head>
 <body>
-<div class="wrap">
-
+<div class="page">
 <nav>
-  <a class="logo" href="/"><img src="/brand/mark-mono.svg" alt="" width="22" height="22">za3tar</a>
-  <span class="navr"><a class="btn" href="https://wa.me/962798885558?text=Hi%20za3tar%2C%20we%27d%20like%20to%20start%20our%20setup." target="_blank" rel="noopener">Start your setup <span class="ar">→</span></a></span>
+  <a class="logo" href="/"><img src="/brand/mark-mono.svg" alt="">za3tar</a>
+  <a class="btn" href="https://wa.me/962798885558?text=Hi%20za3tar%2C%20we%27d%20like%20to%20start%20our%20setup." target="_blank" rel="noopener">Start your setup →</a>
 </nav>
 
-<header class="hero">
+<main>
+  <div class="lede">
+    <h1>AI changed how we work.</h1>
+    <p>Za3tar is the method we built around it: an assistant in the chat you already use, connected to your tools, with one place that connects it all. You learn it by working.</p>
+    <p class="muted">Your data stays in your tools. You choose the models, it can run on your servers, and it is built on open-source software. Nothing important happens without your yes.</p>
+    <p class="go"><a href="/method/">Learn more →</a></p>
+  </div>
+
   <div>
-    <h1>This is how we work now.</h1>
-    <div class="lede">
-      <p>Za3tar is the method behind it: an assistant in the chat you already use, connected to your tools, with one place to see it all.</p>
-      <p>You learn it by working. Ask as you would ask a colleague, and new ways of working show up in the work itself.</p>
-      <p>Your data stays in your tools. You choose and change the models. It can run on your servers and is built on open-source software. You stay in control. Nothing important happens without your yes.</p>
-      <p>We run our own work this way. We want other teams to work this way too.</p>
-      <p class="links"><a href="#start">Start your setup <span class="ar">→</span></a></p>
-    </div>
-  </div>
-
-  <!-- za3tar mark, mono variant (BRAND.md) — geometry verbatim; the dot is the eye -->
-  <div class="markwrap" aria-hidden="true">
-    <svg id="bigmark" viewBox="56 14 134 134">
-      <defs>
-        <clipPath id="ct"><path d="M0 0H190V14C147.2 88 102 128 56 148L0 200Z"/></clipPath>
-        <clipPath id="cb"><path d="M56 148C150 140 195.4 96 190 14H200V200H56Z"/></clipPath>
-      </defs>
-      <rect x="56" y="14" width="134" height="44" fill="#0B1710" clip-path="url(#ct)"/>
-      <rect x="56" y="104" width="134" height="44" fill="#0B1710" clip-path="url(#cb)"/>
-      <path d="M190 14C195.4 96 150 140 56 148C102 128 147.2 88 190 14Z" fill="#0B1710"/>
-      <g class="eye">
-        <circle cx="126" cy="36" r="11" fill="#F2EEE2"/>
-        <circle cx="126" cy="36" r="5" fill="#0B1710"/>
-      </g>
-    </svg>
-  </div>
-</header>
-
-<section id="see">
-  <h2 class="usehead rv">How we use it</h2>
-  <div class="use">
-    <div class="rv"><h3>WhatsApp is where we talk to it.</h3><p>We message our assistant like a teammate: “what’s still open on the event?”, “chase the venue”, or a voice note after a call. It is always on, it remembers, and it answers in the same chat. Teams that live in Slack use Slack.</p></div>
-    <div class="rv"><h3>We build what’s missing.</h3><p>When we need something that doesn’t exist yet, such as a booking page, a report or a small internal tool, we build it with AI and it joins the setup.</p></div>
-    <div class="rv"><h3>Our tools stay where they are.</h3><p>Calendar, email, spreadsheets, payments, the shop. The assistant reads from them and writes to them, with our permission.</p></div>
-    <div class="rv wide"><h3>One place to see it together.</h3><p>Meetings become decisions and to-dos. Every project has one line on where it stands. You can see what the assistant is doing, and the few things waiting for your yes.</p></div>
-  </div>
-  <figure class="setup rv" role="img" aria-label="You and your team talk to the assistant in WhatsApp or Slack. The assistant works with your tools and what we build. Everything shows together in one place.">
-    <div class="srow">
-      <div class="sbox"><b>You and your team</b><span>ask and approve</span></div>
-      <i class="sarr" aria-hidden="true">↔</i>
-      <div class="sbox"><b>Chat</b><span>WhatsApp or Slack</span></div>
-      <i class="sarr" aria-hidden="true">↔</i>
-      <div class="sbox on"><b>Assistant</b><span>does the work</span></div>
-      <i class="sarr" aria-hidden="true">↔</i>
-      <div class="sbox"><b>Your tools</b><span>plus what we build</span></div>
-    </div>
-    <div class="sdrop" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
-    <div class="sbox sapp"><b>One place to see it all</b><span>decisions, to-dos, and the few things waiting for your yes</span></div>
-  </figure>
-  <p class="framecap rv"><a class="seelink" href="/app/">See the app <span class="ar">→</span></a></p>
-</section>
-
-<section id="agents">
-  <h2 class="usehead rv">The agents we built</h2>
-  <div class="use">
-    <div class="rv"><img class="agentpic" src="/agents/jello.png" alt="Jello, a purple character with a flower necklace, arms out" width="200" height="227" loading="lazy"><h3>Jello</h3><p>Runs By Jello and the ventures around it. It builds our own things, and it helps other people build theirs.</p>
-      <p class="built mono">Jello built</p>
-      <ul class="builtlist">
-        <li><a href="https://glgclipping.com" target="_blank" rel="noopener">GLG Clipping <span class="ar">↗</span></a></li>
-        <li><a href="https://makbasrecords.com" target="_blank" rel="noopener">MAKBAS Records <span class="ar">↗</span></a></li>
-        <li><a href="https://www.nady3ady.com" target="_blank" rel="noopener">nady3ady <span class="ar">↗</span></a></li>
-      </ul>
-    </div>
-    <div class="rv"><img class="agentpic" src="/agents/ops.svg" alt="A mint-green character with a headset and a clipboard" width="200" height="227" loading="lazy"><h3>An operations agent</h3><p>Runs day-to-day operations with the team at a media company, in their Slack.</p></div>
-    <div class="rv"><img class="agentpic" src="/agents/fnb.svg" alt="A peach character with an apron, a moustache and a covered dish on a tray" width="200" height="227" loading="lazy"><h3>An agent for a restaurant group</h3><p>Works with a food-and-beverage group across its brands and locations, in their Slack.</p></div>
-  </div>
-</section>
-
-<div class="page3">
-<section id="how" class="cta">
-  <div class="how" id="start">
-    <div class="ctacopy">
-      <h2 class="display rv">If you had a magic wand, how would you change how your company runs?</h2>
-      <form class="tryform rv" id="startform">
-        <input name="company" required autocomplete="organization" placeholder="Company name" aria-label="Company name">
-        <input name="week" placeholder="With a magic wand, we’d… (optional)" aria-label="What you would change with a magic wand">
-        <button class="btn" type="submit">Send on WhatsApp <span class="ar">→</span></button>
-      </form>
-      <p class="trynote muted rv">WhatsApp opens with your message ready. You read it and press send yourself, and we get back to you to explore it with your team.</p>
-      <p class="person rv">Ready to go? <a href="https://wa.me/962798885558?text=Hi%20za3tar%2C%20we%27d%20like%20to%20start%20our%20setup." target="_blank" rel="noopener">Start your setup →</a></p>
-    </div>
-    <!-- the four pieces reassemble here as the steps scroll by; static mark is the no-js fallback -->
-    <div class="howmark" aria-hidden="true">
-      <svg viewBox="56 14 134 134">
-        <defs><clipPath id="hct"><path d="M0 0H190V14C147.2 88 102 128 56 148L0 200Z"/></clipPath><clipPath id="hcb"><path d="M56 148C150 140 195.4 96 190 14H200V200H56Z"/></clipPath></defs>
-        <rect x="56" y="14" width="134" height="44" fill="#0B1710" clip-path="url(#hct)"/>
-        <rect x="56" y="104" width="134" height="44" fill="#0B1710" clip-path="url(#hcb)"/>
-        <path d="M190 14C195.4 96 150 140 56 148C102 128 147.2 88 190 14Z" fill="#0B1710"/>
-        <circle cx="126" cy="36" r="11" fill="#F2EEE2"/><circle cx="126" cy="36" r="5" fill="#0B1710"/>
+    <figure class="assemble" tabindex="0" role="img" aria-label="Four pieces, you and your team, chat, the assistant and your tools, come together into the za3tar Z: one place that connects it all.">
+      <svg viewBox="-60 -34 380 236" aria-hidden="true">
+        <defs><clipPath id="act"><path d="M0 0H190V14C147.2 88 102 128 56 148L0 200Z"/></clipPath><clipPath id="acb"><path d="M56 148C150 140 195.4 96 190 14H200V200H56Z"/></clipPath></defs>
+        <g class="pc p-top"><rect x="56" y="14" width="134" height="44" fill="#0B1710" clip-path="url(#act)"/></g>
+        <g class="pc p-bot"><rect x="56" y="104" width="134" height="44" fill="#0B1710" clip-path="url(#acb)"/></g>
+        <g class="pc p-blade"><path d="M190 14C195.4 96 150 140 56 148C102 128 147.2 88 190 14Z" fill="#0B1710"/></g>
+        <g class="pc p-eye"><circle cx="126" cy="36" r="11" fill="#F2EEE2" stroke="#0B1710" stroke-width="2.5"/><circle cx="126" cy="36" r="5" fill="#0B1710"/></g>
+        <g class="lb l-top"><text x="-56" y="-14" class="ln">Chat</text><text x="-56" y="-3" class="ls">WhatsApp or Slack</text></g>
+        <g class="lb l-eye"><text x="196" y="-14" class="ln">You and your team</text><text x="196" y="-3" class="ls">ask and approve</text></g>
+        <g class="lb l-blade"><text x="-56" y="132" class="ln">Assistant</text><text x="-56" y="143" class="ls">does the work</text></g>
+        <g class="lb l-bot"><text x="236" y="176" class="ln">Your tools</text><text x="236" y="187" class="ls">plus what we build</text></g>
+        <g class="cap2"><text x="123" y="182" text-anchor="middle" class="cn">za3tar</text><text x="123" y="195" text-anchor="middle" class="ls">one place that connects it all</text></g>
       </svg>
-      <svg class="wand" viewBox="0 0 100 100"><g class="wg">
-        <line x1="96" y1="96" x2="34" y2="34" stroke="#0B1710" stroke-width="6" stroke-linecap="round"/>
-        <line x1="96" y1="96" x2="80" y2="80" stroke="#6F7F5A" stroke-width="6" stroke-linecap="round"/>
-        <path d="M24 6 L28.5 19.5 L42 24 L28.5 28.5 L24 42 L19.5 28.5 L6 24 L19.5 19.5 Z" fill="#0B1710"/>
-        <path class="spark" d="M48 2 L50 8 L56 10 L50 12 L48 18 L46 12 L40 10 L46 8 Z" fill="#6F7F5A"/>
-        <path class="spark" d="M6 44 L7.5 48.5 L12 50 L7.5 51.5 L6 56 L4.5 51.5 L0 50 L4.5 48.5 Z" fill="#6F7F5A"/>
-        <path class="spark" d="M44 40 L45 43 L48 44 L45 45 L44 48 L43 45 L40 44 L43 43 Z" fill="#0B1710"/>
-      </g></svg>
-    </div>
+    </figure>
+    <p class="hint mono"><span class="hov">Hover to take it apart</span><span class="tap">Tap to take it apart</span></p>
+
+    <a class="see" href="/app/">See the app →</a>
+  </div>
+</main>
+
+<section class="cast" aria-label="za3tar and the agents we built">
+  <span class="castlabel mono">The agents we built, around za3tar</span>
+  <div class="ring">
+    <div class="ag"><img src="/agents/jello.png" alt="Jello"><b>Jello</b><p>Runs By Jello. Built <a href="https://glgclipping.com" target="_blank" rel="noopener">GLG Clipping</a>, <a href="https://makbasrecords.com" target="_blank" rel="noopener">MAKBAS Records</a> and <a href="https://www.nady3ady.com" target="_blank" rel="noopener">nady3ady</a>.</p></div>
+    <div class="ag"><img src="/agents/ops.svg" alt="An operations agent"><b>Operations</b><p>Day-to-day operations for a media company, in Slack.</p></div>
+    <div class="ag mid"><svg class="bigz" viewBox="56 14 134 134" aria-hidden="true"><defs><clipPath id="bzt"><path d="M0 0H190V14C147.2 88 102 128 56 148L0 200Z"/></clipPath><clipPath id="bzb"><path d="M56 148C150 140 195.4 96 190 14H200V200H56Z"/></clipPath></defs><rect x="56" y="14" width="134" height="44" fill="#0B1710" clip-path="url(#bzt)"/><rect x="56" y="104" width="134" height="44" fill="#0B1710" clip-path="url(#bzb)"/><path d="M190 14C195.4 96 150 140 56 148C102 128 147.2 88 190 14Z" fill="#0B1710"/><circle cx="126" cy="36" r="11" fill="#F2EEE2"/><circle cx="126" cy="36" r="5" fill="#0B1710"/></svg><b>za3tar</b><p>Connects them all.</p></div>
+    <div class="ag"><img src="/agents/fnb.svg" alt="An agent for a restaurant group"><b>Restaurants</b><p>For a food-and-beverage group, in Slack.</p></div>
+    <a class="ag next" href="https://wa.me/962798885558?text=Hi%20za3tar%2C%20we%27d%20like%20to%20start%20our%20setup." target="_blank" rel="noopener"><span class="ghost" aria-hidden="true">?</span><b>Yours next</b><p>An agent for your team. Start your setup →</p></a>
   </div>
 </section>
 
-<footer>
-  <div class="mono fbar">
-    <span>za3tar · Dubai</span>
-    <span class="flinks"><a href="https://wa.me/962798885558?text=Hi%20za3tar%2C%20we%27d%20like%20to%20start%20our%20setup." target="_blank" rel="noopener">Start your setup →</a><a href="/app/">See the app →</a><a href="/demo/">See what we’d build →</a><a href="/llms.txt">llms.txt</a></span>
-  </div>
-</footer>
-</div><!-- /page3 -->
-
+<footer class="foot mono"><span>za3tar · Dubai</span><span><a href="/app/">See the app →</a><a href="/llms.txt">llms.txt</a></span></footer>
 </div>
 
-<svg id="overlay" aria-hidden="true">
-  <defs>
-    <clipPath id="oct"><path d="M0 0H190V14C147.2 88 102 128 56 148L0 200Z"/></clipPath>
-    <clipPath id="ocb"><path d="M56 148C150 140 195.4 96 190 14H200V200H56Z"/></clipPath>
-  </defs>
-  <g id="pc-bottom"><rect x="56" y="104" width="134" height="44" fill="#0B1710" clip-path="url(#ocb)"/></g>
-  <g id="pc-leaf"><path d="M190 14C195.4 96 150 140 56 148C102 128 147.2 88 190 14Z" fill="#0B1710"/></g>
-  <g id="pc-top"><rect x="56" y="14" width="134" height="44" fill="#0B1710" clip-path="url(#oct)"/></g>
-  <g id="pc-eye">
-    <circle id="ring" cx="126" cy="36" r="13" fill="#0B1710" opacity="0"/>
-    <g class="eye" id="eye">
-      <circle id="sclera" cx="126" cy="36" r="11" fill="#F2EEE2"/>
-      <circle id="pupil" cx="126" cy="36" r="5" fill="#0B1710"/>
-    </g>
-  </g>
-</svg>
-<script>
-(function(){
-  var reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
-  var noHover=matchMedia('(hover: none)').matches;
-  var hero=document.querySelector('.markwrap svg');
-  var howZ=document.querySelector('.howmark svg');
-  var howSec=document.getElementById('how');
-  var overlay=document.getElementById('overlay');
-  if(reduce||!hero||!overlay||!howZ) return;
-  document.body.classList.add('fx');
-
-  /* ---- pieces: overlay group, its bbox in mark units, and the slot it flies to ---- */
-  var pieces=[
-    {g:document.getElementById('pc-eye'),    box:[113,23,26,26],  slot:document.querySelector('[data-piece=eye]'),    delay:0,   d2:0,   intro:[0,-90,.45]},
-    {g:document.getElementById('pc-leaf'),   box:[56,14,135,134], slot:document.querySelector('[data-piece=leaf]'),   delay:.07, d2:.62, intro:[120,-40,.2]},
-    {g:document.getElementById('pc-bottom'), box:[56,104,134,44], slot:document.querySelector('[data-piece=bottom]'), delay:.14, d2:.28, intro:[-140,60,.1]},
-    {g:document.getElementById('pc-top'),    box:[56,14,134,44],  slot:document.querySelector('[data-piece=top]'),    delay:.21, d2:.42, intro:[-120,-70,0]}
-  ];
-  var ring=document.getElementById('ring'), t0=performance.now(), introBlinked=false;
-  function ease(t){ return t<.5 ? 4*t*t*t : 1-Math.pow(-2*t+2,3)/2; }
-  function clamp(v){ return v<0?0:v>1?1:v; }
-
-  function layout(){
-    var vh=innerHeight, y=scrollY;
-    var h=hero.getBoundingClientRect();              // whole mark in the hero (live)
-    var s0=h.width/134, ox=h.left-56*s0, oy=h.top-14*s0;
-    var z=howZ.getBoundingClientRect();              // whole mark in "how we work" (live)
-    var s2=z.width/134, ox2=z.left-56*s2, oy2=z.top-14*s2;
-
-    // stage 1: hero -> four slots (a longer runway on phones, where the hero is short)
-    var hasSlots=!!pieces[0].slot;
-    var firstSlot=hasSlots?pieces[0].slot.querySelector('svg').getBoundingClientRect():{top:-y-vh};
-    var phone=innerWidth<=700;
-    var start=vh*(phone?.08:.14), end=(firstSlot.top+y)-vh*(phone?.42:.58);
-    // the steps sit further down the page now: start the flight one screen before them
-    start=Math.max(start, end-vh*(phone?1.2:1));
-    if(end<start+(phone?360:240)) end=start+(phone?360:240);
-    var p1=clamp((y-start)/(end-start));
-    // intro: pieces fly in and assemble on first paint
-    var it=clamp((performance.now()-t0)/950);
-    dbg.p1=p1; dbg.p2=p2; dbg.it=it;
-
-    // stage 2: slots -> reassembled mark, paced by the steps
-    // paced by the steps, not the (sticky) mark box, so the end point stays put
-    var secTop=howSec.getBoundingClientRect().top+y;
-    // finish just before the closing section settles in view (the form sits lower now)
-    var start2=secTop-vh*.95, end2=secTop-vh*.12;
-    // the page may end before that point: never pace past the last scrollable pixel
-    var maxY=document.documentElement.scrollHeight-vh-4;
-    if(end2>maxY) end2=maxY;
-    if(end2<start2+320) start2=Math.max(end, end2-320);
-    if(start2<end) { start2=end; }
-    var p2=clamp((y-start2)/(end2-start2));
-    document.body.classList.toggle('held', p2>=.98);
-
-    pieces.forEach(function(pc){
-      var cxm=pc.box[0]+pc.box[2]/2, cym=pc.box[1]+pc.box[3]/2;
-      var c0x=ox+cxm*s0, c0y=oy+cym*s0;            // in hero
-      var s1=s0, c1x=c0x, c1y=c0y;                 // no step cards: the hero is the waypoint
-      if(hasSlots){ var t=pc.slot.querySelector('svg').getBoundingClientRect();
-        s1=t.width/pc.box[2]; c1x=t.left+t.width/2; c1y=t.top+t.height/2; } // in slot
-      var c2x=ox2+cxm*s2, c2y=oy2+cym*s2;          // in reassembled mark
-      var sc,cx,cy,ringA;
-      if(p2>0){
-        var e=ease(clamp((p2-pc.d2)/(1-pc.d2)));
-        sc=s1+(s2-s1)*e; cx=c1x+(c2x-c1x)*e; cy=c1y+(c2y-c1y)*e; ringA=1-e;
-        if(!hasSlots) ringA=0;
-      } else {
-        var e1=ease(clamp((p1-pc.delay)/(1-pc.delay)));
-        sc=s0+(s1-s0)*e1; cx=c0x+(c1x-c0x)*e1; cy=c0y+(c1y-c0y)*e1; ringA=e1;
-        if(!hasSlots) ringA=0;
-      }
-      if(it<1 && p1===0 && p2===0){
-        var ie=1-Math.pow(1-clamp((it-pc.intro[2])/(1-pc.intro[2])),3);   // ease-out, staggered
-        cx+=pc.intro[0]*s0*(1-ie); cy+=pc.intro[1]*s0*(1-ie); sc*=0.72+0.28*ie;
-        if(pc.g.id==='pc-eye'&&ie>=1&&!introBlinked){introBlinked=true; setTimeout(blink,60);}
-      }
-      pc.g.setAttribute('transform','translate('+(cx-cxm*sc).toFixed(2)+' '+(cy-cym*sc).toFixed(2)+') scale('+sc.toFixed(4)+')');
-      if(pc.g.id==='pc-eye') ring.setAttribute('opacity', ringA.toFixed(2));
-      if(hasSlots) pc.slot.classList.toggle('filled', p2===0 && ringA>=.97);   // ringA == this piece's stage-1 ease
-    });
-  }
-
-  /* ---- the eye: follows the cursor, wanders when idle, blinks ---- */
-  var eye=document.getElementById('eye'), pupil=document.getElementById('pupil'), sclera=document.getElementById('sclera');
-  var MAX=4.6, tx=0,ty=0,cx=0,cy=0, lastMove=0, wanderTimer, blinkTimer;
-  function lookAt(px,py){
-    var r=sclera.getBoundingClientRect(), ex=r.left+r.width/2, ey=r.top+r.height/2;
-    var dx=px-ex, dy=py-ey, d=Math.hypot(dx,dy)||1, k=Math.min(1,d/260)*MAX;
-    tx=dx/d*k; ty=dy/d*k;
-  }
-  function wander(){
-    var a=Math.random()*Math.PI*2, k=(Math.random()<.2?0:MAX*(0.55+Math.random()*0.45));
-    tx=Math.cos(a)*k; ty=Math.sin(a)*k*0.8;
-    wanderTimer=setTimeout(wander,1400+Math.random()*2200);
-  }
-  function blink(){
-    eye.classList.add('blink'); setTimeout(function(){eye.classList.remove('blink');},130);
-    if(Math.random()<.18) setTimeout(function(){eye.classList.add('blink');setTimeout(function(){eye.classList.remove('blink');},120);},260);
-    blinkTimer=setTimeout(blink,2600+Math.random()*4200);
-  }
-  function attend(){ lastMove=Date.now(); if(wanderTimer){clearTimeout(wanderTimer);wanderTimer=null;} }
-  // the eye glances at the headline word each time it flips
-  addEventListener('za3tar:look',function(e){ attend(); lookAt(e.detail.x,e.detail.y); });
-  if(!noHover){
-    addEventListener('mousemove',function(e){ attend(); lookAt(e.clientX,e.clientY); },{passive:true});
-  } else {
-    // the eye follows a thumb, and glances the way the page is scrolling
-    addEventListener('touchmove',function(e){ var t=e.touches[0]; if(t){ attend(); lookAt(t.clientX,t.clientY); } },{passive:true});
-    var lastY=scrollY;
-    addEventListener('scroll',function(){ var d=scrollY-lastY; lastY=scrollY; if(Math.abs(d)<2) return; attend(); tx=0; ty=(d>0?1:-1)*MAX*.85; },{passive:true});
-    wander();
-  }
-  setInterval(function(){ if(!wanderTimer && Date.now()-lastMove>(noHover?1400:2600)) wander(); },600);
-  // tap the mark: a blink and a quick dart
-  ['.markwrap','.howmark'].forEach(function(sel){ var el=document.querySelector(sel); if(!el) return;
-    el.addEventListener('click',function(){ blink(); attend(); tx=(Math.random()<.5?-1:1)*MAX; ty=-MAX*.4; setTimeout(function(){tx=0;ty=0;},420); }); });
-  // reveals
-  if('IntersectionObserver' in window){
-    var io=new IntersectionObserver(function(es){ es.forEach(function(en){ if(en.isIntersecting){ en.target.classList.add('in'); io.unobserve(en.target);} }); },{rootMargin:'0px 0px -8% 0px',threshold:.15});
-    document.querySelectorAll('.rv').forEach(function(el){ io.observe(el); });
-  } else document.querySelectorAll('.rv').forEach(function(el){ el.classList.add('in'); });
-  blinkTimer=setTimeout(blink,1200);
-  document.addEventListener('visibilitychange',function(){ if(document.hidden) clearTimeout(blinkTimer); else blinkTimer=setTimeout(blink,600); });
-
-  var dbg={};
-  window.__za3tar=function(){ return {tx:tx,ty:ty,cx:cx,cy:cy,p1:dbg.p1,p2:dbg.p2,it:dbg.it,w:innerWidth}; };
-  function tick(){
-    layout();
-    cx+=(tx-cx)*0.14; cy+=(ty-cy)*0.14;
-    pupil.setAttribute('transform','translate('+cx.toFixed(2)+' '+cy.toFixed(2)+')');
-    requestAnimationFrame(tick);
-  }
-  tick();
-})();
-
-/* the closing box writes a WhatsApp message; the visitor sends it themselves */
-(function(){
-  var f=document.getElementById('startform');
-  if(!f) return;
-  f.addEventListener('submit',function(e){
-    e.preventDefault();
-    var c=f.company.value.trim(), w=f.week.value.trim();
-    if(!c) return f.company.focus();
-    var t='Hi za3tar, I’m from '+c+'.'+(w?' With a magic wand, we’d '+w.replace(/^(we’d|we'd|we would|i’d|i'd|i would)\s+/i,''):'');
-    window.open('https://wa.me/962798885558?text='+encodeURIComponent(t),'_blank','noopener');
-  });
-})();
-</script>
 </body>
 </html>

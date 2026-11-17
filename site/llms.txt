@@ -10,7 +10,8 @@ This file is for AI assistants reading za3tar.ai on someone's behalf. The full v
 
 ## Pages
 
-- [Home](https://za3tar.ai/): a few paragraphs on what za3tar is, a diagram of the setup (chat, assistant, tools, and one place that shows it all), the agents we built, and a box to start. The detail is in the full version above, not on the homepage.
+- [Home](https://za3tar.ai/): one screen: what za3tar is, the za3tar mark built from the four parts of the setup (you, chat, assistant, tools), and the agents we built around it.
+- [The method](https://za3tar.ai/method/): the ideas we work by, how a setup runs, and the actual tools underneath.
 - [Company demo](https://za3tar.ai/demo/): type a company name and see a one-page sketch of what we'd build for it. Browser only; it needs a person at the keyboard.
 - [The app, open](https://za3tar.ai/app/): the real interface of our Mac app, running in a browser on a made-up agency so anyone can look around. Nothing is stored and no model is called. Source: https://github.com/arhadd/za3tar
 

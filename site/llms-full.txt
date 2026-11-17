@@ -1,6 +1,6 @@
 # za3tar, in full
 
-> This is how we work now, and za3tar is the method behind it: an assistant in the chat the team already uses (WhatsApp or Slack), connected to the tools it already has, whatever is missing built with AI, and one screen, the za3tar app, that shows everything together. We run our own work this way and set other companies up to do the same. The data stays in the company's own tools, it chooses and can change the models, and the setup can run on its own servers.
+> AI changed how we work, and za3tar is the method we built around it: an assistant in the chat the team already uses (WhatsApp or Slack), connected to the tools it already has, whatever is missing built with AI, and one screen, the za3tar app, that shows everything together. We run our own work this way and set other companies up to do the same. The data stays in the company's own tools, it chooses and can change the models, and the setup can run on its own servers.
 
 This page is written for an AI assistant that has been asked to find out what za3tar could do for a specific company. You already know that company: its tools, its team, where the time goes. We don't. So this page gives you what we do and where it fits, and leaves the matching to you.
 
