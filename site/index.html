@@ -208,6 +208,9 @@ body.fx.held .howmark svg.wand{opacity:1;transform:none}
 .sdrop i{display:block;width:0;height:100%;margin:0 auto;border-left:1.5px dashed var(--ink)}
 .sdrop i:nth-child(2){grid-column:3}.sdrop i:nth-child(3){grid-column:5}.sdrop i:nth-child(4){grid-column:7}
 .sapp{background:var(--ink-08);align-items:center;text-align:center;padding:18px 16px}
+/* the agents are the one place colour comes in: their own characters */
+#agents .use>div{border-top:0;padding-top:0}
+.agentpic{display:block;height:190px;width:auto;margin:0 0 14px}
 .use p.built{margin-top:16px}
 .builtlist{list-style:none;padding:0;margin:6px 0 0;display:flex;flex-direction:column;gap:6px}
 .builtlist a{font-weight:600;font-size:17px;border-bottom:1.5px solid var(--ink);padding-bottom:1px}
@@ -382,7 +385,7 @@ footer a:hover{color:var(--ink)}
 <section id="agents">
   <h2 class="usehead rv">The agents we built</h2>
   <div class="use">
-    <div class="rv"><h3>Jello</h3><p>Runs By Jello and the ventures around it. It builds our own things, and it helps other people build theirs.</p>
+    <div class="rv"><img class="agentpic" src="/agents/jello.png" alt="Jello, a purple character with a flower necklace, arms out" width="200" height="227" loading="lazy"><h3>Jello</h3><p>Runs By Jello and the ventures around it. It builds our own things, and it helps other people build theirs.</p>
       <p class="built mono">Jello built</p>
       <ul class="builtlist">
         <li><a href="https://glgclipping.com" target="_blank" rel="noopener">GLG Clipping <span class="ar">↗</span></a></li>
@@ -390,8 +393,8 @@ footer a:hover{color:var(--ink)}
         <li><a href="https://www.nady3ady.com" target="_blank" rel="noopener">nady3ady <span class="ar">↗</span></a></li>
       </ul>
     </div>
-    <div class="rv"><h3>An operations agent</h3><p>Runs day-to-day operations with the team at a media company, in their Slack.</p></div>
-    <div class="rv"><h3>An agent for a restaurant group</h3><p>Works with a food-and-beverage group across its brands and locations, in their Slack.</p></div>
+    <div class="rv"><img class="agentpic" src="/agents/ops.svg" alt="A mint-green character with a headset and a clipboard" width="200" height="227" loading="lazy"><h3>An operations agent</h3><p>Runs day-to-day operations with the team at a media company, in their Slack.</p></div>
+    <div class="rv"><img class="agentpic" src="/agents/fnb.svg" alt="A peach character with an apron, a moustache and a covered dish on a tray" width="200" height="227" loading="lazy"><h3>An agent for a restaurant group</h3><p>Works with a food-and-beverage group across its brands and locations, in their Slack.</p></div>
   </div>
 </section>
 

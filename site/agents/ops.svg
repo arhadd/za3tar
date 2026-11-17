@@ -1,0 +1,34 @@
+<svg viewBox="0 0 600 680" xmlns="http://www.w3.org/2000/svg">
+  <!-- left arm, waving -->
+  <path d="M 170 380 C 120 350 95 300 90 250" fill="none" stroke="#FF4000" stroke-width="38" stroke-linecap="round"/>
+  <path d="M 170 380 C 120 350 95 300 90 250" fill="none" stroke="#CDEFE2" stroke-width="30" stroke-linecap="round"/>
+  <!-- right arm to the clipboard -->
+  <path d="M 430 400 C 470 390 495 360 505 330" fill="none" stroke="#FF4000" stroke-width="38" stroke-linecap="round"/>
+  <path d="M 430 400 C 470 390 495 360 505 330" fill="none" stroke="#CDEFE2" stroke-width="30" stroke-linecap="round"/>
+  <!-- feet -->
+  <ellipse cx="250" cy="625" rx="44" ry="22" fill="#CDEFE2" stroke="#FF4000" stroke-width="5"/>
+  <ellipse cx="355" cy="625" rx="44" ry="22" fill="#CDEFE2" stroke="#FF4000" stroke-width="5"/>
+  <!-- body -->
+  <path d="M 300 130 C 400 128 455 230 458 360 C 462 520 400 612 300 612 C 200 612 140 520 142 360 C 145 230 200 132 300 130 Z" fill="#CDEFE2" stroke="#FF4000" stroke-width="5" stroke-linejoin="round"/>
+  <!-- clipboard -->
+  <g transform="translate(520 280) rotate(12)">
+    <rect x="-52" y="-72" width="104" height="138" rx="12" fill="#FFFDF6" stroke="#FF4000" stroke-width="4.5"/>
+    <rect x="-24" y="-84" width="48" height="22" rx="8" fill="#5B4CFF" stroke="#FF4000" stroke-width="3.5"/>
+    <path d="M -30 -30 h 60 M -30 -2 h 60 M -30 26 h 40" stroke="#5B4CFF" stroke-width="7" stroke-linecap="round"/>
+    <path d="M -36 -34 l 8 8 l 14 -16" fill="none" stroke="#FF4000" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+  <!-- headset -->
+  <path d="M 178 250 C 170 120 430 120 422 250" fill="none" stroke="#5B4CFF" stroke-width="9" stroke-linecap="round"/>
+  <rect x="160" y="236" width="34" height="58" rx="14" fill="#5B4CFF" stroke="#FF4000" stroke-width="3.5"/>
+  <rect x="406" y="236" width="34" height="58" rx="14" fill="#5B4CFF" stroke="#FF4000" stroke-width="3.5"/>
+  <path d="M 190 290 C 200 340 230 350 262 346" fill="none" stroke="#5B4CFF" stroke-width="4.5" stroke-linecap="round"/>
+  <circle cx="268" cy="345" r="9" fill="#5B4CFF"/>
+  <!-- eyes -->
+  <circle cx="268" cy="215" r="28" fill="#FFF3E3" stroke="#FF4000" stroke-width="4"/>
+  <circle cx="334" cy="219" r="28" fill="#FFF3E3" stroke="#FF4000" stroke-width="4"/>
+  <circle cx="274" cy="213" r="10" fill="#1A1A1A"/>
+  <circle cx="340" cy="217" r="10" fill="#1A1A1A"/>
+  <path d="M 246 172 q 20 -16 42 -4 M 314 176 q 22 -14 42 0" fill="none" stroke="#FF4000" stroke-width="3.5" stroke-linecap="round"/>
+  <!-- smile -->
+  <path d="M 284 284 q 18 18 38 2" fill="none" stroke="#FF4000" stroke-width="4" stroke-linecap="round"/>
+</svg>
