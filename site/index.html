@@ -191,7 +191,7 @@ main{padding:clamp(4px,1vh,14px) 0}
 .assemble .pc{transform-box:view-box}
 .assemble .p-top rect,.assemble .p-bot rect,.assemble .p-blade path{stroke:#0B1710;stroke-width:.8}
 .assemble .cn{font-size:13px;font-weight:800;font-stretch:78%;fill:var(--ink)}
-/* the Z is whole on load; hover or tap a part to read about it */
+/* the Z steps through its parts on its own; hover or tap a part to hold on it */
 .assemble .pc{cursor:pointer;outline:none}
 .hint{margin-top:2px;text-align:center}
 .hint .tap{display:none}
@@ -202,14 +202,14 @@ main{padding:clamp(4px,1vh,14px) 0}
 /* a description under the Z; point at one part to read about it */
 .p-top{--nudge:translate(-12px,-6px)}.p-bot{--nudge:translate(13px,8px)}.p-blade{--nudge:translate(-10px,7px)}.p-eye{--nudge:translate(16px,-10px)}
 .assemble .pc{transition:transform .45s cubic-bezier(.3,0,.2,1),opacity .3s}
-.assemble svg:has(.pc:is(:hover,:focus)) .pc:not(:hover):not(:focus){opacity:.14}
+.assemble svg:has(.pc:is(:hover,:focus,.on)) .pc:not(:hover):not(:focus):not(.on){opacity:.14}
 .desc{position:relative;min-height:clamp(64px,12vh,100px);margin-top:clamp(8px,1.6vh,14px);text-align:center}
 .desc .d{position:absolute;left:0;right:0;top:0;opacity:0;transition:opacity .3s}
 .desc .d b{display:block;font-size:clamp(16px,min(1.5vw,2.5vh),21px);font-weight:800;font-stretch:88%;letter-spacing:-.01em}
 .desc .d p{margin:4px auto 0;font-size:clamp(13px,min(1.15vw,2vh),16px);line-height:1.45;color:var(--ink-66);max-width:46ch;text-wrap:pretty}
 .desc .d-zz{opacity:1}
-.assemble:has(.pc:is(:hover,:focus)) ~ .desc .d-zz{opacity:0}
-.assemble:has(.p-eye:is(:hover,:focus)) ~ .desc .d-eye,.assemble:has(.p-top:is(:hover,:focus)) ~ .desc .d-top,.assemble:has(.p-blade:is(:hover,:focus)) ~ .desc .d-blade,.assemble:has(.p-bot:is(:hover,:focus)) ~ .desc .d-bot{opacity:1}
+.assemble:has(.pc:is(:hover,:focus,.on)) ~ .desc .d-zz{opacity:0}
+.assemble:has(.p-eye:is(:hover,:focus,.on)) ~ .desc .d-eye,.assemble:has(.p-top:is(:hover,:focus,.on)) ~ .desc .d-top,.assemble:has(.p-blade:is(:hover,:focus,.on)) ~ .desc .d-blade,.assemble:has(.p-bot:is(:hover,:focus,.on)) ~ .desc .d-bot{opacity:1}
 </style>
 </head>
 <body>
@@ -257,5 +257,25 @@ main{padding:clamp(4px,1vh,14px) 0}
 <footer class="foot mono"><span>za3tar · Dubai</span><span><a href="/app/">See the app →</a><a href="/llms.txt">llms.txt</a></span></footer>
 </div>
 
+<script>
+/* step through the parts of the Z; pointing at one holds it there */
+(function(){
+  var fig=document.querySelector('.assemble');if(!fig)return;
+  var pcs=['.p-eye','.p-top','.p-blade','.p-bot'].map(function(q){return fig.querySelector(q)});
+  var i=-1,t=null,still=matchMedia('(prefers-reduced-motion:reduce)').matches;
+  function show(n){i=n;pcs.forEach(function(p,k){p.classList.toggle('on',k===n)})}
+  function step(){show(i>=pcs.length-1?-1:i+1)}
+  function play(){if(still||t)return;t=setInterval(step,3200)}
+  function hold(n){clearInterval(t);t=null;show(n)}
+  pcs.forEach(function(p,k){
+    p.addEventListener('pointerenter',function(){hold(k)});
+    p.addEventListener('focus',function(){hold(k)});
+    p.addEventListener('blur',play);
+  });
+  fig.querySelector('svg').addEventListener('pointerleave',function(){if(!fig.querySelector('.pc:focus'))play()});
+  document.addEventListener('visibilitychange',function(){if(document.hidden){clearInterval(t);t=null}else if(!fig.querySelector('.pc:hover,.pc:focus'))play()});
+  play();
+})();
+</script>
 </body>
 </html>
