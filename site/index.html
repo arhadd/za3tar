@@ -64,7 +64,7 @@ a{color:inherit;text-decoration:none}
 .mono{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-66)}
 /* one screen on a laptop: nav, two columns, the ask along the bottom */
 .page{min-height:100vh;min-height:100svh;display:grid;grid-template-rows:auto 1fr auto;padding:0 var(--pad)}
-nav{display:flex;align-items:center;justify-content:space-between;height:clamp(52px,8vh,68px)}
+nav{display:flex;align-items:center;justify-content:flex-end;height:clamp(52px,8vh,68px)}
 .navlinks{display:flex;gap:clamp(18px,2.4vw,32px);font-weight:600;font-size:16px}
 .navlinks a{border-bottom:1.5px solid transparent;padding-bottom:1px}
 .navlinks a:hover{border-bottom-color:var(--ink)}
@@ -187,7 +187,8 @@ main{padding:clamp(4px,1vh,14px) 0}
 
 /* v5: the four pieces of the Z are the four parts of the method; they come together */
 .assemble{margin:0}
-.assemble svg{display:block;width:100%;height:auto;max-height:31vh;overflow:visible;font-family:var(--sans)}
+.zword{margin:0 0 clamp(4px,1vh,12px);text-align:center;font-weight:700;font-stretch:78%;font-size:clamp(22px,min(2.8vw,4vh),40px);letter-spacing:-.01em;line-height:1}
+.assemble svg{display:block;width:100%;height:auto;max-height:26vh;overflow:visible;font-family:var(--sans)}
 .assemble .pc{transform-box:view-box}
 .assemble .p-top rect,.assemble .p-bot rect,.assemble .p-blade path{stroke:#0B1710;stroke-width:.8}
 .assemble .cn{font-size:13px;font-weight:800;font-stretch:78%;fill:var(--ink)}
@@ -204,18 +205,20 @@ main{padding:clamp(4px,1vh,14px) 0}
 .assemble .pc{transition:transform .45s cubic-bezier(.3,0,.2,1),opacity .3s}
 .assemble svg:has(.pc:is(:hover,:focus,.on)) .pc:not(:hover):not(:focus):not(.on){opacity:.14}
 .desc{position:relative;min-height:clamp(64px,12vh,100px);margin-top:clamp(8px,1.6vh,14px);text-align:center}
-.desc .d{position:absolute;left:0;right:0;top:0;opacity:0;transition:opacity .3s}
+.desc .d{position:absolute;left:0;right:0;top:0;opacity:0;transition:opacity .15s}
+/* fade the old text out before the new one comes in, so two never overlap */
+.desc .d-zz{transition:opacity .25s .15s}
+.assemble:has(.pc:is(:hover,:focus,.on)) ~ .desc .d-zz{transition:opacity .15s}
 .desc .d b{display:block;font-size:clamp(16px,min(1.5vw,2.5vh),21px);font-weight:800;font-stretch:88%;letter-spacing:-.01em}
 .desc .d p{margin:4px auto 0;font-size:clamp(13px,min(1.15vw,2vh),16px);line-height:1.45;color:var(--ink-66);max-width:46ch;text-wrap:pretty}
 .desc .d-zz{opacity:1}
 .assemble:has(.pc:is(:hover,:focus,.on)) ~ .desc .d-zz{opacity:0}
-.assemble:has(.p-eye:is(:hover,:focus,.on)) ~ .desc .d-eye,.assemble:has(.p-top:is(:hover,:focus,.on)) ~ .desc .d-top,.assemble:has(.p-blade:is(:hover,:focus,.on)) ~ .desc .d-blade,.assemble:has(.p-bot:is(:hover,:focus,.on)) ~ .desc .d-bot{opacity:1}
+.assemble:has(.p-eye:is(:hover,:focus,.on)) ~ .desc .d-eye,.assemble:has(.p-top:is(:hover,:focus,.on)) ~ .desc .d-top,.assemble:has(.p-blade:is(:hover,:focus,.on)) ~ .desc .d-blade,.assemble:has(.p-bot:is(:hover,:focus,.on)) ~ .desc .d-bot{opacity:1;transition:opacity .25s .15s}
 </style>
 </head>
 <body>
 <div class="page">
 <nav>
-  <a class="logo" href="/"><img src="/brand/mark-mono.svg" alt="">za3tar</a>
   <span class="navlinks"><a href="/app/">app</a><a href="https://github.com/arhadd/za3tar" target="_blank" rel="noopener">github</a></span>
 </nav>
 
@@ -228,6 +231,7 @@ main{padding:clamp(4px,1vh,14px) 0}
   </div>
 
   <div>
+    <h2 class="zword">za3tar</h2>
     <figure class="assemble" aria-label="Four pieces, you and your team, chat, the assistant and your tools, come together into the za3tar Z: one place that connects it all.">
       <svg viewBox="-17 -6 280 174">
         <defs><clipPath id="act"><path d="M0 0H190V14C147.2 88 102 128 56 148L0 200Z"/></clipPath><clipPath id="acb"><path d="M56 148C150 140 195.4 96 190 14H200V200H56Z"/></clipPath></defs>
@@ -237,7 +241,7 @@ main{padding:clamp(4px,1vh,14px) 0}
         <g class="pc p-eye" tabindex="0" aria-label="You and your team"><circle cx="126" cy="36" r="11" fill="#F2EEE2" stroke="#0B1710" stroke-width="2.5"/><circle cx="126" cy="36" r="5" fill="#0B1710"/></g>
       </svg>
     </figure>
-    <div class="desc" aria-live="polite"><div class="d d-zz"><b>za3tar</b><p>One place that connects it all: sources, decisions, people, and what needs your yes. Point at a part of the Z to see what it does.</p></div><div class="d d-eye"><b>You and your team</b><p>You ask and you approve, by text or voice note, the way you would ask a colleague. Nothing important goes out without your yes.</p></div><div class="d d-top"><b>Chat</b><p>It lives in the chat you already use: WhatsApp, Slack or Telegram. Nobody installs anything new, and the whole team can use it.</p></div><div class="d d-blade"><b>Assistant</b><p>One assistant for the company that knows your people, tools and rules. It drafts, chases, reconciles and builds, and it remembers.</p></div><div class="d d-bot"><b>Your tools</b><p>It reads and writes in the tools you already have: calendar, email, sheets, payments. When something is missing, we build it.</p></div></div>
+    <div class="desc" aria-live="polite"><div class="d d-zz"><p>One place that connects it all: sources, decisions, people, and what needs your yes. Point at a part of the Z to see what it does.</p></div><div class="d d-eye"><b>You and your team</b><p>You ask and you approve, by text or voice note, the way you would ask a colleague. Nothing important goes out without your yes.</p></div><div class="d d-top"><b>Chat</b><p>It lives in the chat you already use: WhatsApp, Slack or Telegram. Nobody installs anything new, and the whole team can use it.</p></div><div class="d d-blade"><b>Assistant</b><p>One assistant for the company that knows your people, tools and rules. It drafts, chases, reconciles and builds, and it remembers.</p></div><div class="d d-bot"><b>Your tools</b><p>It reads and writes in the tools you already have: calendar, email, sheets, payments. When something is missing, we build it.</p></div></div>
 
     <a class="see" href="/app/">See the app →</a>
   </div>
