@@ -223,7 +223,7 @@ main{padding:clamp(4px,1vh,14px) 0}
   .zcol .desc .d p{margin-left:0;max-width:34ch}
   .zcol .desc .d b{font-size:clamp(18px,min(1.8vw,3vh),26px)}
   .zcol .see{grid-column:2;grid-row:3;justify-self:start}
-  .assemble svg{max-height:38vh}
+  .assemble svg{max-height:36vh}
 }
 /* the last word of the headline cycles through the work AI changed */
 .rot{display:inline-grid;justify-items:start;vertical-align:top}
@@ -233,9 +233,30 @@ main{padding:clamp(4px,1vh,14px) 0}
 .rot>span:nth-child(5){animation-delay:9.6s}.rot>span:nth-child(6){animation-delay:12s}.rot>span:nth-child(7){animation-delay:14.4s}.rot>span:nth-child(8){animation-delay:16.8s}
 @keyframes rotw{0%{opacity:0;transform:translateY(.25em)}2%,11%{opacity:1;transform:none}12.5%,100%{opacity:0;transform:translateY(-.25em)}}
 @media(prefers-reduced-motion:reduce){.rot>span{animation:none}}
+/* design pass: one left edge in the right column, numbered parts, matching links */
+.parts{display:none}
+@media(min-width:821px){
+  main{grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:clamp(32px,4vw,80px)}
+  .zcol{grid-template-columns:minmax(0,1fr) minmax(0,1.05fr);row-gap:clamp(6px,1.4vh,18px)}
+  .zcol .zword{text-align:left}
+  .zcol .assemble svg{margin:0}
+  .zcol .parts{grid-column:2;grid-row:1;align-self:end}
+  .zcol .desc{grid-row:2;align-self:start;margin-top:clamp(4px,1vh,10px);min-height:clamp(130px,21vh,190px)}
+  .zcol .desc .d{top:0;transform:none}
+  .zcol .see{grid-row:3}
+}
+.parts{gap:10px}
+.js .parts{display:flex}
+.parts button{width:clamp(32px,4.4vh,40px);height:clamp(32px,4.4vh,40px);border-radius:50%;border:1.5px solid var(--ink);background:var(--paper);color:var(--ink);font:600 clamp(13px,1.8vh,16px)/1 var(--sans);cursor:pointer;transition:background .2s,color .2s}
+.parts button:hover{background:var(--ink-08)}
+.parts button[aria-pressed="true"]{background:var(--ink);color:var(--paper)}
+.parts button:focus-visible{outline:2px solid var(--ink);outline-offset:3px}
+@media(max-width:820px){.js .parts{justify-content:center;margin-top:14px}.zcol .see{display:table;margin-left:auto;margin-right:auto}}
+.zcol .see,.lede p.go a{font-size:clamp(15px,min(1.35vw,2.2vh),19px);font-weight:600;border-bottom:1.5px solid var(--ink);padding-bottom:1px}
 </style>
 </head>
 <body>
+<script>document.documentElement.classList.add('js')</script>
 <div class="page">
 <nav>
   <span class="navlinks"><a href="/app/">app</a><a href="https://github.com/arhadd/za3tar" target="_blank" rel="noopener">github</a></span>
@@ -260,7 +281,8 @@ main{padding:clamp(4px,1vh,14px) 0}
         <g class="pc p-eye" tabindex="0" aria-label="You and your team"><circle cx="126" cy="36" r="11" fill="#F2EEE2" stroke="#0B1710" stroke-width="2.5"/><circle cx="126" cy="36" r="5" fill="#0B1710"/></g>
       </svg>
     </figure>
-    <div class="desc" aria-live="polite"><div class="d d-zz"><p>One place that connects it all: sources, decisions, people, and what needs your yes. Point at a part of the Z to see what it does.</p></div><div class="d d-eye"><b>You and your team</b><p>You ask and you approve, by text or voice note, the way you would ask a colleague. Nothing important goes out without your yes.</p></div><div class="d d-top"><b>Chat</b><p>It lives in the chat you already use: WhatsApp, Slack or Telegram. Nobody installs anything new, and the whole team can use it.</p></div><div class="d d-blade"><b>Assistant</b><p>One assistant for the company that knows your people, tools and rules. It drafts, chases, reconciles and builds, and it remembers.</p></div><div class="d d-bot"><b>Your tools</b><p>It reads and writes in the tools you already have: calendar, email, sheets, payments. When something is missing, we build it.</p></div></div>
+    <div class="parts" aria-label="The four parts of the Z"><button type="button" aria-label="You and your team">1</button><button type="button" aria-label="Chat">2</button><button type="button" aria-label="Assistant">3</button><button type="button" aria-label="Your tools">4</button></div>
+    <div class="desc" aria-live="polite"><div class="d d-zz"><b>One place that connects it all</b><p>Sources, decisions, people, and what needs your yes. Pick a number, or point at a part of the Z, to see what each part does.</p></div><div class="d d-eye"><b>You and your team</b><p>You ask and you approve, by text or voice note, the way you would ask a colleague. Nothing important goes out without your yes.</p></div><div class="d d-top"><b>Chat</b><p>It lives in the chat you already use: WhatsApp, Slack or Telegram. Nobody installs anything new, and the whole team can use it.</p></div><div class="d d-blade"><b>Assistant</b><p>One assistant for the company that knows your people, tools and rules. It drafts, chases, reconciles and builds, and it remembers.</p></div><div class="d d-bot"><b>Your tools</b><p>It reads and writes in the tools you already have: calendar, email, sheets, payments. When something is missing, we build it.</p></div></div>
 
     <a class="see" href="/app/">See the app →</a>
   </div>
@@ -271,7 +293,7 @@ main{padding:clamp(4px,1vh,14px) 0}
   <p class="castsub">For teams that deliver for clients: proposals, delivery and reporting.</p>
   <div class="ring">
     <div class="ag"><img src="/agents/jello.png" alt="Jello"><b>Jello</b><p>Runs By Jello, and builds <a href="https://byjello.com/toolsforcommunity" target="_blank" rel="noopener">Tools for Community</a>.</p></div>
-    <div class="ag"><img src="/agents/ops.svg" alt="An agent for a marketing company"><b>Marketing</b><p>Day-to-day operations for a marketing and media company, in Slack.</p></div>
+    <div class="ag"><img src="/agents/ops.svg" alt="An agent for a marketing company"><b>Marketing</b><p>Daily operations for a marketing and media company, in Slack.</p></div>
     <div class="ag"><img src="/agents/fnb.svg" alt="An agent for a restaurant group"><b>Restaurants</b><p>For a food-and-beverage group, in Slack.</p></div>
     <div class="ag"><img src="/agents/build.svg" alt="An agent for a construction company"><b>Construction</b><p>The admin and delivery work of construction companies.</p></div>
     <a class="ag next" href="https://wa.me/962798885558?text=Hi%20za3tar%2C%20we%27d%20like%20to%20start%20our%20setup." target="_blank" rel="noopener"><span class="ghost" aria-hidden="true">?</span><b>Your agent</b><p>Any team, any industry. We build it with you. Start your setup →</p></a>
@@ -287,7 +309,8 @@ main{padding:clamp(4px,1vh,14px) 0}
   var fig=document.querySelector('.assemble');if(!fig)return;
   var pcs=['.p-eye','.p-top','.p-blade','.p-bot'].map(function(q){return fig.querySelector(q)});
   var i=-1,t=null,still=matchMedia('(prefers-reduced-motion:reduce)').matches;
-  function show(n){i=n;pcs.forEach(function(p,k){p.classList.toggle('on',k===n)})}
+  var btns=[].slice.call(document.querySelectorAll('.parts button')),rt=null;
+  function show(n){i=n;pcs.forEach(function(p,k){p.classList.toggle('on',k===n)});btns.forEach(function(b,k){b.setAttribute('aria-pressed',k===n?'true':'false')})}
   function step(){show(i>=pcs.length-1?-1:i+1)}
   function play(){if(still||t)return;t=setInterval(step,3200)}
   function hold(n){clearInterval(t);t=null;show(n)}
@@ -298,6 +321,7 @@ main{padding:clamp(4px,1vh,14px) 0}
   });
   fig.querySelector('svg').addEventListener('pointerleave',function(){if(!fig.querySelector('.pc:focus'))play()});
   document.addEventListener('visibilitychange',function(){if(document.hidden){clearInterval(t);t=null}else if(!fig.querySelector('.pc:hover,.pc:focus'))play()});
+  btns.forEach(function(b,k){b.addEventListener('click',function(){hold(k);clearTimeout(rt);rt=setTimeout(play,9000)})});
   play();
 })();
 </script>
