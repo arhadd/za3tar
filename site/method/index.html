@@ -80,8 +80,8 @@ h1{font-size:clamp(34px,min(4.4vw,7vh),64px);font-weight:800;font-stretch:88%;le
   .lede p{font-size:16px}.sbox b{font-size:14px}.sbox span{font-size:12px}.agent p{font-size:13px}.agent b{font-size:15px}
 }
 
-.m{max-width:1040px;margin:0 auto;padding:clamp(28px,6vh,72px) 0 80px}
-.m h1{font-size:clamp(40px,5vw,72px)}
+.m{max-width:1200px;margin:0;padding:clamp(28px,6vh,72px) 0 80px}
+.m h1{font-size:clamp(40px,4.4vw,64px)}
 .m .intro{font-size:20px;max-width:46ch;margin-top:18px;text-wrap:pretty}
 .m h2{font-size:clamp(26px,3vw,36px);font-weight:800;font-stretch:88%;letter-spacing:-.025em;margin:64px 0 22px}
 .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:26px 40px}
@@ -107,11 +107,31 @@ h1{font-size:clamp(34px,min(4.4vw,7vh),64px);font-weight:800;font-stretch:88%;le
 .end a{border-bottom:1.5px solid var(--ink)}
 @media(max-width:820px){.grid,.steps,.built4{grid-template-columns:1fr}.stack{grid-template-columns:1fr}.stack dt{border-bottom:0;padding-bottom:0}}
 
+/* match the homepage: nav state, round step numbers, the same agents block */
+.navlinks a[aria-current]{border-bottom-color:var(--ink)}
+.steps span{width:34px;height:34px;border-radius:50%;border:1.5px solid var(--ink);display:flex;align-items:center;justify-content:center;font-family:var(--sans);font-size:15px;font-weight:600;letter-spacing:0;color:var(--ink);margin-bottom:12px}
+.m .sub{font-size:16px;color:var(--ink-66);margin:-12px 0 22px}
+.ring{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:28px}
+.ag{display:flex;flex-direction:column;align-items:flex-start;gap:4px;color:var(--ink)}
+.ag img,.ag .ghost{height:96px;width:auto;margin-bottom:8px}
+.ag b{font-size:17px;font-weight:700;font-stretch:92%}
+.ag p{font-size:15px;line-height:1.4;color:var(--ink-66)}
+.ag p a{color:var(--ink);font-weight:600;border-bottom:1px solid var(--ink)}
+.ag.next .ghost{display:flex;align-items:center;justify-content:center;aspect-ratio:3/4;border:1.5px dashed var(--ink);border-radius:999px 999px 18px 18px;font-weight:800;font-size:28px}
+.ag.next:hover .ghost{background:var(--ink);color:var(--paper)}
+a:focus-visible{outline:2px solid var(--ink);outline-offset:3px}
+@media(max-width:820px){
+  .ring{grid-template-columns:1fr 1fr;gap:24px 16px}
+  .ag img,.ag .ghost{height:72px}
+  .ag.next{grid-column:1/-1;display:grid;grid-template-columns:auto 1fr;column-gap:14px;align-items:center;border-top:1px solid var(--ink-18);padding-top:16px}
+  .ag.next .ghost{grid-row:1/3;height:60px;margin:0}
+}
+@media(min-width:600px) and (max-width:820px){.ring{grid-template-columns:repeat(4,1fr)}}
 </style>
 </head>
 <body>
 <div class="page" style="display:block">
-<nav><a class="logo" href="/"><svg class="navz" viewBox="56 14 134 134" width="20" height="20" aria-hidden="true"><defs><clipPath id="mzt"><path d="M0 0H190V14C147.2 88 102 128 56 148L0 200Z"></path></clipPath><clipPath id="mzb"><path d="M56 148C150 140 195.4 96 190 14H200V200H56Z"></path></clipPath></defs><rect x="56" y="14" width="134" height="44" fill="#0B1710" clip-path="url(#mzt)"></rect><rect x="56" y="104" width="134" height="44" fill="#0B1710" clip-path="url(#mzb)"></rect><path d="M190 14C195.4 96 150 140 56 148C102 128 147.2 88 190 14Z" fill="#0B1710"></path><circle cx="126" cy="36" r="11" fill="#F2EEE2"></circle><circle cx="126" cy="36" r="5" fill="#0B1710"></circle></svg>za3tar</a><span class="navlinks"><a href="/app/">app</a><a href="https://github.com/arhadd/za3tar" target="_blank" rel="noopener">github</a></span></nav>
+<nav><a class="logo" href="/"><svg class="navz" viewBox="56 14 134 134" width="20" height="20" aria-hidden="true"><defs><clipPath id="mzt"><path d="M0 0H190V14C147.2 88 102 128 56 148L0 200Z"></path></clipPath><clipPath id="mzb"><path d="M56 148C150 140 195.4 96 190 14H200V200H56Z"></path></clipPath></defs><rect x="56" y="14" width="134" height="44" fill="#0B1710" clip-path="url(#mzt)"></rect><rect x="56" y="104" width="134" height="44" fill="#0B1710" clip-path="url(#mzb)"></rect><path d="M190 14C195.4 96 150 140 56 148C102 128 147.2 88 190 14Z" fill="#0B1710"></path><circle cx="126" cy="36" r="11" fill="#F2EEE2"></circle><circle cx="126" cy="36" r="5" fill="#0B1710"></circle></svg>za3tar</a><span class="navlinks"><a href="/method/" aria-current="page">thesis</a><a href="/app/">app</a><a href="https://github.com/arhadd/za3tar" target="_blank" rel="noopener">github</a></span></nav>
 <div class="m">
 <span class="mono">The za3tar method</span>
 <h1>AI changed how we work.</h1>
@@ -122,11 +142,14 @@ h1{font-size:clamp(34px,min(4.4vw,7vh),64px);font-weight:800;font-stretch:88%;le
 <div class="steps"><div><span>1</span><b>Set up</b><p>The first weeks with the team: how the work really moves, who asks for what, where the time goes. The assistant goes into the team’s chat on day one.</p></div><div><span>2</span><b>Connect</b><p>The tools the company already uses are connected, so the assistant works from the real numbers and nobody copies things by hand.</p></div><div><span>3</span><b>Maintain</b><p>Every connection is checked, every answer is tested against what a good answer looks like, and anything that breaks is fixed before the team notices.</p></div><div><span>4</span><b>Grow</b><p>The team brings new jobs and new tools, and the setup grows with the company.</p></div></div>
 <h2>The actual setup</h2>
 <dl class="stack"><dt>The assistant</dt><dd>An always-on agent built on Hermes, an open-source agent framework. Each company gets its own, on its own server or under its own account, with its own memory, rules and skills. It is never shared between companies.</dd><dt>The chat</dt><dd>WhatsApp, Slack or Telegram, whichever the team lives in. Ask it directly or in a group; it can also post on a schedule: a morning brief, a weekly report, a reminder.</dd><dt>The models</dt><dd>We pick the model for the job and can switch at any time, so you are never tied to one provider.</dd><dt>One live map</dt><dd>A single file with one line per thing in motion: what it is, where it stands, what’s next, who owns it. People and agents both read it and both update it.</dd><dt>The za3tar app</dt><dd>Our open-source Mac workspace. Meetings are recorded without a bot in the call, and the decisions and to-dos land in the right project. It shows what the assistant is doing and what is waiting on you. <a href="https://github.com/arhadd/za3tar">github.com/arhadd/za3tar</a></dd><dt>Building</dt><dd>When something needs building, we build it with AI coding tools, on the same stack every time: a web app, a Postgres database, and code that lives in the company’s own repository. Every change is a pull request that a person approves.</dd><dt>Approvals and checks</dt><dd>Anything outgoing or hard to undo asks first. Assistants are tested against a set of real questions, and the results go to a person, not just a log.</dd><dt>Secrets</dt><dd>Keys and passwords never go through chat or email. They live in a vault on the server, and nobody pastes them anywhere.</dd></dl>
-<h2>What we’ve built with it</h2>
-<div class="built4">
-<div><img src="/agents/jello.png" alt="Jello"><b>Jello</b><p>Runs By Jello, and builds <a href="https://byjello.com/toolsforcommunity">Tools for Community</a>.</p></div>
-<div><img src="/agents/ops.svg" alt="An agent for a marketing company"><b>Marketing</b><p>Day-to-day operations for a marketing and media company, in their Slack.</p></div>
-<div><img src="/agents/fnb.svg" alt="An agent for a restaurant group"><b>Restaurants</b><p>For a food-and-beverage group across its brands, in their Slack.</p></div>
+<h2>The agents we build for service companies</h2>
+<p class="sub">For teams that deliver for clients: proposals, delivery and reporting.</p>
+<div class="ring">
+<div class="ag"><img src="/agents/jello.png" alt="Jello"><b>Jello</b><p>Runs By Jello, and builds <a href="https://byjello.com/toolsforcommunity" target="_blank" rel="noopener">Tools for Community</a>.</p></div>
+<div class="ag"><img src="/agents/ops.svg" alt="An agent for a marketing company"><b>Marketing</b><p>Daily operations for a marketing and media company, in Slack.</p></div>
+<div class="ag"><img src="/agents/fnb.svg" alt="An agent for a restaurant group"><b>Restaurants</b><p>For a food-and-beverage group, in Slack.</p></div>
+<div class="ag"><img src="/agents/build.svg" alt="An agent for a construction company"><b>Construction</b><p>The admin and delivery work of construction companies.</p></div>
+<a class="ag next" href="https://wa.me/962798885558?text=Hi%20za3tar%2C%20we%27d%20like%20to%20start%20our%20setup." target="_blank" rel="noopener"><span class="ghost" aria-hidden="true">?</span><b>Your agent</b><p>Any industry. We build it with you. Start your setup →</p></a>
 </div>
 <p class="end"><a href="https://wa.me/962798885558?text=Hi%20za3tar%2C%20we%27d%20like%20to%20start%20our%20setup." target="_blank" rel="noopener">Start your setup →</a><a href="/app/">See the app →</a></p>
 </div>
