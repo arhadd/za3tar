@@ -195,7 +195,7 @@ main{padding:clamp(4px,1vh,14px) 0}
 .hint{margin-top:2px;text-align:center}
 .hint .tap{display:none}
 @media(hover:none){.hint .hov{display:none}.hint .tap{display:inline}}
-@media(max-width:820px){.assemble .cn{font-size:16px}.assemble svg{max-height:none}}
+@media(max-width:820px){.assemble .cn{font-size:16px}.assemble svg{max-height:none;max-width:240px;margin:0 auto}}
 @media(prefers-reduced-motion:reduce){.assemble .pc,.desc .d{transition:none}}
 
 /* a description under the Z; point at one part to read about it */
@@ -212,6 +212,27 @@ main{padding:clamp(4px,1vh,14px) 0}
 .desc .d-zz{opacity:1}
 .assemble:has(.pc:is(:hover,:focus,.on)) ~ .desc .d-zz{opacity:0}
 .assemble:has(.p-eye:is(:hover,:focus,.on)) ~ .desc .d-eye,.assemble:has(.p-top:is(:hover,:focus,.on)) ~ .desc .d-top,.assemble:has(.p-blade:is(:hover,:focus,.on)) ~ .desc .d-blade,.assemble:has(.p-bot:is(:hover,:focus,.on)) ~ .desc .d-bot{opacity:1;transition:opacity .25s .15s}
+/* the Z and its description side by side, using the width between the columns */
+@media(min-width:821px){
+  main{grid-template-columns:minmax(0,.82fr) minmax(0,1.18fr)}
+  .zcol{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);column-gap:clamp(20px,3vw,48px);align-items:center}
+  .zcol .zword{grid-column:1;grid-row:1}
+  .zcol .assemble{grid-column:1;grid-row:2}
+  .zcol .desc{grid-column:2;grid-row:1/3;align-self:center;text-align:left;margin:0;min-height:clamp(150px,24vh,210px)}
+  .zcol .desc .d{top:50%;transform:translateY(-50%)}
+  .zcol .desc .d p{margin-left:0;max-width:34ch}
+  .zcol .desc .d b{font-size:clamp(18px,min(1.8vw,3vh),26px)}
+  .zcol .see{grid-column:2;grid-row:3;justify-self:start}
+  .assemble svg{max-height:38vh}
+}
+/* the last word of the headline cycles through the work AI changed */
+.rot{display:inline-grid;justify-items:start;vertical-align:top}
+.rot>span{display:block;grid-area:1/1;opacity:0;animation:rotw 19.2s infinite}
+.rot>span:nth-child(1){opacity:1}
+.rot>span:nth-child(2){animation-delay:2.4s}.rot>span:nth-child(3){animation-delay:4.8s}.rot>span:nth-child(4){animation-delay:7.2s}
+.rot>span:nth-child(5){animation-delay:9.6s}.rot>span:nth-child(6){animation-delay:12s}.rot>span:nth-child(7){animation-delay:14.4s}.rot>span:nth-child(8){animation-delay:16.8s}
+@keyframes rotw{0%{opacity:0;transform:translateY(.25em)}2%,11%{opacity:1;transform:none}12.5%,100%{opacity:0;transform:translateY(-.25em)}}
+@media(prefers-reduced-motion:reduce){.rot>span{animation:none}}
 </style>
 </head>
 <body>
@@ -222,16 +243,16 @@ main{padding:clamp(4px,1vh,14px) 0}
 
 <main>
   <div class="lede">
-    <h1>AI changed how we work.</h1>
+    <h1 aria-label="AI changed how we work.">AI changed how we <span class="rot" aria-hidden="true"><span>work.</span><span>build.</span><span>sell.</span><span>ship.</span><span>report.</span><span>deliver.</span><span>design.</span><span>market.</span></span></h1>
     <p>Za3tar is the method we built around it: an assistant in the chat you already use, connected to your tools, with one place that connects it all. You learn it by working.</p>
     <p class="muted">Your data stays in your tools. You choose the models, it can run on your servers, and it is built on open-source software. Nothing important happens without your yes.</p>
     <p class="go"><a href="/method/">Learn more →</a></p>
   </div>
 
-  <div>
+  <div class="zcol">
     <h2 class="zword">za3tar</h2>
     <figure class="assemble" aria-label="Four pieces, you and your team, chat, the assistant and your tools, come together into the za3tar Z: one place that connects it all.">
-      <svg viewBox="-17 -6 280 174">
+      <svg viewBox="44 6 158 150">
         <defs><clipPath id="act"><path d="M0 0H190V14C147.2 88 102 128 56 148L0 200Z"/></clipPath><clipPath id="acb"><path d="M56 148C150 140 195.4 96 190 14H200V200H56Z"/></clipPath></defs>
         <g class="pc p-top" tabindex="0" aria-label="Chat"><rect x="56" y="14" width="134" height="44" fill="#0B1710" clip-path="url(#act)"/></g>
         <g class="pc p-bot" tabindex="0" aria-label="Your tools"><rect x="56" y="104" width="134" height="44" fill="#0B1710" clip-path="url(#acb)"/></g>
