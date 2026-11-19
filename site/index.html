@@ -185,7 +185,7 @@ main{padding:clamp(4px,1vh,14px) 0}
 
 /* v5: the four pieces of the Z are the four parts of the method; they come together */
 .assemble{margin:0}
-.zword{margin:0 0 clamp(4px,1vh,12px);text-align:center;font-weight:700;font-stretch:78%;font-size:clamp(22px,min(2.8vw,4vh),40px);letter-spacing:-.01em;line-height:1}
+.zword{margin:0 0 clamp(4px,1vh,12px);text-align:center;font-weight:700;font-stretch:78%;font-size:clamp(28px,min(4.2vw,6.4vh),68px);letter-spacing:-.015em;line-height:1}
 .assemble svg{display:block;width:100%;height:auto;max-height:26vh;overflow:visible;font-family:var(--sans)}
 .assemble .pc{transform-box:view-box}
 .assemble .p-top rect,.assemble .p-bot rect,.assemble .p-blade path{stroke:#0B1710;stroke-width:.8}
@@ -201,17 +201,17 @@ main{padding:clamp(4px,1vh,14px) 0}
 /* a description under the Z; point at one part to read about it */
 .p-top{--nudge:translate(-12px,-6px)}.p-bot{--nudge:translate(13px,8px)}.p-blade{--nudge:translate(-10px,7px)}.p-eye{--nudge:translate(16px,-10px)}
 .assemble .pc{transition:transform .45s cubic-bezier(.3,0,.2,1),opacity .3s}
-.assemble svg:has(.pc:is(:hover,:focus,.on)) .pc:not(:hover):not(:focus):not(.on){opacity:.14}
+.assemble svg:has(.pc:is(:hover,.on)) .pc:not(:hover):not(.on){opacity:.3}
 .desc{position:relative;min-height:clamp(64px,12vh,100px);margin-top:clamp(8px,1.6vh,14px);text-align:center}
 .desc .d{position:absolute;left:0;right:0;top:0;opacity:0;transition:opacity .15s}
 /* fade the old text out before the new one comes in, so two never overlap */
 .desc .d-zz{transition:opacity .25s .15s}
-.assemble:has(.pc:is(:hover,:focus,.on)) ~ .desc .d-zz{transition:opacity .15s}
+.zcol:has(.pc:is(:hover,:focus,.on)) .desc .d-zz{transition:opacity .15s}
 .desc .d b{display:block;font-size:clamp(16px,min(1.5vw,2.5vh),21px);font-weight:800;font-stretch:88%;letter-spacing:-.01em}
 .desc .d p{margin:4px auto 0;font-size:clamp(13px,min(1.15vw,2vh),16px);line-height:1.45;color:var(--ink-66);max-width:46ch;text-wrap:pretty}
 .desc .d-zz{opacity:1}
-.assemble:has(.pc:is(:hover,:focus,.on)) ~ .desc .d-zz{opacity:0}
-.assemble:has(.p-eye:is(:hover,:focus,.on)) ~ .desc .d-eye,.assemble:has(.p-top:is(:hover,:focus,.on)) ~ .desc .d-top,.assemble:has(.p-blade:is(:hover,:focus,.on)) ~ .desc .d-blade,.assemble:has(.p-bot:is(:hover,:focus,.on)) ~ .desc .d-bot{opacity:1;transition:opacity .25s .15s}
+.zcol:has(.pc:is(:hover,:focus,.on)) .desc .d-zz{opacity:0}
+.zcol:has(.p-eye:is(:hover,:focus,.on)) .desc .d-eye,.zcol:has(.p-top:is(:hover,:focus,.on)) .desc .d-top,.zcol:has(.p-blade:is(:hover,:focus,.on)) .desc .d-blade,.zcol:has(.p-bot:is(:hover,:focus,.on)) .desc .d-bot{opacity:1;transition:opacity .25s .15s}
 /* the Z and its description side by side, using the width between the columns */
 @media(min-width:821px){
   main{grid-template-columns:minmax(0,.82fr) minmax(0,1.18fr)}
@@ -223,46 +223,89 @@ main{padding:clamp(4px,1vh,14px) 0}
   .zcol .desc .d p{margin-left:0;max-width:34ch}
   .zcol .desc .d b{font-size:clamp(18px,min(1.8vw,3vh),26px)}
   .zcol .see{grid-column:2;grid-row:3;justify-self:start}
-  .assemble svg{max-height:38vh}
+  .assemble svg{max-height:36vh}
 }
 /* the last word of the headline cycles through the work AI changed */
 .rot{display:inline-grid;justify-items:start;vertical-align:top}
-.rot>span{display:block;grid-area:1/1;opacity:0;animation:rotw 19.2s infinite}
-.rot>span:nth-child(1){opacity:1}
+.rot>span{display:block;grid-area:1/1;opacity:0;animation:rotw 19.2s 1}
+.rot>span:nth-child(9){animation:rotin .4s 19.2s both}
 .rot>span:nth-child(2){animation-delay:2.4s}.rot>span:nth-child(3){animation-delay:4.8s}.rot>span:nth-child(4){animation-delay:7.2s}
 .rot>span:nth-child(5){animation-delay:9.6s}.rot>span:nth-child(6){animation-delay:12s}.rot>span:nth-child(7){animation-delay:14.4s}.rot>span:nth-child(8){animation-delay:16.8s}
 @keyframes rotw{0%{opacity:0;transform:translateY(.25em)}2%,11%{opacity:1;transform:none}12.5%,100%{opacity:0;transform:translateY(-.25em)}}
-@media(prefers-reduced-motion:reduce){.rot>span{animation:none}}
+@keyframes rotin{from{opacity:0;transform:translateY(.25em)}to{opacity:1;transform:none}}
+@media(prefers-reduced-motion:reduce){.rot>span,.rot>span:nth-child(9){animation:none}.rot>span:nth-child(1){opacity:1}}
+/* design pass: one left edge in the right column, numbered parts, matching links */
+.parts{display:none}
+@media(min-width:821px){
+  main{grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:clamp(32px,4vw,80px)}
+  .zcol{grid-template-columns:minmax(0,1fr) minmax(0,1.05fr);row-gap:clamp(6px,1.4vh,18px)}
+  .zcol .zword{text-align:left}
+  .zcol .assemble svg{margin:0}
+  .zcol .parts{grid-column:2;grid-row:1;align-self:end}
+  .zcol .desc{grid-row:2;align-self:start;margin-top:clamp(4px,1vh,10px);min-height:clamp(130px,21vh,190px)}
+  .zcol .desc .d{top:0;transform:none}
+  .zcol .see{grid-row:3}
+}
+.parts{gap:10px}
+.js .parts{display:flex}
+.parts button{width:clamp(32px,4.4vh,40px);height:clamp(32px,4.4vh,40px);border-radius:50%;border:1.5px solid var(--ink);background:var(--paper);color:var(--ink);font:600 clamp(13px,1.8vh,16px)/1 var(--sans);cursor:pointer;transition:background .2s,color .2s}
+.parts button:hover{background:var(--ink-08)}
+.parts button[aria-pressed="true"]{background:var(--ink);color:var(--paper)}
+.parts button:focus-visible{outline:2px solid var(--ink);outline-offset:3px}
+@media(max-width:820px){.js .parts{justify-content:center;margin-top:14px}.zcol .see{display:table;margin-left:auto;margin-right:auto}}
+.zcol .see,.lede p.go a{font-size:clamp(15px,min(1.35vw,2.2vh),19px);font-weight:600;border-bottom:1.5px solid var(--ink);padding-bottom:1px}
+/* review fixes: one ask in the hero, right column anchored to the Z, softer fades, readable small text */
+.cta{margin-top:clamp(14px,2.4vh,26px)}
+.btn{display:inline-block;background:var(--ink);color:var(--paper);font-weight:600;font-size:clamp(15px,min(1.3vw,2.1vh),18px);padding:clamp(10px,1.5vh,14px) clamp(18px,1.8vw,24px);border-radius:999px;transition:transform .15s}
+.btn:hover{transform:translateY(-1px)}
+a:focus-visible,.btn:focus-visible{outline:2px solid var(--ink);outline-offset:3px}
+@media(min-width:821px){
+  .zcol .side{grid-column:2;grid-row:2;align-self:stretch;display:flex;flex-direction:column;justify-content:space-between;gap:clamp(10px,1.6vh,18px)}
+  .zcol .side .desc{flex:1;align-self:stretch;margin:0;min-height:clamp(110px,17vh,150px)}
+  .zcol .side .parts{align-self:flex-start}
+  .zcol .side .see{align-self:flex-start;margin:0}
+}
+@media(max-width:820px){.side{text-align:center}.side .desc{text-align:center}}
+.zcol:has(.pc:is(:hover,.on)) .pc:not(:hover):not(.on){opacity:.3}
+.zcol:has(.pc:is(:hover,.on)) .pc:not(:hover):not(.on) :is(rect,path){stroke:none}
+.mono{font-size:12px}
+.ag p{font-size:clamp(12px,min(.95vw,1.7vh),13.5px)}
+.castsub{font-size:clamp(13px,min(1vw,1.8vh),14.5px)}
+.foot a{padding:4px 0}
 </style>
 </head>
 <body>
+<script>document.documentElement.classList.add('js')</script>
 <div class="page">
 <nav>
-  <span class="navlinks"><a href="/app/">app</a><a href="https://github.com/arhadd/za3tar" target="_blank" rel="noopener">github</a></span>
+  <span class="navlinks"><a href="/method/">thesis</a><a href="/app/">app</a><a href="https://github.com/arhadd/za3tar" target="_blank" rel="noopener">github</a></span>
 </nav>
 
 <main>
   <div class="lede">
-    <h1 aria-label="AI changed how we work.">AI changed how we <span class="rot" aria-hidden="true"><span>work.</span><span>build.</span><span>sell.</span><span>ship.</span><span>report.</span><span>deliver.</span><span>design.</span><span>market.</span></span></h1>
+    <h1 aria-label="AI changed how we work.">AI changed how we <span class="rot" aria-hidden="true"><span>work.</span><span>build.</span><span>sell.</span><span>ship.</span><span>report.</span><span>deliver.</span><span>design.</span><span>market.</span><span>work.</span></span></h1>
     <p>Za3tar is the method we built around it: an assistant in the chat you already use, connected to your tools, with one place that connects it all. You learn it by working.</p>
     <p class="muted">Your data stays in your tools. You choose the models, it can run on your servers, and it is built on open-source software. Nothing important happens without your yes.</p>
-    <p class="go"><a href="/method/">Learn more →</a></p>
+    <p class="cta"><a class="btn" href="https://wa.me/962798885558?text=Hi%20za3tar%2C%20we%27d%20like%20to%20start%20our%20setup." target="_blank" rel="noopener">Start your setup →</a></p>
   </div>
 
   <div class="zcol">
     <h2 class="zword">za3tar</h2>
-    <figure class="assemble" aria-label="Four pieces, you and your team, chat, the assistant and your tools, come together into the za3tar Z: one place that connects it all.">
-      <svg viewBox="44 6 158 150">
+    <figure class="assemble" role="img" aria-label="Four pieces, you and your team, chat, the assistant and your tools, come together into the za3tar Z: one place that connects it all.">
+      <svg viewBox="44 6 158 150" aria-hidden="true">
         <defs><clipPath id="act"><path d="M0 0H190V14C147.2 88 102 128 56 148L0 200Z"/></clipPath><clipPath id="acb"><path d="M56 148C150 140 195.4 96 190 14H200V200H56Z"/></clipPath></defs>
-        <g class="pc p-top" tabindex="0" aria-label="Chat"><rect x="56" y="14" width="134" height="44" fill="#0B1710" clip-path="url(#act)"/></g>
-        <g class="pc p-bot" tabindex="0" aria-label="Your tools"><rect x="56" y="104" width="134" height="44" fill="#0B1710" clip-path="url(#acb)"/></g>
-        <g class="pc p-blade" tabindex="0" aria-label="Assistant"><path d="M190 14C195.4 96 150 140 56 148C102 128 147.2 88 190 14Z" fill="#0B1710"/></g>
-        <g class="pc p-eye" tabindex="0" aria-label="You and your team"><circle cx="126" cy="36" r="11" fill="#F2EEE2" stroke="#0B1710" stroke-width="2.5"/><circle cx="126" cy="36" r="5" fill="#0B1710"/></g>
+        <g class="pc p-top"><rect x="56" y="14" width="134" height="44" fill="#0B1710" clip-path="url(#act)"/></g>
+        <g class="pc p-bot"><rect x="56" y="104" width="134" height="44" fill="#0B1710" clip-path="url(#acb)"/></g>
+        <g class="pc p-blade"><path d="M190 14C195.4 96 150 140 56 148C102 128 147.2 88 190 14Z" fill="#0B1710"/></g>
+        <g class="pc p-eye"><circle cx="126" cy="36" r="11" fill="#F2EEE2" stroke="#0B1710" stroke-width="2.5"/><circle cx="126" cy="36" r="5" fill="#0B1710"/></g>
       </svg>
     </figure>
-    <div class="desc" aria-live="polite"><div class="d d-zz"><p>One place that connects it all: sources, decisions, people, and what needs your yes. Point at a part of the Z to see what it does.</p></div><div class="d d-eye"><b>You and your team</b><p>You ask and you approve, by text or voice note, the way you would ask a colleague. Nothing important goes out without your yes.</p></div><div class="d d-top"><b>Chat</b><p>It lives in the chat you already use: WhatsApp, Slack or Telegram. Nobody installs anything new, and the whole team can use it.</p></div><div class="d d-blade"><b>Assistant</b><p>One assistant for the company that knows your people, tools and rules. It drafts, chases, reconciles and builds, and it remembers.</p></div><div class="d d-bot"><b>Your tools</b><p>It reads and writes in the tools you already have: calendar, email, sheets, payments. When something is missing, we build it.</p></div></div>
+    <div class="side">
+    <div class="parts" role="group" aria-label="The four parts of the Z"><button type="button" aria-label="1, You and your team">1</button><button type="button" aria-label="2, Chat">2</button><button type="button" aria-label="3, Assistant">3</button><button type="button" aria-label="4, Your tools">4</button></div>
+    <div class="desc"><div class="d d-zz"><b>One place that connects it all</b><p>Sources, decisions, people, and what needs your yes. Pick a number, or point at a part of the Z, to see what each part does.</p></div><div class="d d-eye"><b>You and your team</b><p>You ask and you approve, by text or voice note, the way you would ask a colleague. Nothing important goes out without your yes.</p></div><div class="d d-top"><b>Chat</b><p>It lives in the chat you already use: WhatsApp, Slack or Telegram. Nobody installs anything new, and the whole team can use it.</p></div><div class="d d-blade"><b>Assistant</b><p>One assistant for the company that knows your people, tools and rules. It drafts, chases, reconciles and builds, and it remembers.</p></div><div class="d d-bot"><b>Your tools</b><p>It reads and writes in the tools you already have: calendar, email, sheets, payments. When something is missing, we build it.</p></div></div>
 
     <a class="see" href="/app/">See the app →</a>
+    </div>
   </div>
 </main>
 
@@ -271,34 +314,32 @@ main{padding:clamp(4px,1vh,14px) 0}
   <p class="castsub">For teams that deliver for clients: proposals, delivery and reporting.</p>
   <div class="ring">
     <div class="ag"><img src="/agents/jello.png" alt="Jello"><b>Jello</b><p>Runs By Jello, and builds <a href="https://byjello.com/toolsforcommunity" target="_blank" rel="noopener">Tools for Community</a>.</p></div>
-    <div class="ag"><img src="/agents/ops.svg" alt="An agent for a marketing company"><b>Marketing</b><p>Day-to-day operations for a marketing and media company, in Slack.</p></div>
+    <div class="ag"><img src="/agents/ops.svg" alt="An agent for a marketing company"><b>Marketing</b><p>Daily operations for a marketing and media company, in Slack.</p></div>
     <div class="ag"><img src="/agents/fnb.svg" alt="An agent for a restaurant group"><b>Restaurants</b><p>For a food-and-beverage group, in Slack.</p></div>
     <div class="ag"><img src="/agents/build.svg" alt="An agent for a construction company"><b>Construction</b><p>The admin and delivery work of construction companies.</p></div>
-    <a class="ag next" href="https://wa.me/962798885558?text=Hi%20za3tar%2C%20we%27d%20like%20to%20start%20our%20setup." target="_blank" rel="noopener"><span class="ghost" aria-hidden="true">?</span><b>Your agent</b><p>Any team, any industry. We build it with you. Start your setup →</p></a>
+    <a class="ag next" href="https://wa.me/962798885558?text=Hi%20za3tar%2C%20we%27d%20like%20to%20start%20our%20setup." target="_blank" rel="noopener"><span class="ghost" aria-hidden="true">?</span><b>Your agent</b><p>Any industry. We build it with you. Start your setup →</p></a>
   </div>
 </section>
 
-<footer class="foot mono"><span>za3tar · Dubai</span><span><a href="/app/">See the app →</a><a href="/llms.txt">llms.txt</a></span></footer>
+<footer class="foot mono"><span>za3tar · Dubai</span><span><a href="https://wa.me/962798885558?text=Hi%20za3tar%2C%20we%27d%20like%20to%20start%20our%20setup." target="_blank" rel="noopener">Start your setup →</a><a href="/llms.txt">llms.txt</a></span></footer>
 </div>
 
 <script>
-/* step through the parts of the Z; pointing at one holds it there */
+/* the Z steps through its parts once, slowly, then rests whole; a number or a pointed-at part holds it */
 (function(){
   var fig=document.querySelector('.assemble');if(!fig)return;
   var pcs=['.p-eye','.p-top','.p-blade','.p-bot'].map(function(q){return fig.querySelector(q)});
-  var i=-1,t=null,still=matchMedia('(prefers-reduced-motion:reduce)').matches;
-  function show(n){i=n;pcs.forEach(function(p,k){p.classList.toggle('on',k===n)})}
-  function step(){show(i>=pcs.length-1?-1:i+1)}
-  function play(){if(still||t)return;t=setInterval(step,3200)}
-  function hold(n){clearInterval(t);t=null;show(n)}
-  pcs.forEach(function(p,k){
-    p.addEventListener('pointerenter',function(){hold(k)});
-    p.addEventListener('focus',function(){hold(k)});
-    p.addEventListener('blur',play);
-  });
-  fig.querySelector('svg').addEventListener('pointerleave',function(){if(!fig.querySelector('.pc:focus'))play()});
-  document.addEventListener('visibilitychange',function(){if(document.hidden){clearInterval(t);t=null}else if(!fig.querySelector('.pc:hover,.pc:focus'))play()});
-  play();
+  var btns=[].slice.call(document.querySelectorAll('.parts button'));
+  var i=-1,t=null,n=0,done=false,picked=-1,still=matchMedia('(prefers-reduced-motion:reduce)').matches;
+  function show(k){i=k;pcs.forEach(function(p,j){p.classList.toggle('on',j===k)});btns.forEach(function(b,j){b.setAttribute('aria-pressed',j===k?'true':'false')})}
+  function stop(){clearInterval(t);t=null}
+  function step(){show(i>=pcs.length-1?-1:i+1);if(++n>=pcs.length+1){done=true;stop()}}
+  function play(){if(still||t||done||picked>=0||document.hidden)return;t=setInterval(step,7000)}
+  pcs.forEach(function(p,k){p.addEventListener('pointerenter',function(){stop();show(k)})});
+  fig.querySelector('svg').addEventListener('pointerleave',function(){if(picked>=0)show(picked);else if(done)show(-1);else play()});
+  btns.forEach(function(b,k){b.addEventListener('click',function(){picked=k;stop();show(k)})});
+  document.addEventListener('visibilitychange',function(){if(document.hidden)stop();else play()});
+  show(-1);play();
 })();
 </script>
 </body>
