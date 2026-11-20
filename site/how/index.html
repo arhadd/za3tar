@@ -1,0 +1,287 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>How the work moves · za3tar</title>
+<meta name="description" content="A note comes in. The agent works out what it means, does what it can, and asks you for the rest. Three made-up companies, step by step.">
+<meta property="og:title" content="How the work moves · za3tar">
+<meta property="og:description" content="A note comes in. The agent works out what it means, does what it can, and asks you for the rest.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://za3tar.ai/how/">
+<meta property="og:image" content="https://za3tar.ai/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="canonical" href="https://za3tar.ai/how/">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<meta name="theme-color" content="#F2EEE2">
+<link rel="alternate" type="text/plain" href="/llms.txt" title="za3tar for AI assistants">
+<script defer src="/_vercel/insights/script.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,100..900&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#0B1710;--paper:#F2EEE2;--card:#F8F5EC;--ink-66:rgba(11,23,16,.66);--ink-40:rgba(11,23,16,.4);--ink-18:rgba(11,23,16,.18);--ink-08:rgba(11,23,16,.08);
+  --sans:"Archivo",ui-sans-serif,system-ui,-apple-system,"Helvetica Neue",Arial,sans-serif;--mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  --pad:clamp(20px,4vw,56px)}
+*{box-sizing:border-box;margin:0}
+body{background:var(--paper);color:var(--ink);font-family:var(--sans);line-height:1.45;-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none}
+button{font:inherit;color:inherit}
+a:focus-visible,button:focus-visible{outline:2px solid var(--ink);outline-offset:3px}
+.mono{font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-66)}
+.page{min-height:100vh;min-height:100svh;display:flex;flex-direction:column;padding:0 var(--pad)}
+nav{display:flex;align-items:center;justify-content:space-between;height:clamp(52px,8vh,68px)}
+.logo{display:flex;align-items:center;gap:9px;font-weight:700;font-stretch:78%;font-size:20px}
+.navlinks{display:flex;gap:clamp(18px,2.4vw,32px);font-weight:600;font-size:16px}
+.navlinks a{border-bottom:1.5px solid transparent;padding-bottom:1px}
+.navlinks a:hover,.navlinks a[aria-current]{border-bottom-color:var(--ink)}
+
+main{flex:1;display:flex;flex-direction:column;justify-content:center;padding:clamp(10px,2.4vh,28px) 0 clamp(14px,2.4vh,24px)}
+.top{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:14px 32px}
+h1{font-size:clamp(30px,min(3.6vw,6vh),54px);font-weight:800;font-stretch:88%;letter-spacing:-.03em;line-height:1}
+.intro{margin-top:8px;font-size:clamp(15px,min(1.3vw,2.1vh),18px);color:var(--ink-66);max-width:52ch}
+.tabs{display:flex;gap:6px;flex-wrap:wrap}
+.tabs button{border:1.5px solid var(--ink);background:none;border-radius:999px;padding:7px 14px;font-weight:600;font-size:14px;cursor:pointer}
+.tabs button[aria-selected="true"]{background:var(--ink);color:var(--paper)}
+.tabs button:not([aria-selected="true"]):hover{background:var(--ink-08)}
+
+/* the four stages */
+.flow{margin-top:clamp(14px,3vh,30px);display:grid;grid-template-columns:minmax(0,1fr) 22px minmax(0,1fr) 22px minmax(0,1.15fr) 22px minmax(0,1.1fr);align-items:stretch}
+.stage{display:flex;flex-direction:column;min-width:0}
+.stage>header{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.num{width:30px;height:30px;flex:none;border-radius:50%;border:1.5px solid var(--ink);display:flex;align-items:center;justify-content:center;font-weight:600;font-size:14px}
+.stage h2{font-size:clamp(16px,min(1.4vw,2.4vh),20px);font-weight:800;font-stretch:88%;letter-spacing:-.01em}
+.stage h2 small{display:block;font-size:12.5px;font-weight:500;font-stretch:100%;letter-spacing:0;color:var(--ink-66)}
+.arrow{display:flex;align-items:flex-start;justify-content:center;padding-top:6px;font-size:16px;color:var(--ink-40)}
+.box{background:var(--card);border:1.5px solid var(--ink-18);border-radius:12px;padding:14px}
+
+/* reveal, once per story */
+.reveal{opacity:0;transform:translateY(8px);transition:opacity .45s ease,transform .45s ease}
+.reveal.in{opacity:1;transform:none}
+
+/* 1 note */
+.from{display:flex;align-items:center;gap:10px}
+.av{width:34px;height:34px;border-radius:50%;background:var(--ink);color:var(--paper);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;flex:none}
+.from b{font-size:14.5px;display:block;line-height:1.2}
+.from div span{font-size:12.5px;color:var(--ink-66)}
+.wave{display:flex;align-items:center;gap:3px;height:26px;margin:12px 0 8px}
+.wave i{display:block;width:3px;border-radius:2px;background:var(--ink)}
+.quote{font-size:clamp(14px,min(1.15vw,2vh),16px);line-height:1.5}
+
+/* 2 agent */
+.kv{display:grid;gap:10px}
+.kv dt{font-size:12px;color:var(--ink-66)}
+.kv dd{margin:2px 0 0;font-size:14.5px;font-weight:600;line-height:1.35}
+.kv ul{list-style:none;padding:0;margin:2px 0 0;display:grid;gap:4px}
+.kv li{font-size:14px;font-weight:500;padding-left:14px;position:relative;line-height:1.35}
+.kv li::before{content:"";position:absolute;left:0;top:.55em;width:6px;height:6px;border-radius:50%;background:var(--ink)}
+.tools{display:flex;flex-wrap:wrap;gap:6px;margin-top:2px}
+.tools span{font-size:12px;border:1px solid var(--ink-18);border-radius:999px;padding:2px 9px;background:var(--paper)}
+
+/* 3 actions */
+.acts{display:grid;gap:10px}
+.act{display:flex;flex-direction:column;align-items:flex-start;gap:8px;text-align:left;width:100%;background:var(--card);border:1.5px solid var(--ink-18);border-radius:12px;padding:12px 14px;cursor:pointer;transition:border-color .2s,background .2s}
+.act:hover{border-color:var(--ink)}
+.act[aria-pressed="true"]{border-color:var(--ink);background:var(--paper);box-shadow:inset 4px 0 0 var(--ink)}
+.act b{font-size:14.5px;line-height:1.3}
+.pill{font-size:11.5px;font-weight:700;letter-spacing:.02em;border-radius:999px;padding:3px 9px;border:1.5px solid var(--ink)}
+.pill.done{background:var(--ink);color:var(--paper)}
+.pill.yes{background:#FFE7A8;border-color:#B07A00;color:#5A3D00}
+.pill.wait{background:none;border-style:dashed}
+
+/* 4 steps */
+.steps{list-style:none;padding:0;display:grid;gap:0}
+.steps li{display:grid;grid-template-columns:22px 1fr;gap:10px;padding:0 0 14px;position:relative}
+.steps li:not(:last-child)::after{content:"";position:absolute;left:10px;top:24px;bottom:2px;border-left:1.5px solid var(--ink-18)}
+.dot{width:22px;height:22px;border-radius:50%;border:1.5px solid var(--ink-40);display:flex;align-items:center;justify-content:center;font-size:12px;background:var(--paper)}
+.steps li.done .dot{background:var(--ink);border-color:var(--ink);color:var(--paper)}
+.steps li.now .dot{border-color:var(--ink);border-width:2px}
+.steps li.now .dot::after{content:"";width:8px;height:8px;border-radius:50%;background:var(--ink);animation:pulse 1.4s ease-in-out infinite}
+@keyframes pulse{50%{opacity:.25}}
+.steps p{font-size:14px;line-height:1.4;padding-top:1px}
+.steps li.todo p{color:var(--ink-66)}
+.steps li.now p{font-weight:700}
+.steps small{display:block;font-size:12px;color:var(--ink-66);font-weight:500}
+.approve{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}
+.approve button{border:1.5px solid var(--ink);border-radius:999px;padding:6px 13px;font-weight:600;font-size:13px;cursor:pointer;background:none}
+.approve button.y{background:var(--ink);color:var(--paper)}
+.stitle{font-size:14.5px;font-weight:700;margin-bottom:12px;line-height:1.3}
+
+.bottom{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px 28px;margin-top:clamp(20px,5vh,56px);padding-top:clamp(12px,2vh,18px);border-top:1px solid var(--ink-18)}
+.bottom .note{font-size:13px;color:var(--ink-66)}
+.bottom .links{display:flex;gap:22px;align-items:center;flex-wrap:wrap}
+.btn{display:inline-block;background:var(--ink);color:var(--paper);font-weight:600;font-size:15px;padding:10px 20px;border-radius:999px}
+.ul{font-weight:600;font-size:15px;border-bottom:1.5px solid var(--ink)}
+
+@media(max-width:900px){
+  .flow{grid-template-columns:1fr;gap:0}
+  .arrow{padding:8px 0;transform:rotate(90deg);height:28px}
+  .top{align-items:flex-start}
+}
+@media(prefers-reduced-motion:reduce){.reveal{transition:none}.steps li.now .dot::after{animation:none}}
+</style>
+</head>
+<body>
+<div class="page">
+<nav><a class="logo" href="/"><svg class="navz" viewBox="56 14 134 134" width="20" height="20" aria-hidden="true"><defs><clipPath id="mzt"><path d="M0 0H190V14C147.2 88 102 128 56 148L0 200Z"></path></clipPath><clipPath id="mzb"><path d="M56 148C150 140 195.4 96 190 14H200V200H56Z"></path></clipPath></defs><rect x="56" y="14" width="134" height="44" fill="#0B1710" clip-path="url(#mzt)"></rect><rect x="56" y="104" width="134" height="44" fill="#0B1710" clip-path="url(#mzb)"></rect><path d="M190 14C195.4 96 150 140 56 148C102 128 147.2 88 190 14Z" fill="#0B1710"></path><circle cx="126" cy="36" r="11" fill="#F2EEE2"></circle><circle cx="126" cy="36" r="5" fill="#0B1710"></circle></svg>za3tar</a><span class="navlinks"><a href="/method/">thesis</a><a href="/how/" aria-current="page">app</a><a href="https://github.com/arhadd/za3tar" target="_blank" rel="noopener">github</a></span></nav>
+<main>
+  <div class="top">
+    <div>
+      <h1>How the work moves</h1>
+      <p class="intro">A note comes in. The agent works out what it means, does what it can, and asks you for the rest.</p>
+    </div>
+    <div class="tabs" role="tablist" aria-label="Pick a company"></div>
+  </div>
+
+  <div class="flow" id="flow" role="tabpanel" aria-live="off">
+    <section class="stage" aria-labelledby="h1n"><header><span class="num">1</span><h2 id="h1n">Note<small>what comes in</small></h2></header><div class="box reveal" id="note"></div></section>
+    <div class="arrow" aria-hidden="true">→</div>
+    <section class="stage" aria-labelledby="h2n"><header><span class="num">2</span><h2 id="h2n">Agent<small>what it understood</small></h2></header><div class="box reveal" id="agent"></div></section>
+    <div class="arrow" aria-hidden="true">→</div>
+    <section class="stage" aria-labelledby="h3n"><header><span class="num">3</span><h2 id="h3n">Actions<small>pick one to see its steps</small></h2></header><div class="acts" id="acts"></div></section>
+    <div class="arrow" aria-hidden="true">→</div>
+    <section class="stage" aria-labelledby="h4n"><header><span class="num">4</span><h2 id="h4n">Steps<small>where it stands</small></h2></header><div class="box reveal" id="steps" aria-live="polite"></div></section>
+  </div>
+
+  <div class="bottom">
+    <span class="note">Made-up companies. Nothing is sent.</span>
+    <span class="links"><a class="btn" href="https://wa.me/962798885558?text=Hi%20za3tar%2C%20we%27d%20like%20to%20start%20our%20setup." target="_blank" rel="noopener">Start your setup →</a><a class="ul" href="/app/">Open the full za3tar app →</a></span>
+  </div>
+</main>
+</div>
+
+<script>
+/* the stories: made-up companies, one note each, followed through to steps */
+var STORIES = [
+  { id:'agency', tab:'Agency',
+    note:{ who:'Lina', init:'L', where:'Team chat · WhatsApp · 9:42', voice:true,
+      text:'Just off the call with Sama. They want the launch moved to the 12th, the budget stays where we agreed, and they want a recap to their team by Thursday.' },
+    agent:{ about:'Sama Skincare · product launch',
+      got:['Launch moves to the 12th','Budget stays as agreed','Recap to Sama’s team by Thursday'],
+      uses:['Project plan','Content calendar','Email'] },
+    acts:[
+      { t:'Move the launch to the 12th in the plan', s:'done', steps:[
+        ['done','Found the launch in the project plan'],
+        ['done','Moved the date, and the four tasks that hang off it'],
+        ['done','Noted the change on the project’s line']] },
+      { t:'Send the recap to Sama’s team', s:'yes', steps:[
+        ['done','Drafted the recap from Lina’s note and the call'],
+        ['now','Waiting for your yes','approve'],
+        ['todo','Send it from Lina’s email'],
+        ['todo','File it in the project']] },
+      { t:'Re-plan the content calendar', s:'wait', steps:[
+        ['done','Moved six posts to after the 12th'],
+        ['now','Asked Omar to confirm the new shoot day','waiting on Omar'],
+        ['todo','Update the calendar when he answers']] }
+    ] },
+  { id:'restaurant', tab:'Restaurant',
+    note:{ who:'Hadi', init:'H', where:'Ops channel · Slack · 7:15', voice:false,
+      text:'Walk-in freezer at Marina has been down since we opened. It’s at 9°. The seafood delivery lands at 11.' },
+    agent:{ about:'Marina branch · urgent',
+      got:['Freezer down, stock at risk','Seafood delivery at 11 needs somewhere to go','Tonight’s menu is affected'],
+      uses:['Supplier contacts','Delivery schedule','Menu'] },
+    acts:[
+      { t:'Book a repair with the fridge supplier', s:'done', steps:[
+        ['done','Opened a ticket with the refrigeration supplier'],
+        ['done','Sent the temperature and Hadi’s photos'],
+        ['done','Technician booked for 10:30']] },
+      { t:'Send the 11:00 delivery to the JBR branch', s:'yes', steps:[
+        ['done','Checked JBR has freezer space'],
+        ['now','Waiting for your yes','approve'],
+        ['todo','Give the supplier the new address'],
+        ['todo','Tell both branch managers']] },
+      { t:'Take seafood off tonight’s Marina menu', s:'wait', steps:[
+        ['done','Listed the three dishes affected'],
+        ['now','Asked the head chef for swaps','waiting on the chef'],
+        ['todo','Update the menu screens']] }
+    ] },
+  { id:'construction', tab:'Construction',
+    note:{ who:'Karim', init:'K', where:'Site meeting notes · WhatsApp · 14:05', voice:true,
+      text:'Client wants the kitchen window on villa 3 widened by 40 cm. Steel for block B is two days late. Inspector is coming Sunday.' },
+    agent:{ about:'Al Barsha villas',
+      got:['Design change: wider kitchen window','Steel for block B two days late','Inspection on Sunday'],
+      uses:['Schedule','Drawings register','Supplier list'] },
+    acts:[
+      { t:'Update the schedule for the late steel', s:'done', steps:[
+        ['done','Moved block B steel by two days'],
+        ['done','Pushed the three tasks after it'],
+        ['done','Flagged the new finish date on the project’s line']] },
+      { t:'Price the wider window as a change order', s:'yes', steps:[
+        ['done','Asked the architect for a revised drawing'],
+        ['done','Priced it from this quarter’s rates'],
+        ['now','Waiting for your yes','approve'],
+        ['todo','Send it to the client to sign']] },
+      { t:'Get ready for Sunday’s inspection', s:'wait', steps:[
+        ['done','Built the checklist from the last inspection'],
+        ['now','Asked the site lead for photos of block A','waiting on the site lead'],
+        ['todo','Share the pack on Saturday evening']] }
+    ] }
+];
+var PILL = { done:['done','Done'], yes:['yes','Needs your yes'], wait:['wait','In progress'] };
+
+(function(){
+  var tabsEl=document.querySelector('.tabs'), noteEl=document.getElementById('note'), agentEl=document.getElementById('agent'),
+      actsEl=document.getElementById('acts'), stepsEl=document.getElementById('steps'), flow=document.getElementById('flow');
+  var still=matchMedia('(prefers-reduced-motion:reduce)').matches, timers=[], cur=0, approved={};
+  function esc(s){return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
+  function later(fn,ms){if(still){fn();return}timers.push(setTimeout(fn,ms))}
+
+  STORIES.forEach(function(st,k){
+    var b=document.createElement('button');b.type='button';b.setAttribute('role','tab');b.id='tab-'+st.id;b.textContent=st.tab;
+    b.addEventListener('click',function(){pick(k,true)});
+    b.addEventListener('keydown',function(e){var d=e.key==='ArrowRight'?1:e.key==='ArrowLeft'?-1:0;if(!d)return;e.preventDefault();var n=(k+d+STORIES.length)%STORIES.length;pick(n,true);document.getElementById('tab-'+STORIES[n].id).focus()});
+    tabsEl.appendChild(b);
+  });
+
+  function wave(){var h=[8,14,20,12,24,16,10,22,18,8,14,26,12,18,10,20,14,8,16,12,22,10,16,8];return '<div class="wave" aria-hidden="true">'+h.map(function(x){return '<i style="height:'+x+'px"></i>'}).join('')+'</div>'}
+
+  function renderSteps(st,ai){
+    var a=st.acts[ai], key=st.id+':'+ai, ok=approved[key];
+    var html='<p class="stitle">'+esc(a.t)+'</p><ol class="steps">';
+    a.steps.forEach(function(s,j){
+      var state=s[0], text=s[1], extra=s[2];
+      if(ok){ if(extra==='approve'){state='done';text='You said yes'} else if(state==='todo'){state='done'} }
+      html+='<li class="'+state+'"><span class="dot" aria-hidden="true">'+(state==='done'?'✓':'')+'</span><div><p>'+esc(text)+
+        (extra&&extra!=='approve'&&!ok?'<small>'+esc(extra)+'</small>':'')+'</p>'+
+        (extra==='approve'&&!ok?'<div class="approve"><button type="button" class="y" data-yes>Yes, go ahead</button><button type="button" data-no>Not yet</button></div>':'')+
+        '</div><span class="sr">'+(state==='done'?'':'')+'</span></li>';
+    });
+    stepsEl.innerHTML=html+'</ol>';
+    var y=stepsEl.querySelector('[data-yes]');
+    if(y){y.addEventListener('click',function(){approved[key]=true;setPill(ai,'done');renderSteps(st,ai);var f=stepsEl.querySelector('.stitle');if(f){f.setAttribute('tabindex','-1');f.focus()}})}
+    var n=stepsEl.querySelector('[data-no]');
+    if(n){n.addEventListener('click',function(){n.textContent='It will wait for you';n.disabled=true})}
+  }
+  function setPill(ai,s){var p=actsEl.querySelectorAll('.act')[ai].querySelector('.pill');p.className='pill '+PILL[s][0];p.textContent=PILL[s][1]}
+  function selectAct(st,ai){
+    actsEl.querySelectorAll('.act').forEach(function(b,j){b.setAttribute('aria-pressed',j===ai?'true':'false')});
+    renderSteps(st,ai);
+  }
+
+  function pick(k,user){
+    timers.forEach(clearTimeout);timers=[];cur=k;var st=STORIES[k];
+    tabsEl.querySelectorAll('button').forEach(function(b,j){b.setAttribute('aria-selected',j===k?'true':'false');b.tabIndex=j===k?0:-1});
+    flow.setAttribute('aria-labelledby','tab-'+st.id);
+    var n=st.note;
+    noteEl.innerHTML='<div class="from"><span class="av" aria-hidden="true">'+esc(n.init)+'</span><div><b>'+esc(n.who)+'</b><span>'+esc(n.where)+'</span></div></div>'+(n.voice?wave():'<div style="height:12px"></div>')+'<p class="quote">'+(n.voice?'<span class="mono" style="display:block;margin-bottom:4px">Voice note, transcribed</span>':'')+'“'+esc(n.text)+'”</p>';
+    var a=st.agent;
+    agentEl.innerHTML='<dl class="kv"><div><dt>This is about</dt><dd>'+esc(a.about)+'</dd></div><div><dt>What changed</dt><dd><ul>'+a.got.map(function(g){return '<li>'+esc(g)+'</li>'}).join('')+'</ul></dd></div><div><dt>Works in</dt><dd class="tools">'+a.uses.map(function(u){return '<span>'+esc(u)+'</span>'}).join('')+'</dd></div></dl>';
+    actsEl.innerHTML='';
+    st.acts.forEach(function(ac,j){
+      var key=st.id+':'+j, s=approved[key]?'done':ac.s;
+      var b=document.createElement('button');b.type='button';b.className='act reveal';b.setAttribute('aria-pressed','false');
+      b.innerHTML='<b>'+esc(ac.t)+'</b><span class="pill '+PILL[s][0]+'">'+PILL[s][1]+'</span>';
+      b.addEventListener('click',function(){selectAct(st,j)});
+      actsEl.appendChild(b);
+    });
+    var parts=[noteEl,agentEl].concat([].slice.call(actsEl.children)).concat([stepsEl]);
+    parts.forEach(function(el){el.classList.remove('in')});
+    selectAct(st,1);
+    var gap=user?260:650;
+    parts.forEach(function(el,i){later(function(){el.classList.add('in')},120+i*gap)});
+  }
+  pick(0,false);
+})();
+</script>
+</body>
+</html>
