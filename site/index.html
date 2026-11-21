@@ -287,6 +287,18 @@ a:focus-visible,.btn:focus-visible{outline:2px solid var(--ink);outline-offset:3
   .ag.next b{margin-top:0}
 }
 @media(min-width:600px) and (max-width:820px){.ring{grid-template-columns:repeat(4,1fr)}}
+
+/* all four parts on the page at once: quiet numbered rows with hairlines */
+.plist{list-style:none;margin:0;padding:0;display:grid;text-align:left}
+.plist li{display:grid;grid-template-columns:2.2em 1fr;align-items:baseline;border-top:1px solid var(--ink-18);padding:clamp(4px,1.1vh,16px) 0;transition:opacity .2s}
+.plist .n{font-family:var(--mono);font-size:clamp(11px,1.5vh,12.5px);letter-spacing:.06em;color:var(--ink-66);transition:color .2s}
+.plist b{display:block;font-size:clamp(15px,min(1.25vw,2.1vh),18px);font-weight:700;font-stretch:92%;letter-spacing:-.005em;line-height:1.2}
+.plist p{margin:2px 0 0;text-wrap:pretty;font-size:clamp(12.5px,min(1vw,1.75vh),14.5px);line-height:1.4;color:var(--ink-66)}
+.plist li.on .n{color:var(--ink)}
+.plist:has(li.on) li:not(.on){opacity:.4}
+@media(min-width:821px){.zcol .side{justify-content:center}.zcol .side .plist{margin:0;max-width:30rem}}
+@media(max-width:820px){.plist{max-width:30rem;margin:clamp(14px,3vh,24px) auto 0}}
+@media(min-width:821px) and (max-height:640px){.plist p{line-height:1.3}.plist li{padding:3px 0 4px}}
 </style>
 </head>
 <body>
@@ -300,8 +312,6 @@ a:focus-visible,.btn:focus-visible{outline:2px solid var(--ink);outline-offset:3
   <div class="lede">
     <h1 aria-label="AI changed how we work.">AI changed how we <span class="rot" aria-hidden="true"><span>work.</span><span>build.</span><span>sell.</span><span>ship.</span><span>report.</span><span>deliver.</span><span>design.</span><span>market.</span><span>work.</span></span></h1>
     <p>Za3tar is the method we built around it: an assistant in the chat you already use, connected to your tools, with one place that connects it all. You learn it by working.</p>
-    <p class="muted">Your data stays in your tools. You choose the models, it can run on your servers, and it is built on open-source software. Nothing important happens without your yes.</p>
-    <p class="cta"><a class="btn" href="https://wa.me/962798885558?text=Hi%20za3tar%2C%20we%27d%20like%20to%20start%20our%20setup." target="_blank" rel="noopener">Start your setup →</a></p>
   </div>
 
   <div class="zcol">
@@ -316,44 +326,40 @@ a:focus-visible,.btn:focus-visible{outline:2px solid var(--ink);outline-offset:3
       </svg>
     </figure>
     <div class="side">
-    <div class="parts" role="group" aria-label="The four parts of the Z"><button type="button" aria-label="1, You and your team">1</button><button type="button" aria-label="2, Chat">2</button><button type="button" aria-label="3, Assistant">3</button><button type="button" aria-label="4, Your tools">4</button></div>
-    <div class="desc"><div class="d d-zz"><b>One place that connects it all</b><p>Sources, decisions, people, and what needs your yes. Pick a number, or point at a part of the Z, to see what each part does.</p></div><div class="d d-eye"><b>You and your team</b><p>You ask and you approve, by text or voice note, the way you would ask a colleague. Nothing important goes out without your yes.</p></div><div class="d d-top"><b>Chat</b><p>It lives in the chat you already use: WhatsApp, Slack or Telegram. Nobody installs anything new, and the whole team can use it.</p></div><div class="d d-blade"><b>Assistant</b><p>One assistant for the company that knows your people, tools and rules. It drafts, chases, reconciles and builds, and it remembers.</p></div><div class="d d-bot"><b>Your tools</b><p>It reads and writes in the tools you already have: calendar, email, sheets, payments. When something is missing, we build it.</p></div></div>
+    <ol class="plist">
+      <li data-k="0"><span class="n" aria-hidden="true">01</span><div><b>You and your team</b><p>You ask and approve, by text or voice note.</p></div></li>
+      <li data-k="1"><span class="n" aria-hidden="true">02</span><div><b>Chat</b><p>WhatsApp, Slack or Telegram. Nothing new to install.</p></div></li>
+      <li data-k="2"><span class="n" aria-hidden="true">03</span><div><b>Assistant</b><p>One assistant that knows your people and rules.</p></div></li>
+      <li data-k="3"><span class="n" aria-hidden="true">04</span><div><b>Your tools</b><p>Calendar, email, sheets. What is missing, we build.</p></div></li>
+    </ol>
 
-    <a class="see" href="/how/">See the app →</a>
     </div>
   </div>
 </main>
 
 <section class="cast" aria-label="The agents we build">
-  <div class="casthead"><span class="castlabel mono">The agents we build for service companies</span><p class="castsub">For teams that deliver for clients: proposals, delivery and reporting.</p></div>
+  <div class="casthead"><span class="castlabel mono">The agents we build for service companies</span></div>
   <div class="ring">
-    <div class="ag"><img src="/agents/jello.png" alt="Jello"><b>Jello</b><p>Runs By Jello, and builds <a href="https://byjello.com/toolsforcommunity" target="_blank" rel="noopener">Tools for Community</a>.</p></div>
-    <div class="ag"><img src="/agents/ops.svg" alt="An agent for a marketing company"><b>Marketing</b><p>Daily operations for a marketing and media company, in Slack.</p></div>
-    <div class="ag"><img src="/agents/fnb.svg" alt="An agent for a restaurant group"><b>Restaurants</b><p>For a food-and-beverage group, in Slack.</p></div>
-    <div class="ag"><img src="/agents/build.svg" alt="An agent for a construction company"><b>Construction</b><p>The admin and delivery work of construction companies.</p></div>
-    <a class="ag next" href="https://wa.me/962798885558?text=Hi%20za3tar%2C%20we%27d%20like%20to%20start%20our%20setup." target="_blank" rel="noopener"><span class="ghost" aria-hidden="true">?</span><b>Your agent</b><p>Any industry. We build it with you. Start your setup →</p></a>
+    <div class="ag"><img src="/agents/jello.png" alt="Jello"><b>Jello</b><p>Runs By Jello. Builds <a href="https://byjello.com/toolsforcommunity" target="_blank" rel="noopener">Tools for Community</a>.</p></div>
+    <div class="ag"><img src="/agents/ops.svg" alt="An agent for a marketing company"><b>Marketing</b><p>Daily operations, in Slack.</p></div>
+    <div class="ag"><img src="/agents/fnb.svg" alt="An agent for a restaurant group"><b>Restaurants</b><p>Food and beverage.</p></div>
+    <div class="ag"><img src="/agents/build.svg" alt="An agent for a construction company"><b>Construction</b><p>Admin and delivery.</p></div>
+    <a class="ag next" href="https://wa.me/962798885558?text=Hi%20za3tar%2C%20we%27d%20like%20to%20start%20our%20setup." target="_blank" rel="noopener"><span class="ghost" aria-hidden="true">?</span><b>Your agent</b><p>Any industry. We build it with you.</p></a>
   </div>
 </section>
 
-<footer class="foot mono"><span>za3tar · Dubai</span><span><a href="https://wa.me/962798885558?text=Hi%20za3tar%2C%20we%27d%20like%20to%20start%20our%20setup." target="_blank" rel="noopener">Start your setup →</a><a href="/llms.txt">llms.txt</a></span></footer>
+<footer class="foot mono"><span>za3tar · Dubai</span><span><a href="/llms.txt">llms.txt</a></span></footer>
 </div>
 
 <script>
-/* the Z steps through its parts once, slowly, then rests whole; a number or a pointed-at part holds it */
+/* all four parts are listed; pointing at a part or its line lights both */
 (function(){
   var fig=document.querySelector('.assemble');if(!fig)return;
   var pcs=['.p-eye','.p-top','.p-blade','.p-bot'].map(function(q){return fig.querySelector(q)});
-  var btns=[].slice.call(document.querySelectorAll('.parts button'));
-  var i=-1,t=null,n=0,done=false,picked=-1,still=matchMedia('(prefers-reduced-motion:reduce)').matches;
-  function show(k){i=k;pcs.forEach(function(p,j){p.classList.toggle('on',j===k)});btns.forEach(function(b,j){b.setAttribute('aria-pressed',j===k?'true':'false')})}
-  function stop(){clearInterval(t);t=null}
-  function step(){show(i>=pcs.length-1?-1:i+1);if(++n>=pcs.length+1){done=true;stop()}}
-  function play(){if(still||t||done||picked>=0||document.hidden)return;t=setInterval(step,7000)}
-  pcs.forEach(function(p,k){p.addEventListener('pointerenter',function(){stop();show(k)})});
-  fig.querySelector('svg').addEventListener('pointerleave',function(){if(picked>=0)show(picked);else if(done)show(-1);else play()});
-  btns.forEach(function(b,k){b.addEventListener('click',function(){picked=k;stop();show(k)})});
-  document.addEventListener('visibilitychange',function(){if(document.hidden)stop();else play()});
-  show(-1);play();
+  var lis=[].slice.call(document.querySelectorAll('.plist li'));
+  function show(k){pcs.forEach(function(p,j){p.classList.toggle('on',j===k)});lis.forEach(function(l,j){l.classList.toggle('on',j===k)})}
+  pcs.forEach(function(p,k){p.addEventListener('pointerenter',function(){show(k)});p.addEventListener('pointerleave',function(){show(-1)})});
+  lis.forEach(function(l,k){l.addEventListener('pointerenter',function(){show(k)});l.addEventListener('pointerleave',function(){show(-1)})});
 })();
 </script>
 </body>
