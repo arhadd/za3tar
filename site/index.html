@@ -287,6 +287,17 @@ a:focus-visible,.btn:focus-visible{outline:2px solid var(--ink);outline-offset:3
   .ag.next b{margin-top:0}
 }
 @media(min-width:600px) and (max-width:820px){.ring{grid-template-columns:repeat(4,1fr)}}
+
+/* all four parts on the page at once */
+.plist{list-style:none;margin:clamp(10px,2vh,18px) 0 0;padding:0;display:grid;gap:clamp(4px,1.1vh,16px);text-align:left}
+.plist li{display:flex;gap:12px;align-items:flex-start;transition:opacity .2s}
+.plist .n{flex:none;width:clamp(26px,3.6vh,32px);height:clamp(26px,3.6vh,32px);border-radius:50%;border:1.5px solid var(--ink);display:grid;place-items:center;font:600 clamp(12px,1.6vh,14px)/1 var(--sans);transition:background .2s,color .2s}
+.plist b{display:block;font-size:clamp(15px,min(1.35vw,2.2vh),19px);font-weight:800;font-stretch:88%;letter-spacing:-.01em}
+.plist p{margin:2px 0 0;font-size:clamp(13px,min(1.1vw,1.9vh),15px);line-height:1.4;color:var(--ink-66)}
+.plist li.on .n{background:var(--ink);color:var(--paper)}
+.plist:has(li.on) li:not(.on){opacity:.45}
+@media(min-width:821px){.zcol .side{justify-content:center}.zcol .side .plist{margin:0}}
+@media(max-width:820px){.plist{max-width:30rem;margin-left:auto;margin-right:auto}}
 </style>
 </head>
 <body>
@@ -300,7 +311,6 @@ a:focus-visible,.btn:focus-visible{outline:2px solid var(--ink);outline-offset:3
   <div class="lede">
     <h1 aria-label="AI changed how we work.">AI changed how we <span class="rot" aria-hidden="true"><span>work.</span><span>build.</span><span>sell.</span><span>ship.</span><span>report.</span><span>deliver.</span><span>design.</span><span>market.</span><span>work.</span></span></h1>
     <p>Za3tar is the method we built around it: an assistant in the chat you already use, connected to your tools, with one place that connects it all. You learn it by working.</p>
-    <p class="cta"><a class="btn" href="https://wa.me/962798885558?text=Hi%20za3tar%2C%20we%27d%20like%20to%20start%20our%20setup." target="_blank" rel="noopener">Start your setup →</a></p>
   </div>
 
   <div class="zcol">
@@ -315,8 +325,12 @@ a:focus-visible,.btn:focus-visible{outline:2px solid var(--ink);outline-offset:3
       </svg>
     </figure>
     <div class="side">
-    <div class="parts" role="group" aria-label="The four parts of the Z"><button type="button" aria-label="1, You and your team">1</button><button type="button" aria-label="2, Chat">2</button><button type="button" aria-label="3, Assistant">3</button><button type="button" aria-label="4, Your tools">4</button></div>
-    <div class="desc"><div class="d d-zz"><b>One place that connects it all</b><p>Pick a number to see each part.</p></div><div class="d d-eye"><b>You and your team</b><p>You ask and approve, by text or voice note.</p></div><div class="d d-top"><b>Chat</b><p>WhatsApp, Slack or Telegram. Nothing new to install.</p></div><div class="d d-blade"><b>Assistant</b><p>One assistant that knows your people and rules.</p></div><div class="d d-bot"><b>Your tools</b><p>Calendar, email, sheets. What is missing, we build.</p></div></div>
+    <ol class="plist">
+      <li data-k="0"><span class="n" aria-hidden="true">1</span><div><b>You and your team</b><p>You ask and approve, by text or voice note.</p></div></li>
+      <li data-k="1"><span class="n" aria-hidden="true">2</span><div><b>Chat</b><p>WhatsApp, Slack or Telegram. Nothing new to install.</p></div></li>
+      <li data-k="2"><span class="n" aria-hidden="true">3</span><div><b>Assistant</b><p>One assistant that knows your people and rules.</p></div></li>
+      <li data-k="3"><span class="n" aria-hidden="true">4</span><div><b>Your tools</b><p>Calendar, email, sheets. What is missing, we build.</p></div></li>
+    </ol>
 
     </div>
   </div>
@@ -329,7 +343,7 @@ a:focus-visible,.btn:focus-visible{outline:2px solid var(--ink);outline-offset:3
     <div class="ag"><img src="/agents/ops.svg" alt="An agent for a marketing company"><b>Marketing</b><p>Daily operations, in Slack.</p></div>
     <div class="ag"><img src="/agents/fnb.svg" alt="An agent for a restaurant group"><b>Restaurants</b><p>Food and beverage.</p></div>
     <div class="ag"><img src="/agents/build.svg" alt="An agent for a construction company"><b>Construction</b><p>Admin and delivery.</p></div>
-    <a class="ag next" href="https://wa.me/962798885558?text=Hi%20za3tar%2C%20we%27d%20like%20to%20start%20our%20setup." target="_blank" rel="noopener"><span class="ghost" aria-hidden="true">?</span><b>Your agent</b><p>Any industry. Start your setup →</p></a>
+    <a class="ag next" href="https://wa.me/962798885558?text=Hi%20za3tar%2C%20we%27d%20like%20to%20start%20our%20setup." target="_blank" rel="noopener"><span class="ghost" aria-hidden="true">?</span><b>Your agent</b><p>Any industry. We build it with you.</p></a>
   </div>
 </section>
 
@@ -337,21 +351,14 @@ a:focus-visible,.btn:focus-visible{outline:2px solid var(--ink);outline-offset:3
 </div>
 
 <script>
-/* the Z steps through its parts once, slowly, then rests whole; a number or a pointed-at part holds it */
+/* all four parts are listed; pointing at a part or its line lights both */
 (function(){
   var fig=document.querySelector('.assemble');if(!fig)return;
   var pcs=['.p-eye','.p-top','.p-blade','.p-bot'].map(function(q){return fig.querySelector(q)});
-  var btns=[].slice.call(document.querySelectorAll('.parts button'));
-  var i=-1,t=null,n=0,done=false,picked=-1,still=matchMedia('(prefers-reduced-motion:reduce)').matches;
-  function show(k){i=k;pcs.forEach(function(p,j){p.classList.toggle('on',j===k)});btns.forEach(function(b,j){b.setAttribute('aria-pressed',j===k?'true':'false')})}
-  function stop(){clearInterval(t);t=null}
-  function step(){show(i>=pcs.length-1?-1:i+1);if(++n>=pcs.length+1){done=true;stop()}}
-  function play(){if(still||t||done||picked>=0||document.hidden)return;t=setInterval(step,7000)}
-  pcs.forEach(function(p,k){p.addEventListener('pointerenter',function(){stop();show(k)})});
-  fig.querySelector('svg').addEventListener('pointerleave',function(){if(picked>=0)show(picked);else if(done)show(-1);else play()});
-  btns.forEach(function(b,k){b.addEventListener('click',function(){picked=k;stop();show(k)})});
-  document.addEventListener('visibilitychange',function(){if(document.hidden)stop();else play()});
-  show(-1);play();
+  var lis=[].slice.call(document.querySelectorAll('.plist li'));
+  function show(k){pcs.forEach(function(p,j){p.classList.toggle('on',j===k)});lis.forEach(function(l,j){l.classList.toggle('on',j===k)})}
+  pcs.forEach(function(p,k){p.addEventListener('pointerenter',function(){show(k)});p.addEventListener('pointerleave',function(){show(-1)})});
+  lis.forEach(function(l,k){l.addEventListener('pointerenter',function(){show(k)});l.addEventListener('pointerleave',function(){show(-1)})});
 })();
 </script>
 </body>
